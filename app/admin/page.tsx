@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { AdminHeader } from '@/components/admin/AdminHeader';
+import { NOTIFICATIONS } from '@/lib/notifications';
 
 export default function WanderluxAdminDashboardOverviewPage() {
   const [revenuePeriod, setRevenuePeriod] = useState<'monthly' | 'weekly'>('monthly');
@@ -43,49 +44,43 @@ export default function WanderluxAdminDashboardOverviewPage() {
       className="relative p-2 rounded-lg bg-surface-dark text-slate-300 hover:text-white hover:bg-border-dark transition-colors"
     >
       <span className="material-symbols-outlined">notifications</span>
-      <span className="absolute top-2 right-2 size-2 bg-primary rounded-full ring-2 ring-surface-dark"></span>
+      {NOTIFICATIONS.length > 0 && (
+        <span className="absolute -top-1 -right-1 h-5 w-5 bg-primary rounded-full ring-2 ring-surface-dark flex items-center justify-center">
+          <span className="text-[10px] font-bold text-white leading-none">{NOTIFICATIONS.length}</span>
+        </span>
+      )}
     </button>
     
     {showNotifications && (
       <div className="absolute right-0 mt-2 w-80 bg-surface-dark border border-border-dark rounded-xl shadow-2xl z-50 overflow-hidden">
         <div className="p-4 border-b border-border-dark flex justify-between items-center bg-background-dark/50">
-          <h3 className="text-white font-bold text-sm">Notifications</h3>
-          <button className="text-xs text-primary hover:text-white transition-colors border-none p-0 bg-transparent">Mark all as read</button>
+          <h3 className="text-white font-bold text-sm">Notifications <span className="ml-1 text-xs font-normal text-slate-400">({NOTIFICATIONS.length})</span></h3>
+          <Link href="/admin/messages" className="text-xs text-primary hover:text-white transition-colors" onClick={() => setShowNotifications(false)}>View all</Link>
         </div>
         <div className="max-h-96 overflow-y-auto">
-          <Link href="/admin/messages" className="block p-4 border-b border-border-dark hover:bg-white/5 transition-colors cursor-pointer text-left relative z-10">
-            <div className="flex gap-3">
-              <div className="h-8 w-8 rounded-full bg-primary/20 text-primary flex items-center justify-center shrink-0">
-                <span className="material-symbols-outlined text-[16px]">book_online</span>
+          {NOTIFICATIONS.map((n, index) => (
+            <Link
+              key={n.id}
+              href="/admin/messages"
+              onClick={() => setShowNotifications(false)}
+              className={`block p-4 ${index < NOTIFICATIONS.length - 1 ? 'border-b border-border-dark' : ''} hover:bg-white/5 transition-colors cursor-pointer text-left relative z-10`}
+            >
+              <div className="flex gap-3">
+                <div className={`h-8 w-8 rounded-full ${n.iconBg} ${n.iconColor} flex items-center justify-center shrink-0`}>
+                  <span className="material-symbols-outlined text-[16px]">{n.icon}</span>
+                </div>
+                <div>
+                  <p className="text-sm text-white">
+                    {n.message}
+                    <strong className={`font-semibold ${n.highlightColor}`}>{n.highlight}</strong>
+                    {n.id === 2 && ' received'}
+                    {n.id === 3 && ' returned'}
+                  </p>
+                  <p className="text-xs text-slate-400 mt-1">{n.time}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm text-white">New booking from <strong className="font-semibold text-primary">Alice Johnson</strong></p>
-                <p className="text-xs text-slate-400 mt-1">2 minutes ago</p>
-              </div>
-            </div>
-          </Link>
-          <Link href="/admin/messages" className="block p-4 border-b border-border-dark hover:bg-white/5 transition-colors cursor-pointer text-left relative z-10">
-            <div className="flex gap-3">
-              <div className="h-8 w-8 rounded-full bg-green-500/20 text-green-500 flex items-center justify-center shrink-0">
-                <span className="material-symbols-outlined text-[16px]">payments</span>
-              </div>
-              <div>
-                <p className="text-sm text-white">Payment of <strong className="font-semibold text-green-400">$1,250</strong> received</p>
-                <p className="text-xs text-slate-400 mt-1">1 hour ago</p>
-              </div>
-            </div>
-          </Link>
-          <Link href="/admin/messages" className="block p-4 hover:bg-white/5 transition-colors cursor-pointer text-left relative z-10">
-            <div className="flex gap-3">
-              <div className="h-8 w-8 rounded-full bg-yellow-500/20 text-yellow-500 flex items-center justify-center shrink-0">
-                <span className="material-symbols-outlined text-[16px]">directions_car</span>
-              </div>
-              <div>
-                <p className="text-sm text-white">Rental car <strong className="font-semibold text-yellow-500">#42</strong> returned</p>
-                <p className="text-xs text-slate-400 mt-1">5 hours ago</p>
-              </div>
-            </div>
-          </Link>
+            </Link>
+          ))}
         </div>
       </div>
     )}

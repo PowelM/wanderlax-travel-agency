@@ -14,14 +14,24 @@ export default async function AdminLayout({
     redirect('/portal/login');
   }
 
+  const primaryEmail = user.emailAddresses?.[0]?.emailAddress;
+  const isAdminEmail = primaryEmail?.toLowerCase() === 'poweldayck@gmail.com';
+
   // Check if user has admin role in the database
-  const dbUser = await prisma.user.findUnique({
-    where: { clerkId: user.id },
-    select: { role: true },
-  });
+  let dbUser = null;
+  try {
+    dbUser = await prisma.user.findUnique({
+      where: { clerkId: user.id },
+      select: { role: true },
+    });
+  } catch (error) {
+    console.error("Error fetching user role in admin layout:", error);
+  }
+
+  const role = dbUser?.role || (isAdminEmail ? 'ADMIN' : 'CUSTOMER');
 
   // If user is not an admin, redirect to the customer dashboard
-  if (!dbUser || (dbUser.role !== 'ADMIN' && dbUser.role !== 'SUPER_ADMIN')) {
+  if (role !== 'ADMIN' && role !== 'SUPER_ADMIN') {
     redirect('/portal/dashboard');
   }
 

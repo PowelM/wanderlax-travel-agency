@@ -10,14 +10,24 @@ export default async function AuthRedirectPage() {
     redirect('/sign-in');
   }
 
+  const primaryEmail = user.emailAddresses?.[0]?.emailAddress;
+  const isAdminEmail = primaryEmail?.toLowerCase() === 'poweldayck@gmail.com';
+
   // Look up user role in the database
-  const dbUser = await prisma.user.findUnique({
-    where: { clerkId: user.id },
-    select: { role: true },
-  });
+  let dbUser = null;
+  try {
+    dbUser = await prisma.user.findUnique({
+      where: { clerkId: user.id },
+      select: { role: true },
+    });
+  } catch (error) {
+    console.error("Error fetching user role in auth-redirect:", error);
+  }
+
+  const role = dbUser?.role || (isAdminEmail ? 'ADMIN' : 'CUSTOMER');
 
   // Route based on role
-  if (dbUser?.role === 'ADMIN' || dbUser?.role === 'SUPER_ADMIN') {
+  if (role === 'ADMIN' || role === 'SUPER_ADMIN') {
     redirect('/admin');
   }
 

@@ -10,17 +10,25 @@ export async function GET() {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
     }
 
+    const primaryEmail = user.emailAddresses?.[0]?.emailAddress;
+    const isAdminEmail = primaryEmail?.toLowerCase() === 'poweldayck@gmail.com';
+
     // Look up user in database by Clerk ID
-    const dbUser = await prisma.user.findUnique({
-      where: { clerkId: user.id },
-      select: { role: true, email: true, firstName: true, lastName: true },
-    })
+    let dbUser = null;
+    try {
+      dbUser = await prisma.user.findUnique({
+        where: { clerkId: user.id },
+        select: { role: true, email: true, firstName: true, lastName: true },
+      })
+    } catch (error) {
+      console.error("Error fetching user role in /api/auth/role:", error);
+    }
 
     if (!dbUser) {
-      // User exists in Clerk but not yet synced to DB — return default role
+      // User exists in Clerk but not yet synced to DB or DB failed
       return NextResponse.json({
-        role: 'CUSTOMER',
-        email: user.emailAddresses?.[0]?.emailAddress,
+        role: isAdminEmail ? 'ADMIN' : 'CUSTOMER',
+        email: primaryEmail,
         synced: false,
       })
     }

@@ -2,8 +2,10 @@
  
  
 import React from 'react';
+import { useUser } from '@clerk/nextjs';
 
 export default function WanderluxAdminReportsAnalyticsPage() {
+  const { user } = useUser();
   return (
     <div className="stitch-screen">
       <div className="flex h-screen w-full flex-col">
@@ -35,10 +37,10 @@ export default function WanderluxAdminReportsAnalyticsPage() {
 </button>
 <div className="flex items-center gap-3">
 <div className="text-right hidden sm:block">
-<p className="text-sm font-medium text-white">Alex Morgan</p>
-<p className="text-xs text-text-secondary">Super Admin</p>
+<p className="text-sm font-medium text-white">{user?.fullName || 'Admin User'}</p>
+<p className="text-xs text-text-secondary">Admin</p>
 </div>
-<div className="bg-center bg-no-repeat bg-cover rounded-full size-10 ring-2 ring-surface-darker" data-alt="Profile picture of administrator" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuDlaj4eLp_oNwAb5Vw5QN9CKwUsKiSVrlWPX6ngyfjy_NtIRSJc-DDJl_365AeZt2QFN2vXU_KCe7k2nHsGMyVNTmuvRXeBECyBmgVwfRcZlQA_BuZeC-V-3iHbDJpf6czlRLJjxZ0ocdqVFFGzlSEVwFHzDcrUMvc4-kEguDtDlApLTcrAYpkLUnZZokwVztXBG0yvc8AlbzX8tCFJJpnIBtdO6Iu2_8sAKChra6KrfwH7DRgoPM3h0ehpn_APiktHsXxQT-rTXQ')" }}></div>
+<div className="bg-center bg-no-repeat bg-cover rounded-full size-10 ring-2 ring-surface-darker" data-alt="Profile picture of administrator" style={{ backgroundImage: `url('${user?.imageUrl || 'https://lh3.googleusercontent.com/aida-public/AB6AXuDlaj4eLp_oNwAb5Vw5QN9CKwUsKiSVrlWPX6ngyfjy_NtIRSJc-DDJl_365AeZt2QFN2vXU_KCe7k2nHsGMyVNTmuvRXeBECyBmgVwfRcZlQA_BuZeC-V-3iHbDJpf6czlRLJjxZ0ocdqVFFGzlSEVwFHzDcrUMvc4-kEguDtDlApLTcrAYpkLUnZZokwVztXBG0yvc8AlbzX8tCFJJpnIBtdO6Iu2_8sAKChra6KrfwH7DRgoPM3h0ehpn_APiktHsXxQT-rTXQ'}')` }}></div>
 <button className="flex items-center justify-center size-8 rounded-lg bg-surface-darker text-text-secondary hover:text-primary transition-colors ml-2">
 <span className="material-symbols-outlined text-xl">logout</span>
 </button>
@@ -77,9 +79,13 @@ export default function WanderluxAdminReportsAnalyticsPage() {
 <span className="material-symbols-outlined text-2xl group-hover:text-primary transition-colors">settings</span>
 <p className="text-sm font-medium leading-normal">Settings</p>
 </a>
-<a className="flex items-center gap-3 px-3 py-2 rounded-lg text-text-secondary hover:bg-surface-darker hover:text-white transition-colors group" href="#">
+<a className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary hover:bg-surface-darker hover:text-white transition-colors group" href="#">
 <span className="material-symbols-outlined text-2xl group-hover:text-primary transition-colors">help</span>
 <p className="text-sm font-medium leading-normal">Support</p>
+</a>
+<a className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-primary/80 hover:bg-surface-darker hover:text-primary transition-colors group mt-2" href="/portal/dashboard">
+<span className="material-symbols-outlined text-2xl group-hover:text-primary transition-colors">switch_account</span>
+<p className="text-sm font-medium leading-normal">User Dashboard</p>
 </a>
 </div>
 </aside>

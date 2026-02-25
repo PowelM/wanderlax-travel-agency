@@ -2,8 +2,10 @@
 /* eslint-disable react/no-unescaped-entities */
  
 import React from 'react';
+import { useUser } from '@clerk/nextjs';
 
 export default function FeaturedTestimonialsManagerPage() {
+  const { user } = useUser();
   return (
     <div className="stitch-screen">
       {/* Noise Overlay */}
@@ -34,6 +36,7 @@ export default function FeaturedTestimonialsManagerPage() {
 <a className="px-4 py-1.5 text-sm font-medium text-white/60 hover:text-white hover:bg-white/5 rounded-md transition-colors" href="#">Destinations</a>
 <a className="px-4 py-1.5 text-sm font-medium bg-primary/20 text-primary rounded-md shadow-sm border border-primary/20" href="#">Testimonials</a>
 <a className="px-4 py-1.5 text-sm font-medium text-white/60 hover:text-white hover:bg-white/5 rounded-md transition-colors" href="#">Settings</a>
+<a className="px-4 py-1.5 text-sm font-medium text-primary/80 hover:text-primary hover:bg-white/5 rounded-md transition-colors border-l border-white/10 ml-1 pl-5" href="/portal/dashboard">User Dashboard</a>
 </nav>
 <div className="h-6 w-px bg-white/10 hidden lg:block"></div>
 <div className="flex items-center gap-4">
@@ -42,7 +45,7 @@ export default function FeaturedTestimonialsManagerPage() {
 <span className="absolute top-0 right-0 size-2 bg-primary rounded-full border-2 border-background-dark"></span>
 </button>
 <button className="flex items-center gap-3 pl-2 group">
-<div className="bg-center bg-no-repeat bg-cover rounded-full size-9 ring-2 ring-white/10 group-hover:ring-primary transition-all" data-alt="Admin user profile photo" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuB5svbe5QHCUxH1txbjtC1hfiyJBns4h4DSvF4d3n2GiQ7eYKT678opcb_1LpQL28YgAGJF2_ZQJXRgB0kXXChnUTJHX0LSLultPyRr3FSlm-sg2S0sfLd0NTrCt3eOf6dgwk0ECNHfqgptyhBJ1JJXtFDaCpQZRl-AV3cCElYl-lICDhVD1ufJ2jUYVGJDskJiKQamM9hanS4gizwdqLh79FgqwNr7JuRB5FqwlpQyHADZExxgeZBQCBsnCFKHBvGR5l_h-wZH_Q')" }}></div>
+<div className="bg-center bg-no-repeat bg-cover rounded-full size-9 ring-2 ring-white/10 group-hover:ring-primary transition-all" data-alt="Admin user profile photo" style={{ backgroundImage: `url('${user?.imageUrl || 'https://lh3.googleusercontent.com/aida-public/AB6AXuB5svbe5QHCUxH1txbjtC1hfiyJBns4h4DSvF4d3n2GiQ7eYKT678opcb_1LpQL28YgAGJF2_ZQJXRgB0kXXChnUTJHX0LSLultPyRr3FSlm-sg2S0sfLd0NTrCt3eOf6dgwk0ECNHfqgptyhBJ1JJXtFDaCpQZRl-AV3cCElYl-lICDhVD1ufJ2jUYVGJDskJiKQamM9hanS4gizwdqLh79FgqwNr7JuRB5FqwlpQyHADZExxgeZBQCBsnCFKHBvGR5l_h-wZH_Q'}')` }}></div>
 </button>
 </div>
 </div>

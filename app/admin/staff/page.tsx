@@ -2,8 +2,10 @@
  
  
 import React from 'react';
+import { useUser } from '@clerk/nextjs';
 
 export default function StaffDirectoryManagementPage() {
+  const { user } = useUser();
   return (
     <div className="stitch-screen">
       {/* Side Navigation */}
@@ -45,6 +47,10 @@ export default function StaffDirectoryManagementPage() {
 <span className="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">help</span>
 <span className="text-sm font-medium">Help Center</span>
 </a>
+<a className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-primary/80 dark:text-primary/80 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-primary transition-colors group mt-2" href="/portal/dashboard">
+<span className="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">switch_account</span>
+<span className="text-sm font-medium">User Dashboard</span>
+</a>
 </nav>
 <div className="p-4 border-t border-border-light dark:border-border-dark">
 <button className="w-full flex items-center justify-center gap-2 rounded-lg h-10 px-4 border border-border-light dark:border-border-dark hover:bg-slate-100 dark:hover:bg-white/5 text-slate-600 dark:text-slate-300 text-sm font-medium transition-colors">
@@ -65,7 +71,7 @@ export default function StaffDirectoryManagementPage() {
 <span className="material-symbols-outlined">notifications</span>
 <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-primary ring-2 ring-background-light dark:ring-background-dark"></span>
 </button>
-<div className="h-8 w-8 rounded-full bg-slate-200 dark:bg-slate-700 bg-cover bg-center ring-2 ring-border-light dark:ring-border-dark" data-alt="User profile picture" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuDfuKqcOkunrnvb9BkHNojuFUo4dWnDHGES5vcNX30EC2LWpQcTQG9mnVTKsJUQpVbi9RXkP8cs65vbiv4aYNE-OAI644VpovzXS0t5BONnmx8CTtZ9-fy87PpL8LDqbEVjVN7wIJN9KtENt6FWwvGMFKheOAfsikxOQOcdhZsER3G3pCTlzXFqaJmI8NlDF0eysXM3OvpU1TIZ-A0J4-9HpGgm9tl2luDVj1MB5xN9xNeotKGxD-HKE7gMEpI6PvcDOl-7CXYl6A')" }}></div>
+<div className="h-8 w-8 rounded-full bg-slate-200 dark:bg-slate-700 bg-cover bg-center ring-2 ring-border-light dark:ring-border-dark" data-alt="User profile picture" style={{ backgroundImage: `url('${user?.imageUrl || 'https://lh3.googleusercontent.com/aida-public/AB6AXuDfuKqcOkunrnvb9BkHNojuFUo4dWnDHGES5vcNX30EC2LWpQcTQG9mnVTKsJUQpVbi9RXkP8cs65vbiv4aYNE-OAI644VpovzXS0t5BONnmx8CTtZ9-fy87PpL8LDqbEVjVN7wIJN9KtENt6FWwvGMFKheOAfsikxOQOcdhZsER3G3pCTlzXFqaJmI8NlDF0eysXM3OvpU1TIZ-A0J4-9HpGgm9tl2luDVj1MB5xN9xNeotKGxD-HKE7gMEpI6PvcDOl-7CXYl6A'}')` }}></div>
 </div>
 </header>
 <div className="p-8 max-w-7xl mx-auto w-full flex flex-col gap-8">

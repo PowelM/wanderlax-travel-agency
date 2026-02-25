@@ -2,8 +2,13 @@
 /* eslint-disable react/no-unescaped-entities */
  
 import React from 'react';
+import { useUser } from '@clerk/nextjs';
 
 export default function WanderluxAdminCustomerCrmPage() {
+  const { user } = useUser();
+  const primaryEmail = user?.emailAddresses?.[0]?.emailAddress || 'admin@wanderlux.com';
+  const names = user?.fullName?.split(' ') || ['Admin', 'User'];
+  const initials = `${names[0]?.[0] || 'A'}${names[1]?.[0] || 'D'}`.toUpperCase();
   return (
     <div className="stitch-screen">
       <div className="flex h-screen w-full overflow-hidden">
@@ -48,11 +53,23 @@ export default function WanderluxAdminCustomerCrmPage() {
 <span className="material-symbols-outlined text-text-muted group-hover:text-primary transition-colors">settings</span>
 <span className="text-sm font-medium">Settings</span>
 </a>
+<a className="flex items-center gap-3 px-3 py-2 rounded-lg text-text-muted hover:bg-surface-dark hover:text-white transition-colors group" href="#">
+<span className="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">extension</span>
+<span className="text-sm font-medium">Integrations</span>
+</a>
+<a className="flex items-center gap-3 px-3 py-2 rounded-lg text-primary/80 hover:bg-surface-dark hover:text-primary transition-colors group mt-2" href="/portal/dashboard">
+<span className="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">switch_account</span>
+<span className="text-sm font-medium">User Dashboard</span>
+</a>
 <div className="mt-4 pt-4 border-t border-border-dark flex items-center gap-3 px-2">
-<div className="h-8 w-8 rounded-full bg-gradient-to-tr from-primary to-primary-dark flex items-center justify-center text-xs font-bold text-white">AD</div>
+{user?.imageUrl ? (
+  <div className="h-8 w-8 rounded-full bg-cover bg-center" style={{ backgroundImage: `url('${user.imageUrl}')` }}></div>
+) : (
+  <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-primary to-primary-dark flex items-center justify-center text-xs font-bold text-white">{initials}</div>
+)}
 <div className="flex flex-col">
-<p className="text-sm font-medium text-white">Admin User</p>
-<p className="text-xs text-text-muted">admin@wanderlux.com</p>
+<p className="text-sm font-medium text-white">{user?.fullName || 'Admin User'}</p>
+<p className="text-xs text-text-muted truncate max-w-[140px]">{primaryEmail}</p>
 </div>
 </div>
 </div>

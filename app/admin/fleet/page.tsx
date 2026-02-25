@@ -2,8 +2,10 @@
  
 /* eslint-disable @next/next/no-img-element */
 import React from 'react';
+import { useUser } from '@clerk/nextjs';
 
 export default function AdminFleetManagementOverviewPage() {
+  const { user } = useUser();
   return (
     <div className="stitch-screen">
       <div className="flex h-screen w-full flex-col overflow-hidden">
@@ -38,7 +40,7 @@ export default function AdminFleetManagementOverviewPage() {
 <span className="material-symbols-outlined">settings</span>
 </button>
 <div className="flex items-center gap-3 pl-2">
-<div className="h-9 w-9 rounded-full bg-cover bg-center border border-border-dark" data-alt="User profile picture" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuC2aQtwcYkEoRI7I9Emfjrf_zR9-yU3hcR-PfXtffJWcqiSt7xtah4J5oWEu8gPDFmBNebYQEm8lUK68JOD3h8-_005I6T_BBm7fW2dv9IWWeYIkleHqmBGFDnUrPzq_wUsfY45QdZzZ8TMJWAirPVgxZ-oukizaXDHC8s_PtfKV9-DIq590UHWbWubxpfaw_IlNijrtczuabhKqI7YZqigizE_NVZ3BBwKpzFu6b0BZa2VFkSQAu8jdCZrYLyrNminZnlLYLpMYw')" }}></div>
+<div className="h-9 w-9 rounded-full bg-cover bg-center border border-border-dark" data-alt="User profile picture" style={{ backgroundImage: `url('${user?.imageUrl || 'https://lh3.googleusercontent.com/aida-public/AB6AXuC2aQtwcYkEoRI7I9Emfjrf_zR9-yU3hcR-PfXtffJWcqiSt7xtah4J5oWEu8gPDFmBNebYQEm8lUK68JOD3h8-_005I6T_BBm7fW2dv9IWWeYIkleHqmBGFDnUrPzq_wUsfY45QdZzZ8TMJWAirPVgxZ-oukizaXDHC8s_PtfKV9-DIq590UHWbWubxpfaw_IlNijrtczuabhKqI7YZqigizE_NVZ3BBwKpzFu6b0BZa2VFkSQAu8jdCZrYLyrNminZnlLYLpMYw'}')` }}></div>
 </div>
 </div>
 </header>
@@ -81,6 +83,10 @@ export default function AdminFleetManagementOverviewPage() {
 <a className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary hover:bg-surface-dark hover:text-white transition-colors group" href="#">
 <span className="material-symbols-outlined group-hover:text-primary transition-colors">local_gas_station</span>
 <span className="font-medium">Fuel Log</span>
+</a>
+<a className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-primary/80 hover:bg-surface-dark hover:text-primary transition-colors group mt-2" href="/portal/dashboard">
+<span className="material-symbols-outlined group-hover:text-primary transition-colors">switch_account</span>
+<span className="font-medium">User Dashboard</span>
 </a>
 </div>
 </div>

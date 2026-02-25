@@ -3,8 +3,10 @@
  
 import React from 'react';
 import Link from 'next/link';
+import { useUser } from '@clerk/nextjs';
 
 export default function WanderluxAdminDashboardOverviewPage() {
+  const { user } = useUser();
   return (
     <div className="stitch-screen">
       <div className="flex h-screen w-full">
@@ -45,14 +47,18 @@ export default function WanderluxAdminDashboardOverviewPage() {
 <span className="material-symbols-outlined text-[24px]">settings</span>
 <span className="text-sm font-medium">Settings</span>
 </Link>
+<Link className="flex items-center gap-3 px-4 py-3 rounded-lg text-primary/80 hover:bg-surface-dark hover:text-primary transition-all group border-l-4 border-transparent hover:border-border-dark mt-2" href="/portal/dashboard">
+<span className="material-symbols-outlined text-[24px]">switch_account</span>
+<span className="text-sm font-medium">User Dashboard</span>
+</Link>
 </div>
 </nav>
 <div className="p-4 border-t border-border-dark">
 <div className="flex items-center gap-3 p-3 rounded-lg bg-surface-dark border border-border-dark">
-<div className="bg-center bg-no-repeat bg-cover rounded-full size-8" data-alt="User Avatar Profile" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuA-IBtcNloCVv54a1j2HpwGpjo2wGjfX2gOihiZLlnhLqVsOvBlMASFZ0laWjaPmD9n0CEb_cMJCeW9SVs4-g7mTjYrireW7qoW9U820REumIp6RiZlqnzLi8P6Xg-M6RkHhD3qcADu_9R6fi7jGAMdsu8EXoKTViRIfLASpzS3x3bvXGlrup4ioKFxxP540_LmF5K5o8hq-MkkxFXvj2fgeDQt1kTATsSF2LY2MkB21U9DBUE3N3MWUGneYtxycRhnPC4P8020Bw')" }}></div>
+<div className="bg-center bg-no-repeat bg-cover rounded-full size-8" data-alt="User Avatar Profile" style={{ backgroundImage: `url('${user?.imageUrl || 'https://lh3.googleusercontent.com/aida-public/AB6AXuA-IBtcNloCVv54a1j2HpwGpjo2wGjfX2gOihiZLlnhLqVsOvBlMASFZ0laWjaPmD9n0CEb_cMJCeW9SVs4-g7mTjYrireW7qoW9U820REumIp6RiZlqnzLi8P6Xg-M6RkHhD3qcADu_9R6fi7jGAMdsu8EXoKTViRIfLASpzS3x3bvXGlrup4ioKFxxP540_LmF5K5o8hq-MkkxFXvj2fgeDQt1kTATsSF2LY2MkB21U9DBUE3N3MWUGneYtxycRhnPC4P8020Bw'}')` }}></div>
 <div className="flex flex-col overflow-hidden">
-<span className="text-sm font-medium text-white truncate">Jane Doe</span>
-<span className="text-xs text-slate-400 truncate">Super Admin</span>
+<span className="text-sm font-medium text-white truncate">{user?.fullName || 'Admin User'}</span>
+<span className="text-xs text-slate-400 truncate">Admin</span>
 </div>
 </div>
 </div>

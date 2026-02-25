@@ -1,16 +1,17 @@
 import { NextResponse } from 'next/server';
-import { currentUser } from '@clerk/nextjs/server';
+import { currentUser, auth } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/prisma';
 
 export async function GET() {
   try {
+    const { userId } = await auth();
     const user = await currentUser();
-    if (!user) {
+    if (!userId || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const dbUser = await prisma.user.findUnique({
-      where: { clerkId: user.id },
+      where: { clerkId: userId },
       select: {
         id: true,
         email: true,
@@ -36,8 +37,9 @@ export async function GET() {
 
 export async function PUT(request: Request) {
   try {
+    const { userId } = await auth();
     const user = await currentUser();
-    if (!user) {
+    if (!userId || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -45,7 +47,7 @@ export async function PUT(request: Request) {
     const { firstName, lastName, phone } = body;
 
     const updatedUser = await prisma.user.update({
-      where: { clerkId: user.id },
+      where: { clerkId: userId },
       data: {
         ...(firstName !== undefined && { firstName }),
         ...(lastName !== undefined && { lastName }),

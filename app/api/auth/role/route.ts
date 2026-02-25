@@ -1,12 +1,13 @@
-import { currentUser } from '@clerk/nextjs/server'
+import { currentUser, auth } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 
 export async function GET() {
   try {
-    const user = await currentUser()
+    const { userId } = await auth();
+    const user = await currentUser();
 
-    if (!user) {
+    if (!userId || !user) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
     }
 
@@ -17,7 +18,7 @@ export async function GET() {
     let dbUser = null;
     try {
       dbUser = await prisma.user.findUnique({
-        where: { clerkId: user.id },
+        where: { clerkId: userId },
         select: { role: true, email: true, firstName: true, lastName: true },
       })
     } catch (error) {

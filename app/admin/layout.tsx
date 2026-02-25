@@ -1,4 +1,4 @@
-import { currentUser } from '@clerk/nextjs/server';
+import { currentUser, auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 
@@ -7,10 +7,11 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const { userId } = await auth();
   const user = await currentUser();
 
   // If not authenticated, redirect to login
-  if (!user) {
+  if (!userId || !user) {
     redirect('/portal/login');
   }
 
@@ -21,7 +22,7 @@ export default async function AdminLayout({
   let dbUser = null;
   try {
     dbUser = await prisma.user.findUnique({
-      where: { clerkId: user.id },
+      where: { clerkId: userId },
       select: { role: true },
     });
   } catch (error) {

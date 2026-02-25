@@ -7,7 +7,8 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { userId } = await auth();
+  const authObject = await auth();
+  const userId = authObject?.userId ?? null;
   const user = await currentUser();
 
   // If not authenticated, redirect to login
@@ -19,14 +20,16 @@ export default async function AdminLayout({
   const isAdminEmail = primaryEmail?.toLowerCase() === 'poweldayck@gmail.com';
 
   // Check if user has admin role in the database
-  let dbUser = null;
+  let dbUser: { role: string } | null = null;
   try {
+    // userId is guaranteed to be a non-null string here due to the guard above
     dbUser = await prisma.user.findUnique({
-      where: { clerkId: userId },
+      where: { clerkId: userId as string },
       select: { role: true },
     });
   } catch (error) {
     console.error("Error fetching user role in admin layout:", error);
+    // Fall back to email-based check if DB query fails
   }
 
   const role = dbUser?.role || (isAdminEmail ? 'ADMIN' : 'CUSTOMER');

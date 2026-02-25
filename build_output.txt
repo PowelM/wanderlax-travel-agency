@@ -1,0 +1,23 @@
+
+> travel-agency@0.1.0 build
+> next build
+
+▲ Next.js 16.1.6 (Turbopack)
+- Environments: .env
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 17.9s
+  Running TypeScript ...
+Failed to compile.
+
+./app/(stitch)/admin-add-new-vehicle-form/page.tsx:41:202
+Type error: Type 'string' has no properties in common with type 'Properties<string | number, string & {}>'.
+
+[0m [90m 39 |[39m [33m<[39m[33mspan[39m className[33m=[39m[32m"absolute top-0 right-0 size-2 bg-primary rounded-full"[39m[33m>[39m[33m<[39m[33m/[39m[33mspan[39m[33m>[39m
+ [90m 40 |[39m [33m<[39m[33m/[39m[33mbutton[39m[33m>[39m
+[31m[1m>[22m[39m[90m 41 |[39m [33m<[39m[33mdiv[39m className[33m=[39m[32m"bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-slate-200 dark:border-[#39282c]"[39m data[33m-[39malt[33m=[39m[32m"User profile picture showing a professional man in a suit"[39m style[33m=[39m[32m'background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAmz-xMnFZR38YAHDG6FP9OVRxYcCLMfRIopRlCAsSUa81-NnvDnCL7niibDnCiu1_mqVtQCZ26o8LTi_HNKUMVMPsnU50MalyIFXy6se_JKs9Hr4lQya7Um9Bu-LYLgIgztA5YNPVA3FQ-QTH6gkuu8JwG9mu6Nz_RAgR6ySI6PTQlUCSpfvUj9hLDi5WOflBcGDUh4BvHZlbRwyw0-H-bULQon-bldMgam63DimMlUTuj3wwHZaCOADSa0MG-FMxsjfC9I1D2wg");'[39m[33m>[39m[33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m    |[39m                                                                                                                                                                                                          [31m[1m^[22m[39m
+ [90m 42 |[39m [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m 43 |[39m [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m 44 |[39m [33m<[39m[33m/[39m[33mheader[39m[33m>[39m[0m
+Next.js build worker exited with code: 1 and signal: null

@@ -1,0 +1,681 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  CUSTOMER
+  CONSULTANT
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum ModuleType {
+  BOOKINGS
+  PAYMENTS
+  USERS
+  FLEET
+  CATALOGUE
+  REPORTS
+  SETTINGS
+}
+
+enum PermissionLevel {
+  READ
+  WRITE
+  DELETE
+  ALL
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  CREDIT_CARD
+  PAYPAL
+  BANK_TRANSFER
+  STRIPE
+}
+
+enum ServiceType {
+  CAR_HIRE
+  HOTEL
+  TOUR_PACKAGE
+  FLIGHT
+  CUSTOM
+}
+
+enum CarStatus {
+  AVAILABLE
+  RENTED
+  MAINTENANCE
+  DECOMMISSIONED
+}
+
+enum CarCategory {
+  ECONOMY
+  COMPACT
+  SUV
+  LUXURY
+  VAN
+  BUS
+}
+
+enum MaintenanceType {
+  ROUTINE
+  REPAIR
+  INSPECTION
+  CLEANING
+}
+
+enum HotelStarRating {
+  ONE_STAR
+  TWO_STAR
+  THREE_STAR
+  FOUR_STAR
+  FIVE_STAR
+  UNRATED
+}
+
+enum RoomType {
+  STANDARD
+  DELUXE
+  SUITE
+  FAMILY
+  PENTHOUSE
+}
+
+enum TourCategory {
+  SAFARI
+  BEACH
+  CULTURAL
+  ADVENTURE
+  HONEYMOON
+  FAMILY
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum InquiryStatus {
+  NEW
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+model User {
+  id            String    @id @default(uuid())
+  clerkId       String    @unique // Clerk integration
+  email         String    @unique
+  firstName     String?
+  lastName      String?
+  phone         String?
+  avatarUrl     String?
+  role          Role      @default(CUSTOMER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relationships
+  sessions      Session[]
+  staffProfile  StaffProfile?
+  bookings      Booking[]
+  carHireBookings CarHireBooking[]
+  hotelBookings HotelBooking[]
+  tourBookings  TourBooking[]
+  appointmentsClient Appointment[] @relation("ClientAppointments")
+  appointmentsConsultant Appointment[] @relation("ConsultantAppointments")
+  payments      Payment[]
+  reviews       Review[]
+  inquiries     Inquiry[]
+  inquiryMessages InquiryMessage[]
+  wishlistItems WishlistItem[]
+  notifications Notification[]
+  activityLogs  ActivityLog[]
+
+  @@index([email])
+  @@index([role])
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  deviceInfo String?
+  ipAddress  String?
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([token])
+}
+
+model StaffProfile {
+  id             String   @id @default(uuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  department     String?
+  jobTitle       String?
+  bio            String?
+  hireDate       DateTime?
+  isActive       Boolean  @default(true)
+  
+  permissions    StaffPermission[]
+  blockedDates   BlockedDate[]
+}
+
+model StaffPermission {
+  id             String   @id @default(uuid())
+  staffProfileId String
+  staffProfile   StaffProfile @relation(fields: [staffProfileId], references: [id], onDelete: Cascade)
+  module         ModuleType
+  level          PermissionLevel
+  
+  @@unique([staffProfileId, module])
+}
+
+model BlockedDate {
+  id             String   @id @default(uuid())
+  staffProfileId String
+  staffProfile   StaffProfile @relation(fields: [staffProfileId], references: [id], onDelete: Cascade)
+  startDate      DateTime
+  endDate        DateTime
+  reason         String?
+  createdAt      DateTime @default(now())
+}
+
+model Destination {
+  id          String   @id @default(uuid())
+  name        String
+  slug        String   @unique
+  country     String
+  continent   String
+  description String?  @db.Text
+  images      String[] // JSON array of image URLs
+  featured    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  hotels        Hotel[]
+  tourPackages  TourPackage[]
+
+  @@index([slug])
+  @@index([country])
+  @@index([continent])
+}
+
+model Car {
+  id             String      @id @default(uuid())
+  make           String
+  model          String
+  year           Int
+  licensePlate   String      @unique
+  category       CarCategory
+  capacity       Int
+  transmission   String      // e.g., "Automatic", "Manual"
+  fuelType       String
+  dailyRate      Decimal     @db.Decimal(10, 2)
+  images         String[]
+  status         CarStatus   @default(AVAILABLE)
+  mileage        Int?
+  features       String[]    // JSON array of features (GPS, AC)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  bookings       CarHireBooking[]
+  maintenanceLogs MaintenanceLog[]
+
+  @@index([status])
+  @@index([category])
+}
+
+model CarHireBooking {
+  id             String   @id @default(uuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  carId          String
+  car            Car      @relation(fields: [carId], references: [id], onDelete: Restrict)
+  booking        Booking? @relation("CarBooking")
+  
+  pickupLocation String
+  dropoffLocation String
+  pickupDateTime DateTime
+  returnDateTime DateTime
+  totalDays      Int
+  dailyRate      Decimal  @db.Decimal(10, 2)
+  totalAmount    Decimal  @db.Decimal(10, 2)
+  status         BookingStatus @default(PENDING)
+  notes          String?  @db.Text
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([userId])
+  @@index([carId])
+  @@index([status])
+  @@index([pickupDateTime])
+}
+
+model MaintenanceLog {
+  id             String   @id @default(uuid())
+  carId          String
+  car            Car      @relation(fields: [carId], references: [id], onDelete: Cascade)
+  type           MaintenanceType
+  description    String   @db.Text
+  cost           Decimal? @db.Decimal(10, 2)
+  date           DateTime
+  provider       String?
+  invoiceUrl     String?
+  createdAt      DateTime @default(now())
+}
+
+model Hotel {
+  id             String   @id @default(uuid())
+  destinationId  String
+  destination    Destination @relation(fields: [destinationId], references: [id], onDelete: Restrict)
+  name           String
+  slug           String   @unique
+  description    String   @db.Text
+  starRating     HotelStarRating @default(UNRATED)
+  address        String
+  latitude       Float?
+  longitude      Float?
+  amenities      String[]
+  images         String[]
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  rooms          HotelRoom[]
+  bookings       HotelBooking[]
+  reviews        Review[]
+
+  @@index([slug])
+  @@index([destinationId])
+  @@index([starRating])
+}
+
+model HotelRoom {
+  id             String   @id @default(uuid())
+  hotelId        String
+  hotel          Hotel    @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  type           RoomType
+  name           String
+  description    String?  @db.Text
+  capacityAdults Int
+  capacityKids   Int      @default(0)
+  pricePerNight  Decimal  @db.Decimal(10, 2)
+  quantity       Int      @default(1)
+  images         String[]
+  amenities      String[]
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  bookings       HotelBooking[]
+}
+
+model HotelBooking {
+  id             String   @id @default(uuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  hotelId        String
+  hotel          Hotel    @relation(fields: [hotelId], references: [id], onDelete: Restrict)
+  roomId         String?
+  room           HotelRoom? @relation(fields: [roomId], references: [id], onDelete: SetNull)
+  booking        Booking? @relation("HotelBooking")
+  
+  checkIn        DateTime
+  checkOut       DateTime
+  guestsAdults   Int
+  guestsKids     Int      @default(0)
+  totalNights    Int
+  pricePerNight  Decimal  @db.Decimal(10, 2)
+  totalAmount    Decimal  @db.Decimal(10, 2)
+  status         BookingStatus @default(PENDING)
+  specialRequests String? @db.Text
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([userId])
+  @@index([hotelId])
+  @@index([status])
+  @@index([checkIn])
+}
+
+model TourPackage {
+  id             String   @id @default(uuid())
+  destinationId  String
+  destination    Destination @relation(fields: [destinationId], references: [id], onDelete: Restrict)
+  title          String
+  slug           String   @unique
+  category       TourCategory
+  overview       String   @db.Text
+  durationDays   Int
+  durationNights Int
+  basePrice      Decimal  @db.Decimal(10, 2)
+  groupSizeMin   Int      @default(1)
+  groupSizeMax   Int
+  included       String[]
+  excluded       String[]
+  images         String[]
+  status         String   @default("ACTIVE") // String instead of enum for simplicity
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  itinerary      TourItinerary[]
+  availabilities TourAvailability[]
+  bookings       TourBooking[]
+  reviews        Review[]
+
+  @@index([slug])
+  @@index([destinationId])
+  @@index([category])
+  @@index([status])
+}
+
+model TourItinerary {
+  id             String   @id @default(uuid())
+  tourPackageId  String
+  tourPackage    TourPackage @relation(fields: [tourPackageId], references: [id], onDelete: Cascade)
+  dayNumber      Int
+  title          String
+  description    String   @db.Text
+  accommodation  String?
+  mealsIncluded  String[]
+  activities     String[]
+  
+  @@unique([tourPackageId, dayNumber])
+}
+
+model TourAvailability {
+  id             String   @id @default(uuid())
+  tourPackageId  String
+  tourPackage    TourPackage @relation(fields: [tourPackageId], references: [id], onDelete: Cascade)
+  startDate      DateTime
+  endDate        DateTime
+  priceOverride  Decimal? @db.Decimal(10, 2)
+  capacity       Int
+  bookedCount    Int      @default(0)
+  status         String   @default("AVAILABLE") // "AVAILABLE", "SOLD_OUT", "CANCELLED"
+  createdAt      DateTime @default(now())
+}
+
+model TourBooking {
+  id             String   @id @default(uuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  tourPackageId  String
+  tourPackage    TourPackage @relation(fields: [tourPackageId], references: [id], onDelete: Restrict)
+  booking        Booking? @relation("TourBooking")
+  
+  startDate      DateTime
+  endDate        DateTime
+  guestCount     Int
+  totalAmount    Decimal  @db.Decimal(10, 2)
+  status         BookingStatus @default(PENDING)
+  specialRequirements String? @db.Text
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  travelers      TourTraveler[]
+
+  @@index([userId])
+  @@index([tourPackageId])
+  @@index([status])
+}
+
+model TourTraveler {
+  id             String   @id @default(uuid())
+  tourBookingId  String
+  tourBooking    TourBooking @relation(fields: [tourBookingId], references: [id], onDelete: Cascade)
+  firstName      String
+  lastName       String
+  passportNumber String?
+  dateOfBirth    DateTime?
+  dietaryReqs    String?
+  isLeadGuest    Boolean  @default(false)
+}
+
+model Booking {
+  id               String   @id @default(uuid())
+  bookingRef       String   @unique
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  serviceType      ServiceType
+  status           BookingStatus @default(PENDING)
+  paymentStatus    PaymentStatus @default(PENDING)
+  totalAmount      Decimal  @db.Decimal(10, 2)
+  discountAmount   Decimal  @default(0) @db.Decimal(10, 2)
+  taxAmount        Decimal  @default(0) @db.Decimal(10, 2)
+  finalAmount      Decimal  @db.Decimal(10, 2)
+  currency         String   @default("USD")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  carHireBookingId String?  @unique
+  carHireBooking   CarHireBooking? @relation("CarBooking", fields: [carHireBookingId], references: [id], onDelete: SetNull)
+  
+  hotelBookingId   String?  @unique
+  hotelBooking     HotelBooking? @relation("HotelBooking", fields: [hotelBookingId], references: [id], onDelete: SetNull)
+  
+  tourBookingId    String?  @unique
+  tourBooking      TourBooking? @relation("TourBooking", fields: [tourBookingId], references: [id], onDelete: SetNull)
+  
+  appointmentId    String?  @unique
+  appointment      Appointment? @relation("AppointmentBooking", fields: [appointmentId], references: [id], onDelete: SetNull)
+
+  payments         Payment[]
+  invoice          Invoice?
+
+  @@index([userId])
+  @@index([serviceType])
+  @@index([status])
+  @@index([paymentStatus])
+}
+
+model Payment {
+  id               String   @id @default(uuid())
+  bookingId        String
+  booking          Booking  @relation(fields: [bookingId], references: [id], onDelete: Restrict)
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  amount           Decimal  @db.Decimal(10, 2)
+  currency         String   @default("USD")
+  method           PaymentMethod
+  status           PaymentStatus @default(PENDING)
+  transactionId    String?  @unique
+  providerResponse Json?
+  paidAt           DateTime?
+  createdAt        DateTime @default(now())
+
+  @@index([bookingId])
+  @@index([userId])
+  @@index([status])
+  @@index([method])
+}
+
+model Invoice {
+  id               String   @id @default(uuid())
+  invoiceNumber    String   @unique
+  bookingId        String   @unique
+  booking          Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  issueDate        DateTime @default(now())
+  dueDate          DateTime
+  subtotal         Decimal  @db.Decimal(10, 2)
+  tax              Decimal  @db.Decimal(10, 2)
+  total            Decimal  @db.Decimal(10, 2)
+  pdfUrl           String?
+  status           String   @default("UNPAID") // "UNPAID", "PAID", "VOID"
+  createdAt        DateTime @default(now())
+}
+
+model Appointment {
+  id               String   @id @default(uuid())
+  clientId         String
+  client           User     @relation("ClientAppointments", fields: [clientId], references: [id], onDelete: Restrict)
+  consultantId     String
+  consultant       User     @relation("ConsultantAppointments", fields: [consultantId], references: [id], onDelete: Restrict)
+  booking          Booking? @relation("AppointmentBooking")
+  
+  topic            String
+  scheduledAt      DateTime
+  durationMinutes  Int      @default(60)
+  meetingUrl       String?
+  status           AppointmentStatus @default(SCHEDULED)
+  notes            String?  @db.Text
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([clientId])
+  @@index([consultantId])
+  @@index([status])
+  @@index([scheduledAt])
+}
+
+model Review {
+  id               String   @id @default(uuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  rating           Int      @db.SmallInt // 1-5
+  title            String?
+  comment          String   @db.Text
+  isPublished      Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  hotelId          String?
+  hotel            Hotel?   @relation(fields: [hotelId], references: [id], onDelete: SetNull)
+  
+  tourPackageId    String?
+  tourPackage      TourPackage? @relation(fields: [tourPackageId], references: [id], onDelete: SetNull)
+}
+
+model Inquiry {
+  id               String   @id @default(uuid())
+  userId           String?
+  user             User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  name             String
+  email            String
+  phone            String?
+  subject          String
+  message          String   @db.Text
+  status           InquiryStatus @default(NEW)
+  assignedTo       String?  // Staff ID
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  messages         InquiryMessage[]
+}
+
+model InquiryMessage {
+  id               String   @id @default(uuid())
+  inquiryId        String
+  inquiry          Inquiry  @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
+  senderId         String?  // Null if from customer before account creation
+  sender           User?    @relation(fields: [senderId], references: [id], onDelete: SetNull)
+  message          String   @db.Text
+  isStaffReply     Boolean  @default(false)
+  createdAt        DateTime @default(now())
+}
+
+model WishlistItem {
+  id               String   @id @default(uuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  itemType         String   // "HOTEL", "TOUR", "DESTINATION"
+  itemId           String   // ID of the target resource
+  createdAt        DateTime @default(now())
+
+  @@unique([userId, itemType, itemId])
+}
+
+model Notification {
+  id               String   @id @default(uuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title            String
+  message          String
+  type             String   // "BOOKING_UPDATE", "PROMO", "SYSTEM"
+  isRead           Boolean  @default(false)
+  linkUrl          String?
+  createdAt        DateTime @default(now())
+}
+
+model Promotion {
+  id               String   @id @default(uuid())
+  code             String   @unique
+  description      String?
+  discountType     String   // "PERCENTAGE", "FIXED_AMOUNT"
+  discountValue    Decimal  @db.Decimal(10, 2)
+  minSpend         Decimal? @db.Decimal(10, 2)
+  validFrom        DateTime
+  validUntil       DateTime
+  maxUses          Int?
+  currentUses      Int      @default(0)
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+}
+
+model NewsletterSubscriber {
+  id               String   @id @default(uuid())
+  email            String   @unique
+  firstName        String?
+  source           String?
+  isActive         Boolean  @default(true)
+  subscribedAt     DateTime @default(now())
+  unsubscribedAt   DateTime?
+}
+
+model EmailTemplate {
+  id               String   @id @default(uuid())
+  name             String   @unique
+  subject          String
+  htmlContent      String   @db.Text
+  textContent      String   @db.Text
+  variables        String[] // JSON array of available dynamic vars
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model ActivityLog {
+  id               String   @id @default(uuid())
+  userId           String?
+  user             User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  module           String
+  action           String   // "CREATE", "UPDATE", "DELETE", "LOGIN"
+  details          Json?
+  ipAddress        String?
+  createdAt        DateTime @default(now())
+
+  @@index([userId])
+  @@index([module])
+  @@index([createdAt])
+}
+
+model SiteSetting {
+  id               String   @id @default(uuid())
+  key              String   @unique
+  value            Json
+  description      String?
+  updatedBy        String?  // Staff ID
+  updatedAt        DateTime @updatedAt
+}

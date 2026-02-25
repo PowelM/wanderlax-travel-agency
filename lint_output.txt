@@ -1,0 +1,221 @@
+
+> travel-agency@0.1.0 lint
+> eslint
+
+
+/home/akubrecah/Desktop/tech-hub/travel-agency/app/(stitch)/admin-add-new-vehicle-form/page.tsx
+  1:1  warning  Unused eslint-disable directive (no problems were reported from 'react/no-unescaped-entities')
+  2:1  warning  Unused eslint-disable directive (no problems were reported from '@next/next/no-img-element')
+
+/home/akubrecah/Desktop/tech-hub/travel-agency/app/(stitch)/admin-tour-package-builder/page.tsx
+  1:1  warning  Unused eslint-disable directive (no problems were reported from 'react/no-unescaped-entities')
+  2:1  warning  Unused eslint-disable directive (no problems were reported from '@next/next/no-img-element')
+
+/home/akubrecah/Desktop/tech-hub/travel-agency/app/(stitch)/booking-confirmation-success/page.tsx
+   27:1  warning  img elements must have an alt prop, either with meaningful text, or an empty string for decorative images  jsx-a11y/alt-text
+  107:1  warning  img elements must have an alt prop, either with meaningful text, or an empty string for decorative images  jsx-a11y/alt-text
+
+/home/akubrecah/Desktop/tech-hub/travel-agency/app/(stitch)/checkout-extras-add-ons/page.tsx
+  1:1  warning  Unused eslint-disable directive (no problems were reported from 'react/no-unescaped-entities')
+  2:1  warning  Unused eslint-disable directive (no problems were reported from '@next/next/no-img-element')
+
+/home/akubrecah/Desktop/tech-hub/travel-agency/app/(stitch)/checkout-traveler-details/page.tsx
+  1:1  warning  Unused eslint-disable directive (no problems were reported from 'react/no-unescaped-entities')
+  2:1  warning  Unused eslint-disable directive (no problems were reported from '@next/next/no-img-element')
+
+/home/akubrecah/Desktop/tech-hub/travel-agency/app/(stitch)/contact-wanderlux-categorized-faq-search/page.tsx
+   1:1  warning  Unused eslint-disable directive (no problems were reported from 'react/no-unescaped-entities')
+  77:1  warning  img elements must have an alt prop, either with meaningful text, or an empty string for decorative images  jsx-a11y/alt-text
+
+/home/akubrecah/Desktop/tech-hub/travel-agency/app/(stitch)/contact-wanderlux-faq-integrated/page.tsx
+   1:1  warning  Unused eslint-disable directive (no problems were reported from 'react/no-unescaped-entities')
+  77:1  warning  img elements must have an alt prop, either with meaningful text, or an empty string for decorative images  jsx-a11y/alt-text
+
+/home/akubrecah/Desktop/tech-hub/travel-agency/app/(stitch)/contact-wanderlux-faq-with-cta/page.tsx
+   1:1  warning  Unused eslint-disable directive (no problems were reported from 'react/no-unescaped-entities')
+  77:1  warning  img elements must have an alt prop, either with meaningful text, or an empty string for decorative images  jsx-a11y/alt-text
+
+/home/akubrecah/Desktop/tech-hub/travel-agency/app/(stitch)/contact-wanderlux-faq-with-search/page.tsx
+   1:1  warning  Unused eslint-disable directive (no problems were reported from 'react/no-unescaped-entities')
+  77:1  warning  img elements must have an alt prop, either with meaningful text, or an empty string for decorative images  jsx-a11y/alt-text
+
+/home/akubrecah/Desktop/tech-hub/travel-agency/app/(stitch)/contact-wanderlux-split-layout/page.tsx
+   1:1  warning  Unused eslint-disable directive (no problems were reported from 'react/no-unescaped-entities')
+  77:1  warning  img elements must have an alt prop, either with meaningful text, or an empty string for decorative images  jsx-a11y/alt-text
+
+/home/akubrecah/Desktop/tech-hub/travel-agency/app/(stitch)/document-upload-modal/page.tsx
+  1:1  warning  Unused eslint-disable directive (no problems were reported from 'react/no-unescaped-entities')
+  2:1  warning  Unused eslint-disable directive (no problems were reported from '@next/next/no-img-element')
+
+/home/akubrecah/Desktop/tech-hub/travel-agency/app/(stitch)/financial-performance-analytics/page.tsx
+  1:1  warning  Unused eslint-disable directive (no problems were reported from 'react/no-unescaped-entities')
+  2:1  warning  Unused eslint-disable directive (no problems were reported from '@next/next/no-img-element')
+
+/home/akubrecah/Desktop/tech-hub/travel-agency/app/(stitch)/loyalty-rewards-categorized-points-ledger/page.tsx
+  1:1  warning  Unused eslint-disable directive (no problems were reported from 'react/no-unescaped-entities')
+  2:1  warning  Unused eslint-disable directive (no problems were reported from '@next/next/no-img-element')
+
+/home/akubrecah/Desktop/tech-hub/travel-agency/app/(stitch)/loyalty-rewards-searchable-points-ledger/page.tsx
+  1:1  warning  Unused eslint-disable directive (no problems were reported from 'react/no-unescaped-entities')
+  2:1  warning  Unused eslint-disable directive (no problems were reported from '@next/next/no-img-element')
+
+/home/akubrecah/Desktop/tech-hub/travel-agency/app/(stitch)/message-templates-manager/page.tsx
+  2:1  warning  Unused eslint-disable directive (no problems were reported from '@next/next/no-img-element')
+
+/home/akubrecah/Desktop/tech-hub/travel-agency/app/(stitch)/mobile-navigation-overlay/page.tsx
+  1:1  warning  Unused eslint-disable directive (no problems were reported from 'react/no-unescaped-entities')
+  2:1  warning  Unused eslint-disable directive (no problems were reported from '@next/next/no-img-element')
+
+/home/akubrecah/Desktop/tech-hub/travel-agency/app/(stitch)/mobile-navigation-refined-animations/page.tsx
+  1:1  warning  Unused eslint-disable directive (no problems were reported from 'react/no-unescaped-entities')
+  2:1  warning  Unused eslint-disable directive (no problems were reported from '@next/next/no-img-element')
+
+/home/akubrecah/Desktop/tech-hub/travel-agency/app/(stitch)/payments-invoice-tracking/page.tsx
+  1:1  warning  Unused eslint-disable directive (no problems were reported from 'react/no-unescaped-entities')
+  2:1  warning  Unused eslint-disable directive (no problems were reported from '@next/next/no-img-element')
+
+/home/akubrecah/Desktop/tech-hub/travel-agency/app/(stitch)/pdf-itinerary-photo-gallery-page/page.tsx
+  1:1  warning  Unused eslint-disable directive (no problems were reported from 'react/no-unescaped-entities')
+  2:1  warning  Unused eslint-disable directive (no problems were reported from '@next/next/no-img-element')
+
+/home/akubrecah/Desktop/tech-hub/travel-agency/app/(stitch)/pdf-itinerary-visa-entry-requirements-page/page.tsx
+  1:1  warning  Unused eslint-disable directive (no problems were reported from 'react/no-unescaped-entities')
+  2:1  warning  Unused eslint-disable directive (no problems were reported from '@next/next/no-img-element')
+
+/home/akubrecah/Desktop/tech-hub/travel-agency/app/(stitch)/pdf-itinerary-weather-seasonal-tips/page.tsx
+  2:1  warning  Unused eslint-disable directive (no problems were reported from '@next/next/no-img-element')
+
+/home/akubrecah/Desktop/tech-hub/travel-agency/app/(stitch)/points-redemption-confirmation/page.tsx
+  1:1  warning  Unused eslint-disable directive (no problems were reported from 'react/no-unescaped-entities')
+  2:1  warning  Unused eslint-disable directive (no problems were reported from '@next/next/no-img-element')
+
+/home/akubrecah/Desktop/tech-hub/travel-agency/app/(stitch)/redemption-success-state/page.tsx
+  1:1  warning  Unused eslint-disable directive (no problems were reported from 'react/no-unescaped-entities')
+
+/home/akubrecah/Desktop/tech-hub/travel-agency/app/(stitch)/refined-redemption-security-verification/page.tsx
+  2:1  warning  Unused eslint-disable directive (no problems were reported from '@next/next/no-img-element')
+
+/home/akubrecah/Desktop/tech-hub/travel-agency/app/(stitch)/refined-travel-documents-tracker/page.tsx
+  1:1  warning  Unused eslint-disable directive (no problems were reported from 'react/no-unescaped-entities')
+  2:1  warning  Unused eslint-disable directive (no problems were reported from '@next/next/no-img-element')
+
+/home/akubrecah/Desktop/tech-hub/travel-agency/app/(stitch)/review-moderation-center/page.tsx
+  2:1  warning  Unused eslint-disable directive (no problems were reported from '@next/next/no-img-element')
+
+/home/akubrecah/Desktop/tech-hub/travel-agency/app/(stitch)/review-trip-modal-with-social-sharing/page.tsx
+  1:1  warning  Unused eslint-disable directive (no problems were reported from 'react/no-unescaped-entities')
+  2:1  warning  Unused eslint-disable directive (no problems were reported from '@next/next/no-img-element')
+
+/home/akubrecah/Desktop/tech-hub/travel-agency/app/(stitch)/review-trip-modal/page.tsx
+  1:1  warning  Unused eslint-disable directive (no problems were reported from 'react/no-unescaped-entities')
+  2:1  warning  Unused eslint-disable directive (no problems were reported from '@next/next/no-img-element')
+
+/home/akubrecah/Desktop/tech-hub/travel-agency/app/(stitch)/staff-role-permissions-matrix/page.tsx
+  2:1  warning  Unused eslint-disable directive (no problems were reported from '@next/next/no-img-element')
+
+/home/akubrecah/Desktop/tech-hub/travel-agency/app/(stitch)/tour-package-builder-animated/page.tsx
+  1:1  warning  Unused eslint-disable directive (no problems were reported from 'react/no-unescaped-entities')
+  2:1  warning  Unused eslint-disable directive (no problems were reported from '@next/next/no-img-element')
+
+/home/akubrecah/Desktop/tech-hub/travel-agency/app/(stitch)/traveler-account-settings/page.tsx
+  1:1  warning  Unused eslint-disable directive (no problems were reported from 'react/no-unescaped-entities')
+  2:1  warning  Unused eslint-disable directive (no problems were reported from '@next/next/no-img-element')
+
+/home/akubrecah/Desktop/tech-hub/travel-agency/app/(stitch)/trip-history-archive/page.tsx
+    1:1  warning  Unused eslint-disable directive (no problems were reported from 'react/no-unescaped-entities')
+  208:1  warning  img elements must have an alt prop, either with meaningful text, or an empty string for decorative images  jsx-a11y/alt-text
+
+/home/akubrecah/Desktop/tech-hub/travel-agency/app/(stitch)/trip-history-search-filter-integrated/page.tsx
+    1:1  warning  Unused eslint-disable directive (no problems were reported from 'react/no-unescaped-entities')
+  240:1  warning  img elements must have an alt prop, either with meaningful text, or an empty string for decorative images  jsx-a11y/alt-text
+
+/home/akubrecah/Desktop/tech-hub/travel-agency/app/(stitch)/wanderlux-car-hire-luxury-fleet-selection/page.tsx
+    1:1  warning  Unused eslint-disable directive (no problems were reported from 'react/no-unescaped-entities')
+  139:1  warning  img elements must have an alt prop, either with meaningful text, or an empty string for decorative images  jsx-a11y/alt-text
+  177:1  warning  img elements must have an alt prop, either with meaningful text, or an empty string for decorative images  jsx-a11y/alt-text
+  215:1  warning  img elements must have an alt prop, either with meaningful text, or an empty string for decorative images  jsx-a11y/alt-text
+  253:1  warning  img elements must have an alt prop, either with meaningful text, or an empty string for decorative images  jsx-a11y/alt-text
+  291:1  warning  img elements must have an alt prop, either with meaningful text, or an empty string for decorative images  jsx-a11y/alt-text
+  329:1  warning  img elements must have an alt prop, either with meaningful text, or an empty string for decorative images  jsx-a11y/alt-text
+
+/home/akubrecah/Desktop/tech-hub/travel-agency/app/(stitch)/wanderlux-concierge-global-reach/page.tsx
+  1:1  warning  Unused eslint-disable directive (no problems were reported from 'react/no-unescaped-entities')
+  2:1  warning  Unused eslint-disable directive (no problems were reported from '@next/next/no-img-element')
+
+/home/akubrecah/Desktop/tech-hub/travel-agency/app/(stitch)/wanderlux-global-impact-reach/page.tsx
+  2:1  warning  Unused eslint-disable directive (no problems were reported from '@next/next/no-img-element')
+
+/home/akubrecah/Desktop/tech-hub/travel-agency/app/(stitch)/wanderlux-homepage-mobile-version/page.tsx
+  1:1  warning  Unused eslint-disable directive (no problems were reported from 'react/no-unescaped-entities')
+
+/home/akubrecah/Desktop/tech-hub/travel-agency/app/(stitch)/wanderlux-hotels-premium-accommodations/page.tsx
+  2:1  warning  Unused eslint-disable directive (no problems were reported from '@next/next/no-img-element')
+
+/home/akubrecah/Desktop/tech-hub/travel-agency/app/(stitch)/wanderlux-loyalty-rewards-program/page.tsx
+  1:1  warning  Unused eslint-disable directive (no problems were reported from 'react/no-unescaped-entities')
+  2:1  warning  Unused eslint-disable directive (no problems were reported from '@next/next/no-img-element')
+
+/home/akubrecah/Desktop/tech-hub/travel-agency/app/admin/bookings/page.tsx
+  1:1  warning  Unused eslint-disable directive (no problems were reported from 'react/no-unescaped-entities')
+  2:1  warning  Unused eslint-disable directive (no problems were reported from '@next/next/no-img-element')
+
+/home/akubrecah/Desktop/tech-hub/travel-agency/app/admin/crm/page.tsx
+  2:1  warning  Unused eslint-disable directive (no problems were reported from '@next/next/no-img-element')
+
+/home/akubrecah/Desktop/tech-hub/travel-agency/app/admin/fleet/page.tsx
+    1:1  warning  Unused eslint-disable directive (no problems were reported from 'react/no-unescaped-entities')
+  210:1  warning  img elements must have an alt prop, either with meaningful text, or an empty string for decorative images  jsx-a11y/alt-text
+  260:1  warning  img elements must have an alt prop, either with meaningful text, or an empty string for decorative images  jsx-a11y/alt-text
+  310:1  warning  img elements must have an alt prop, either with meaningful text, or an empty string for decorative images  jsx-a11y/alt-text
+  360:1  warning  img elements must have an alt prop, either with meaningful text, or an empty string for decorative images  jsx-a11y/alt-text
+  409:1  warning  img elements must have an alt prop, either with meaningful text, or an empty string for decorative images  jsx-a11y/alt-text
+  459:1  warning  img elements must have an alt prop, either with meaningful text, or an empty string for decorative images  jsx-a11y/alt-text
+
+/home/akubrecah/Desktop/tech-hub/travel-agency/app/admin/page.tsx
+  2:1  warning  Unused eslint-disable directive (no problems were reported from '@next/next/no-img-element')
+
+/home/akubrecah/Desktop/tech-hub/travel-agency/app/admin/reports/page.tsx
+  1:1  warning  Unused eslint-disable directive (no problems were reported from 'react/no-unescaped-entities')
+  2:1  warning  Unused eslint-disable directive (no problems were reported from '@next/next/no-img-element')
+
+/home/akubrecah/Desktop/tech-hub/travel-agency/app/admin/staff/page.tsx
+  1:1  warning  Unused eslint-disable directive (no problems were reported from 'react/no-unescaped-entities')
+  2:1  warning  Unused eslint-disable directive (no problems were reported from '@next/next/no-img-element')
+
+/home/akubrecah/Desktop/tech-hub/travel-agency/app/admin/testimonials/page.tsx
+  2:1  warning  Unused eslint-disable directive (no problems were reported from '@next/next/no-img-element')
+
+/home/akubrecah/Desktop/tech-hub/travel-agency/app/contact/page.tsx
+  1:1  warning  Unused eslint-disable directive (no problems were reported from 'react/no-unescaped-entities')
+  2:1  warning  Unused eslint-disable directive (no problems were reported from '@next/next/no-img-element')
+
+/home/akubrecah/Desktop/tech-hub/travel-agency/app/layout.tsx
+  1:1  warning  Unused eslint-disable directive (no problems were reported from 'react/no-unescaped-entities')
+  2:1  warning  Unused eslint-disable directive (no problems were reported from '@next/next/no-img-element')
+
+/home/akubrecah/Desktop/tech-hub/travel-agency/app/page.tsx
+  1:1  warning  Unused eslint-disable directive (no problems were reported from 'react/no-unescaped-entities')
+  2:1  warning  Unused eslint-disable directive (no problems were reported from '@next/next/no-img-element')
+
+/home/akubrecah/Desktop/tech-hub/travel-agency/app/portal/dashboard/page.tsx
+  1:1  warning  Unused eslint-disable directive (no problems were reported from 'react/no-unescaped-entities')
+  2:1  warning  Unused eslint-disable directive (no problems were reported from '@next/next/no-img-element')
+
+/home/akubrecah/Desktop/tech-hub/travel-agency/app/portal/login/page.tsx
+  1:1  warning  Unused eslint-disable directive (no problems were reported from 'react/no-unescaped-entities')
+  2:1  warning  Unused eslint-disable directive (no problems were reported from '@next/next/no-img-element')
+
+/home/akubrecah/Desktop/tech-hub/travel-agency/app/portal/loyalty/page.tsx
+  1:1  warning  Unused eslint-disable directive (no problems were reported from 'react/no-unescaped-entities')
+  2:1  warning  Unused eslint-disable directive (no problems were reported from '@next/next/no-img-element')
+
+/home/akubrecah/Desktop/tech-hub/travel-agency/app/portal/wishlist/page.tsx
+  2:1  warning  Unused eslint-disable directive (no problems were reported from '@next/next/no-img-element')
+
+/home/akubrecah/Desktop/tech-hub/travel-agency/app/tours/page.tsx
+  1:1  warning  Unused eslint-disable directive (no problems were reported from 'react/no-unescaped-entities')
+  2:1  warning  Unused eslint-disable directive (no problems were reported from '@next/next/no-img-element')
+
+✖ 105 problems (0 errors, 105 warnings)
+  0 errors and 84 warnings potentially fixable with the `--fix` option.
+

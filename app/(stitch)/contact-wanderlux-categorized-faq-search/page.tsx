@@ -1,5 +1,5 @@
 "use client";
-/* eslint-disable react/no-unescaped-entities */
+ 
 /* eslint-disable @next/next/no-img-element */
 import React from 'react';
 
@@ -75,7 +75,7 @@ export default function ContactWanderluxCategorizedFaqSearchPage() {
 {/* Map Container */}
 <div className="relative w-full aspect-video rounded-xl overflow-hidden grayscale contrast-125 border border-slate-800">
 <div className="absolute inset-0 bg-primary/10 mix-blend-multiply z-10 pointer-events-none"></div>
-<img className="w-full h-full object-cover" data-alt="Dark stylized world map luxury aesthetic" data-location="London" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAFZXRNMDKFI-D7vli5ugYAv0ukmItj6Oeo207ZMuRd1oc4ewm795AvWwprpcfc4PvfSBjqYwEU7cZHzfDFwU81MSlLO7tRXFEqUWJepJyB9brRUtp2_jwB5Er5zzYULkVHBwFQsGlKSnr9tGlqB-9qa6T58ntKZ4xm9O0_1pk9mxqlYq2tcsfQroJH4Ppf0citr-mvBjtrsy315GqnWets_wHHmMaAdEB-gu_bvmhwL84AoUs5nqp4OevFSOTsmMO31rgmRGzY4g"/>
+<img alt="Dark stylized world map" className="w-full h-full object-cover" data-alt="Dark stylized world map luxury aesthetic" data-location="London" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAFZXRNMDKFI-D7vli5ugYAv0ukmItj6Oeo207ZMuRd1oc4ewm795AvWwprpcfc4PvfSBjqYwEU7cZHzfDFwU81MSlLO7tRXFEqUWJepJyB9brRUtp2_jwB5Er5zzYULkVHBwFQsGlKSnr9tGlqB-9qa6T58ntKZ4xm9O0_1pk9mxqlYq2tcsfQroJH4Ppf0citr-mvBjtrsy315GqnWets_wHHmMaAdEB-gu_bvmhwL84AoUs5nqp4OevFSOTsmMO31rgmRGzY4g"/>
 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
 <div className="size-4 bg-primary rounded-full animate-ping absolute"></div>
 <div className="size-4 bg-primary rounded-full"></div>

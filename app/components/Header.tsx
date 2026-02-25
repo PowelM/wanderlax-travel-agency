@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { SignedIn, SignedOut, UserButton, useAuth } from '@clerk/nextjs';
@@ -13,11 +13,27 @@ const navLinks = [
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const pathname = usePathname();
   const { isSignedIn } = useAuth();
   const router = useRouter();
 
   const isActive = (href: string) => pathname === href;
+  const isAdmin = userRole === 'ADMIN' || userRole === 'SUPER_ADMIN';
+
+  // Fetch user role when signed in
+  useEffect(() => {
+    if (isSignedIn) {
+      fetch('/api/auth/role')
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.role) setUserRole(data.role);
+        })
+        .catch(() => setUserRole(null));
+    } else {
+      setUserRole(null);
+    }
+  }, [isSignedIn]);
 
   // Hide global header on admin pages (admin has its own sidebar)
   if (pathname.startsWith('/admin')) return null;
@@ -70,6 +86,16 @@ export default function Header() {
             </Link>
           </SignedOut>
           <SignedIn>
+            {/* Admin Dashboard Button — only visible to admins */}
+            {isAdmin && (
+              <Link
+                href="/admin"
+                className="hidden sm:flex items-center gap-2 text-sm font-bold text-primary hover:text-white transition-colors bg-primary/10 hover:bg-primary/20 rounded-lg px-3 py-1.5 border border-primary/30"
+              >
+                <span className="material-symbols-outlined text-[20px]">admin_panel_settings</span>
+                Dashboard
+              </Link>
+            )}
             <Link
               href="/portal/profile"
               className="hidden sm:flex items-center gap-2 text-sm font-medium text-slate-300 hover:text-white transition-colors"
@@ -135,6 +161,17 @@ export default function Header() {
             </Link>
           </SignedOut>
           <SignedIn>
+            {/* Admin Dashboard Button — mobile menu */}
+            {isAdmin && (
+              <Link
+                href="/admin"
+                className="flex items-center gap-3 text-primary text-2xl font-bold hover:text-white transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <span className="material-symbols-outlined text-[28px]">admin_panel_settings</span>
+                Dashboard
+              </Link>
+            )}
             <Link
               href="/portal/profile"
               className="text-white text-2xl font-semibold hover:text-primary transition-colors"

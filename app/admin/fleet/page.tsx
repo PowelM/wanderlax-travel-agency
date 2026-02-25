@@ -1,5 +1,5 @@
 "use client";
-/* eslint-disable react/no-unescaped-entities */
+ 
 /* eslint-disable @next/next/no-img-element */
 import React from 'react';
 
@@ -208,7 +208,7 @@ export default function AdminFleetManagementOverviewPage() {
 <span className="material-symbols-outlined text-[18px]">more_vert</span>
 </button>
 </div>
-<img className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="Black luxury sedan front view" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBnCWeKjKSDfdcPP67eNOKuCBz9Sk9tpkV4z0wIOFUQ_WzwoIDT35SVClOCL74HTpdW276ppeJGutNBnyab7TtqpURUqePGTE8hpHGUCIQbq867Iozi2AAZvXcHGVKwNhO1IxG2Gb4QnF1_UkMInwJUi3L7JbdWRqeHOCC-DIqMI9-mZKoAE0AMzY67u7oBGmKqWJTwnYMVJSHR5X1n1InHLbySqhPc_Hj_vxgNY87Mhr7ib3p9T-10jb-4n4oUruyvVIUYv2CQVg"/>
+<img alt="Black luxury sedan front view" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="Black luxury sedan front view" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBnCWeKjKSDfdcPP67eNOKuCBz9Sk9tpkV4z0wIOFUQ_WzwoIDT35SVClOCL74HTpdW276ppeJGutNBnyab7TtqpURUqePGTE8hpHGUCIQbq867Iozi2AAZvXcHGVKwNhO1IxG2Gb4QnF1_UkMInwJUi3L7JbdWRqeHOCC-DIqMI9-mZKoAE0AMzY67u7oBGmKqWJTwnYMVJSHR5X1n1InHLbySqhPc_Hj_vxgNY87Mhr7ib3p9T-10jb-4n4oUruyvVIUYv2CQVg"/>
 </div>
 <div className="p-5 flex flex-col flex-1">
 <div className="flex justify-between items-start mb-2">
@@ -258,7 +258,7 @@ export default function AdminFleetManagementOverviewPage() {
 <span className="material-symbols-outlined text-[18px]">more_vert</span>
 </button>
 </div>
-<img className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="Dark grey luxury SUV side view" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBCDhFbosfflFvcK-YbMTBGNYNOgmhr1RjoIHmDOj8fjAsBFC3kyw3YOorehkVOhg_TR1k2od1hKn_7mbPqDnxJ_p2JR3FiW57TVhI3rN0LAPNq4Haa-IieOl3C7Ldeo_AmLhHGacjVPowzqtfHM-5ogHnFq-MgiaeCjSRSebdT8Fr4hgDyuYoe0qV_3QiQiJAYv2m3BOem-OF2YnujiVedFskOG_SUx16UX4lVU4qv_pN2G1irnQX0eShW5vzzMV729D7EcC5qKw"/>
+<img alt="Dark grey luxury SUV side view" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="Dark grey luxury SUV side view" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBCDhFbosfflFvcK-YbMTBGNYNOgmhr1RjoIHmDOj8fjAsBFC3kyw3YOorehkVOhg_TR1k2od1hKn_7mbPqDnxJ_p2JR3FiW57TVhI3rN0LAPNq4Haa-IieOl3C7Ldeo_AmLhHGacjVPowzqtfHM-5ogHnFq-MgiaeCjSRSebdT8Fr4hgDyuYoe0qV_3QiQiJAYv2m3BOem-OF2YnujiVedFskOG_SUx16UX4lVU4qv_pN2G1irnQX0eShW5vzzMV729D7EcC5qKw"/>
 </div>
 <div className="p-5 flex flex-col flex-1">
 <div className="flex justify-between items-start mb-2">
@@ -308,7 +308,7 @@ export default function AdminFleetManagementOverviewPage() {
 <span className="material-symbols-outlined text-[18px]">more_vert</span>
 </button>
 </div>
-<img className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 opacity-60 grayscale-[50%]" data-alt="Sports car front view dark lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuArndRIjBo0X12YmQI6cVHiQH1wnquDlkRDyXUg6qk5kzfUHGNmN57GrObS2bAnzD4iOZ8J1kZRuhtdZTCXLke8eLWPiU7XEIiCWLTdtqicPQ1XFu0hKsDPoZ_VcYQZmxwvEodn3MAao9gCywGqj9fmcIusNIELrea3c9utOPlcdsJltutuAKr5bWZPQJNTxJKLknKUoDxTNyTakxe5F3MLZD1XfrmmaWLQlDPWoFEQXVMOy-jxL-LU_4QG7R0efRyMR5Acw5aZNg"/>
+<img alt="Sports car front view dark lighting" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 opacity-60 grayscale-[50%]" data-alt="Sports car front view dark lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuArndRIjBo0X12YmQI6cVHiQH1wnquDlkRDyXUg6qk5kzfUHGNmN57GrObS2bAnzD4iOZ8J1kZRuhtdZTCXLke8eLWPiU7XEIiCWLTdtqicPQ1XFu0hKsDPoZ_VcYQZmxwvEodn3MAao9gCywGqj9fmcIusNIELrea3c9utOPlcdsJltutuAKr5bWZPQJNTxJKLknKUoDxTNyTakxe5F3MLZD1XfrmmaWLQlDPWoFEQXVMOy-jxL-LU_4QG7R0efRyMR5Acw5aZNg"/>
 </div>
 <div className="p-5 flex flex-col flex-1">
 <div className="flex justify-between items-start mb-2">
@@ -358,7 +358,7 @@ export default function AdminFleetManagementOverviewPage() {
 <span className="material-symbols-outlined text-[18px]">more_vert</span>
 </button>
 </div>
-<img className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="White tesla model s parked" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDxbtDXqMH03Z5Ysc-NwO7w1sISMpMZn47IcgBLiC-U_0bu5p9NMXRPbCQUe6BdJPkOF7rVR35jI2YWOz6I9ug80bpoyzXGqFNjjBhY5s6nyleKaEJTsNHtkcreAa_5fbqSh8SIdSgC1CxOG_pI_l94EdIZyKzLeQk7ezeritfGWe33H-zJslRBMl3gbFbS-Hi-UjWZ0-8Np3ALbMhrw5k_5Q4bRmVSXxr_zZaRLkHzqKLAVUdIb760BQ7VYFLHr_35pZzyu69qwg"/>
+<img alt="White tesla model s parked" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="White tesla model s parked" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDxbtDXqMH03Z5Ysc-NwO7w1sISMpMZn47IcgBLiC-U_0bu5p9NMXRPbCQUe6BdJPkOF7rVR35jI2YWOz6I9ug80bpoyzXGqFNjjBhY5s6nyleKaEJTsNHtkcreAa_5fbqSh8SIdSgC1CxOG_pI_l94EdIZyKzLeQk7ezeritfGWe33H-zJslRBMl3gbFbS-Hi-UjWZ0-8Np3ALbMhrw5k_5Q4bRmVSXxr_zZaRLkHzqKLAVUdIb760BQ7VYFLHr_35pZzyu69qwg"/>
 </div>
 <div className="p-5 flex flex-col flex-1">
 <div className="flex justify-between items-start mb-2">
@@ -407,7 +407,7 @@ export default function AdminFleetManagementOverviewPage() {
 <span className="material-symbols-outlined text-[18px]">more_vert</span>
 </button>
 </div>
-<img className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="BMW X5 side view on road" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBZWqlITk92Ss_uuQtqaasF_82RJZtd5RLPJn8yUUhHf0eCLziBB3VXZz758tb5CUXlEXpo3gCh_JvKpveeRz92Bmqkbl2KP-mh_u8C4tXuQ6tivA_4hHrDfAQ-9D6QpXyht1XiSmM9m-oNSUZyAfEtjBiyMcsvwtafd68hImbUK6yKpMUG0GtO1F4EQuoRBxMyaXqbVjQmQFP0KSX2mLqh4kcrgddGm19RbDdLCdQOHjk2ZAsooYFuDfKNhtwiBXtDyRun1WD2OA"/>
+<img alt="BMW X5 side view on road" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="BMW X5 side view on road" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBZWqlITk92Ss_uuQtqaasF_82RJZtd5RLPJn8yUUhHf0eCLziBB3VXZz758tb5CUXlEXpo3gCh_JvKpveeRz92Bmqkbl2KP-mh_u8C4tXuQ6tivA_4hHrDfAQ-9D6QpXyht1XiSmM9m-oNSUZyAfEtjBiyMcsvwtafd68hImbUK6yKpMUG0GtO1F4EQuoRBxMyaXqbVjQmQFP0KSX2mLqh4kcrgddGm19RbDdLCdQOHjk2ZAsooYFuDfKNhtwiBXtDyRun1WD2OA"/>
 </div>
 <div className="p-5 flex flex-col flex-1">
 <div className="flex justify-between items-start mb-2">
@@ -457,7 +457,7 @@ export default function AdminFleetManagementOverviewPage() {
 <span className="material-symbols-outlined text-[18px]">more_vert</span>
 </button>
 </div>
-<img className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="Audi A8 front aggressive angle" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAB8fcWpXGVy5U_ZMcAx7j7QzlegVq8pmb3Vc5YNMmAH9r6hLgP2nPjcgPm0PBO9b_blrsqMgFbhiWBIbTUXrZ2QWDJv3c42eQdpRPU35ibry3M3Iu1IpV_sA3IVKjniKcdq78THAKOsMRVeJbaocwSdNj4f-SfJ7gvvZf6-AodGTWe4XTDu3PIivcvm2hmdVGcRHlxIyOLyHGkSK0WvoSLeMeROtfAD80OI_rXGRHy_Cd81ehKumvraUZIdgASfcRlL6A2yAxSVA"/>
+<img alt="Audi A8 front aggressive angle" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="Audi A8 front aggressive angle" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAB8fcWpXGVy5U_ZMcAx7j7QzlegVq8pmb3Vc5YNMmAH9r6hLgP2nPjcgPm0PBO9b_blrsqMgFbhiWBIbTUXrZ2QWDJv3c42eQdpRPU35ibry3M3Iu1IpV_sA3IVKjniKcdq78THAKOsMRVeJbaocwSdNj4f-SfJ7gvvZf6-AodGTWe4XTDu3PIivcvm2hmdVGcRHlxIyOLyHGkSK0WvoSLeMeROtfAD80OI_rXGRHy_Cd81ehKumvraUZIdgASfcRlL6A2yAxSVA"/>
 </div>
 <div className="p-5 flex flex-col flex-1">
 <div className="flex justify-between items-start mb-2">

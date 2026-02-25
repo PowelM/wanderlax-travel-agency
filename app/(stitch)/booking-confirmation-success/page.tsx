@@ -25,7 +25,7 @@ export default function BookingConfirmationSuccessPage() {
 <span className="material-symbols-outlined">account_circle</span>
 </button>
 <div className="h-10 w-10 rounded-full border-2 border-primary/30 overflow-hidden">
-<img className="h-full w-full object-cover" data-alt="User profile avatar with elegant lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7vZC5u3miJlnjFQu5RkcTsELWYvnxFp0mnyzHh4Ol6NaemQ6D2hqiRIdcb2JBEtVmHPWZrVRctIHESV-RrtdrpulMbhYycR22d0KXPmXqCZmJYb6jo8JsVt2yycO--5TYXGmpE5mhSn9xaMyPoGzHc43-kLku5UPC-pne4wXRHSkjBlq71vfX5jynF--sjjkPn-Vpxp0yDAid4SOuVAicp6VRuPWhOJOjsPIS3fCxOrHWTm4smagYxUZIOMV3pcyXwxuxc-QJnw"/>
+<img alt="User profile avatar" className="h-full w-full object-cover" data-alt="User profile avatar with elegant lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7vZC5u3miJlnjFQu5RkcTsELWYvnxFp0mnyzHh4Ol6NaemQ6D2hqiRIdcb2JBEtVmHPWZrVRctIHESV-RrtdrpulMbhYycR22d0KXPmXqCZmJYb6jo8JsVt2yycO--5TYXGmpE5mhSn9xaMyPoGzHc43-kLku5UPC-pne4wXRHSkjBlq71vfX5jynF--sjjkPn-Vpxp0yDAid4SOuVAicp6VRuPWhOJOjsPIS3fCxOrHWTm4smagYxUZIOMV3pcyXwxuxc-QJnw"/>
 </div>
 </div>
 </header>
@@ -105,7 +105,7 @@ export default function BookingConfirmationSuccessPage() {
 </div>
 {/* Decorative Map Element */}
 <div className="mt-20 w-full h-48 rounded-3xl overflow-hidden grayscale opacity-30 pointer-events-none">
-<img className="w-full h-full object-cover" data-alt="Stylized map showing coastal regions" data-location="Amalfi Coast, Italy" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCtpp_lUD6Wx3wnuzINHW9WMLz3_mEokfZhskOjjSQygRdb9rF18X9H1ZAeKK4jpJlbzPZFvl0KFgDAZj6nAGTgchR97zP8okQ0v_Bvqqszk76USpWN6zvDAyQ6Apo0jjA_X0UaGeQsP66LaZ94X_c3URF1MwZcgxAup3uJpZ44w6Q51oXjX-EjvZScOGBLIgvIRPe6l3qMrCrgYaSfSnVTO38K3VS4-vDoQPt85DnrEu1WQm8v8PhboL7IM39JScWMDJKBLD-ZyQ"/>
+<img alt="Stylized map showing coastal regions" className="w-full h-full object-cover" data-alt="Stylized map showing coastal regions" data-location="Amalfi Coast, Italy" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCtpp_lUD6Wx3wnuzINHW9WMLz3_mEokfZhskOjjSQygRdb9rF18X9H1ZAeKK4jpJlbzPZFvl0KFgDAZj6nAGTgchR97zP8okQ0v_Bvqqszk76USpWN6zvDAyQ6Apo0jjA_X0UaGeQsP66LaZ94X_c3URF1MwZcgxAup3uJpZ44w6Q51oXjX-EjvZScOGBLIgvIRPe6l3qMrCrgYaSfSnVTO38K3VS4-vDoQPt85DnrEu1WQm8v8PhboL7IM39JScWMDJKBLD-ZyQ"/>
 </div>
 </main>
 <footer className="py-10 px-6 border-t border-primary/10 text-center text-slate-500 dark:text-slate-400 text-sm">

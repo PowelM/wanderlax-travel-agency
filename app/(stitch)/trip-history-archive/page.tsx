@@ -1,5 +1,5 @@
 "use client";
-/* eslint-disable react/no-unescaped-entities */
+ 
 /* eslint-disable @next/next/no-img-element */
 import React from 'react';
 
@@ -206,7 +206,7 @@ export default function TripHistoryArchivePage() {
 </div>
 {/* Map Overlay Accent (Aesthetic) */}
 <div className="fixed bottom-0 right-0 w-96 h-96 opacity-5 pointer-events-none z-0 overflow-hidden">
-<img className="w-full h-full object-contain filter invert dark:invert-0" data-alt="Abstract geographical map lines" data-location="World Map" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAZzAsew6At7aKbbADCxAXK5URcIbaNWppe0sDDQvr5F8NG2v3qUUAW38e3fDKRHgT1f__F-dWLRI6Sm0wuCmeeYryB7T2XDeP3a78uJQzN1g-5WMdLHl4KUpS7SkBDu2qKiZe_bjwSy_lJK31zw-rpWEOhEmqBO43A2XfxtbtgYR_2b1eteub70ZeOt-j4b3OgNwIyl-Hvjdm6lxQeG3GXzV_hTHBrTRKxGi4wqzj5xofu2vbm4eCS6cAEzZM2HUvi2H4-2AfSVQ"/>
+<img alt="Abstract geographical map lines" className="w-full h-full object-contain filter invert dark:invert-0" data-alt="Abstract geographical map lines" data-location="World Map" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAZzAsew6At7aKbbADCxAXK5URcIbaNWppe0sDDQvr5F8NG2v3qUUAW38e3fDKRHgT1f__F-dWLRI6Sm0wuCmeeYryB7T2XDeP3a78uJQzN1g-5WMdLHl4KUpS7SkBDu2qKiZe_bjwSy_lJK31zw-rpWEOhEmqBO43A2XfxtbtgYR_2b1eteub70ZeOt-j4b3OgNwIyl-Hvjdm6lxQeG3GXzV_hTHBrTRKxGi4wqzj5xofu2vbm4eCS6cAEzZM2HUvi2H4-2AfSVQ"/>
 </div>
 </main>
 </div>

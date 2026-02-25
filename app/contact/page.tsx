@@ -1,6 +1,6 @@
 "use client";
-/* eslint-disable react/no-unescaped-entities */
-/* eslint-disable @next/next/no-img-element */
+ 
+ 
 import React, { useState } from 'react';
 import Link from 'next/link';
 

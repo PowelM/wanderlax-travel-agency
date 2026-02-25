@@ -1,5 +1,5 @@
 "use client";
-/* eslint-disable react/no-unescaped-entities */
+ 
 /* eslint-disable @next/next/no-img-element */
 import React from 'react';
 
@@ -137,7 +137,7 @@ export default function WanderluxCarHireLuxuryFleetSelectionPage() {
 {/* Car Card 1 */}
 <div className="group bg-surface-dark rounded-xl overflow-hidden border border-surface-border hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/10 flex flex-col">
 <div className="relative h-56 overflow-hidden">
-<img className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Dark grey Porsche 911 side profile" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBQ3pJ8ddFP2PlAwV7_05qyRJLHIs-8RXOE5HgF_69Swt-RmcjRLduAJiNXMqCNK0pZ2ymkaRRofxEovK4lCfCxfwuzy3v-BuUrk00fNy1SQATjPN6HZnXXEG0y2ttK2V_5JNUTGqgofAxLcN_kPMM-mXWPHxeRqPNYu3-PFuSH_Nt28qvMiJEbPxW0sjknk1bHP52s8aaEtIy9zuIsBVwhQnwkfLfhlfkG2y1UCa0oBC11GvUvT5qvT5U_abWocn1MEnezLkgIOg"/>
+<img alt="Dark grey Porsche 911 side profile" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Dark grey Porsche 911 side profile" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBQ3pJ8ddFP2PlAwV7_05qyRJLHIs-8RXOE5HgF_69Swt-RmcjRLduAJiNXMqCNK0pZ2ymkaRRofxEovK4lCfCxfwuzy3v-BuUrk00fNy1SQATjPN6HZnXXEG0y2ttK2V_5JNUTGqgofAxLcN_kPMM-mXWPHxeRqPNYu3-PFuSH_Nt28qvMiJEbPxW0sjknk1bHP52s8aaEtIy9zuIsBVwhQnwkfLfhlfkG2y1UCa0oBC11GvUvT5qvT5U_abWocn1MEnezLkgIOg"/>
 <div className="absolute top-4 right-4 bg-black/60 backdrop-blur text-white text-xs font-bold px-3 py-1 rounded-full border border-white/10">Sports</div>
 </div>
 <div className="p-6 flex flex-col flex-1">
@@ -175,7 +175,7 @@ export default function WanderluxCarHireLuxuryFleetSelectionPage() {
 {/* Car Card 2 */}
 <div className="group bg-surface-dark rounded-xl overflow-hidden border border-surface-border hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/10 flex flex-col">
 <div className="relative h-56 overflow-hidden">
-<img className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Black Mercedes G-Wagon front view" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCPMPY2i-O7Zb0utGFgC2qyVpUE4dzMNS_5ny8I4HXmmtABZ5zxbHLpBGhCe14OgfNwqs68uXmRu9ZSmiTUUOo15nn7xJdrVJOfmH_7Tve9bSb-dOs_Pw32YTXqlkgpv17bSa4LBqz-B759O3LC158xya3mXbAPFjtkK_89Ao09KDBxxohYjRxX-VWL3nurAH6cBE10HwjXq8aLINfSz-TsS1y9FkvnN22SZ49z1D04tp4oY-zlI8l5kxMDe70T7NmBbezOAc9UxA"/>
+<img alt="Black Mercedes G-Wagon front view" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Black Mercedes G-Wagon front view" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCPMPY2i-O7Zb0utGFgC2qyVpUE4dzMNS_5ny8I4HXmmtABZ5zxbHLpBGhCe14OgfNwqs68uXmRu9ZSmiTUUOo15nn7xJdrVJOfmH_7Tve9bSb-dOs_Pw32YTXqlkgpv17bSa4LBqz-B759O3LC158xya3mXbAPFjtkK_89Ao09KDBxxohYjRxX-VWL3nurAH6cBE10HwjXq8aLINfSz-TsS1y9FkvnN22SZ49z1D04tp4oY-zlI8l5kxMDe70T7NmBbezOAc9UxA"/>
 <div className="absolute top-4 right-4 bg-black/60 backdrop-blur text-white text-xs font-bold px-3 py-1 rounded-full border border-white/10">SUV</div>
 </div>
 <div className="p-6 flex flex-col flex-1">
@@ -213,7 +213,7 @@ export default function WanderluxCarHireLuxuryFleetSelectionPage() {
 {/* Car Card 3 */}
 <div className="group bg-surface-dark rounded-xl overflow-hidden border border-surface-border hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/10 flex flex-col">
 <div className="relative h-56 overflow-hidden">
-<img className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="White Rolls Royce Phantom front grille detail" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBFjRNIKGF2O918KNR3GHX0Un7X5xV8Zlp2RZirAtOwpRRWEl5lNdxZewfkGDAhKGyydNL72b0-uVqokRdV7KdkvaWWDiwOqMx6azU9OMozrElEfnkafcIDU3kICXKK8EABfLmZS7_EvMZW-I-ywaeOgj77nrLahb5Dl66-wVA9QDXFEMvA4avIZKS1qle3zyB_CWuY6BSAT8hpE0O2pE4bPEUa4pWfr-oVcynL5ZyAVeLLvgmLkUbLQcRWp7Q0YEWmOi8gAMMI9w"/>
+<img alt="White Rolls Royce Phantom front grille detail" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="White Rolls Royce Phantom front grille detail" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBFjRNIKGF2O918KNR3GHX0Un7X5xV8Zlp2RZirAtOwpRRWEl5lNdxZewfkGDAhKGyydNL72b0-uVqokRdV7KdkvaWWDiwOqMx6azU9OMozrElEfnkafcIDU3kICXKK8EABfLmZS7_EvMZW-I-ywaeOgj77nrLahb5Dl66-wVA9QDXFEMvA4avIZKS1qle3zyB_CWuY6BSAT8hpE0O2pE4bPEUa4pWfr-oVcynL5ZyAVeLLvgmLkUbLQcRWp7Q0YEWmOi8gAMMI9w"/>
 <div className="absolute top-4 right-4 bg-black/60 backdrop-blur text-white text-xs font-bold px-3 py-1 rounded-full border border-white/10">Luxury</div>
 </div>
 <div className="p-6 flex flex-col flex-1">
@@ -251,7 +251,7 @@ export default function WanderluxCarHireLuxuryFleetSelectionPage() {
 {/* Car Card 4 */}
 <div className="group bg-surface-dark rounded-xl overflow-hidden border border-surface-border hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/10 flex flex-col">
 <div className="relative h-56 overflow-hidden">
-<img className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Red Tesla Model S Plaid driving fast" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDTNwnOxXuwUaOKk03ygvq7i0UvYCHemF6RE1Py39P50UqPNljow7sZwoBdXQqHitZ_mQx8yO0fNVsIvvGsiqlhnMU0-uWZKkbZCvBvKbgtomd1x-yyqFzMvCVLz0ggy5BLxLzL6pfohv7cjySkaBr_lJXFQUbIw8xpndvVuBkGopDLqANPhreGkDLvRCxLK54tmyiEO9mScfdlmcjN5MD1MAvIidDOEBZpXOYT3P2_tq3VAjcsvLEKakZV7hvQRRwkHmPL5K7QPQ"/>
+<img alt="Red Tesla Model S Plaid driving fast" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Red Tesla Model S Plaid driving fast" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDTNwnOxXuwUaOKk03ygvq7i0UvYCHemF6RE1Py39P50UqPNljow7sZwoBdXQqHitZ_mQx8yO0fNVsIvvGsiqlhnMU0-uWZKkbZCvBvKbgtomd1x-yyqFzMvCVLz0ggy5BLxLzL6pfohv7cjySkaBr_lJXFQUbIw8xpndvVuBkGopDLqANPhreGkDLvRCxLK54tmyiEO9mScfdlmcjN5MD1MAvIidDOEBZpXOYT3P2_tq3VAjcsvLEKakZV7hvQRRwkHmPL5K7QPQ"/>
 <div className="absolute top-4 right-4 bg-black/60 backdrop-blur text-white text-xs font-bold px-3 py-1 rounded-full border border-white/10">Electric</div>
 </div>
 <div className="p-6 flex flex-col flex-1">
@@ -289,7 +289,7 @@ export default function WanderluxCarHireLuxuryFleetSelectionPage() {
 {/* Car Card 5 */}
 <div className="group bg-surface-dark rounded-xl overflow-hidden border border-surface-border hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/10 flex flex-col">
 <div className="relative h-56 overflow-hidden">
-<img className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Blue BMW M8 Competition convertible" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC0o46hxcr2VNH0zNvH3Fp9vkroeHH8CBpsQIwS11hnpKXsU-Kvj3YHA7HLP45QD8hiosktaOI7byBo0cUfJ1ENCVrqOIHWvEkZWpPAylJiZTPzoYpyyk-Y_QMxA2hGYgwa0SsBCQ8qvUP77QLbMjI0IAx6VTPu69_08WD0C3C6Z0IaKaCUlDLretymwDXpJfhaNVmndsig52MzvZUG03R9NV-Mq39MrLW8r6Vei1N-lmd3ZBBZGVDIYTbULtA3KvIA50V4HBG_DQ"/>
+<img alt="Blue BMW M8 Competition convertible" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Blue BMW M8 Competition convertible" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC0o46hxcr2VNH0zNvH3Fp9vkroeHH8CBpsQIwS11hnpKXsU-Kvj3YHA7HLP45QD8hiosktaOI7byBo0cUfJ1ENCVrqOIHWvEkZWpPAylJiZTPzoYpyyk-Y_QMxA2hGYgwa0SsBCQ8qvUP77QLbMjI0IAx6VTPu69_08WD0C3C6Z0IaKaCUlDLretymwDXpJfhaNVmndsig52MzvZUG03R9NV-Mq39MrLW8r6Vei1N-lmd3ZBBZGVDIYTbULtA3KvIA50V4HBG_DQ"/>
 <div className="absolute top-4 right-4 bg-black/60 backdrop-blur text-white text-xs font-bold px-3 py-1 rounded-full border border-white/10">Convertible</div>
 </div>
 <div className="p-6 flex flex-col flex-1">
@@ -327,7 +327,7 @@ export default function WanderluxCarHireLuxuryFleetSelectionPage() {
 {/* Car Card 6 */}
 <div className="group bg-surface-dark rounded-xl overflow-hidden border border-surface-border hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/10 flex flex-col">
 <div className="relative h-56 overflow-hidden">
-<img className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Black Range Rover Vogue dynamic shot" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAXn6f3UfObTvx7ARuwgTZRgrZ2zM5i7y5V4gBTRFStY6Zj-MtnjbjZ2Ki6kUkDH-kORSKp8AmBOZhSLNzYvtQ9Nl1CKxrL_FcLhz5uTd07r2BmdNpdM9mtHtEi2plRax6slq20-1RenrV6aKiSnQ2rqbFn9y8Z2wKbaQ8aDMo37f-VLRU8gqq_H3NBli9nW92V2hMip1BuYyj2WLc49b4tO01IyZdDMEftLsnjn5YeAQSn3YhJAM7H1QmDLCHR972VFDFjP4GVsw"/>
+<img alt="Black Range Rover Vogue dynamic shot" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Black Range Rover Vogue dynamic shot" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAXn6f3UfObTvx7ARuwgTZRgrZ2zM5i7y5V4gBTRFStY6Zj-MtnjbjZ2Ki6kUkDH-kORSKp8AmBOZhSLNzYvtQ9Nl1CKxrL_FcLhz5uTd07r2BmdNpdM9mtHtEi2plRax6slq20-1RenrV6aKiSnQ2rqbFn9y8Z2wKbaQ8aDMo37f-VLRU8gqq_H3NBli9nW92V2hMip1BuYyj2WLc49b4tO01IyZdDMEftLsnjn5YeAQSn3YhJAM7H1QmDLCHR972VFDFjP4GVsw"/>
 <div className="absolute top-4 right-4 bg-black/60 backdrop-blur text-white text-xs font-bold px-3 py-1 rounded-full border border-white/10">SUV</div>
 </div>
 <div className="p-6 flex flex-col flex-1">

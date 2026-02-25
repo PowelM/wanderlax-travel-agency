@@ -1,118 +1,38 @@
 "use client";
 
-import { useUser } from '@clerk/nextjs';
 import React from 'react';
+import { AdminSidebar } from '@/components/admin/AdminSidebar';
+import { AdminHeader } from '@/components/admin/AdminHeader';
 
 export default function AdminBookingsPage() {
-  const { user } = useUser();
   return (
     <div className="stitch-screen">
-      <div className="flex h-screen w-full flex-col overflow-hidden">
-{/* Header */}
-<header className="flex items-center justify-between whitespace-nowrap border-b border-border-dark px-6 py-3 bg-background-dark z-20">
-<div className="flex items-center gap-4 text-white">
-<div className="size-8 flex items-center justify-center rounded bg-primary/10 text-primary">
-<span className="material-symbols-outlined text-2xl">diamond</span>
-</div>
-<h2 className="text-lg font-bold leading-tight tracking-[-0.015em]">Wanderlux Admin</h2>
-</div>
-<div className="flex flex-1 justify-end gap-6 items-center">
-<div className="flex items-center gap-6 hidden md:flex">
-<a className="text-text-secondary hover:text-primary text-sm font-medium transition-colors" href="#">Dashboard</a>
-<a className="text-primary text-sm font-bold transition-colors" href="#">Bookings</a>
-<a className="text-text-secondary hover:text-primary text-sm font-medium transition-colors" href="#">Customers</a>
-<a className="text-text-secondary hover:text-primary text-sm font-medium transition-colors" href="#">Services</a>
-<a className="text-text-secondary hover:text-primary text-sm font-medium transition-colors" href="#">Reports</a>
-</div>
-<div className="h-6 w-px bg-border-dark dark:bg-border-dark mx-2"></div>
-<button className="relative text-text-secondary hover:text-primary transition-colors">
-<span className="material-symbols-outlined">notifications</span>
-<span className="absolute top-0 right-0 size-2 bg-primary rounded-full"></span>
-</button>
-<div className="flex items-center gap-3">
-<div className="bg-center bg-no-repeat bg-cover rounded-full size-9 border border-border-dark" data-alt="User avatar" style={{ backgroundImage: `url('https://lh3.googleusercontent.com/aida-public/AB6AXuDZR6gJGxP7D4wmnN-bk0mopkW8AWFrLvakV34S4262a69XmF69dF4x8SgXGr_jypEg-shSRT7jPZ3dZDz9wL65hkyoMp8W9gSyyF9m88GhAam6VH3jynArbrzfDLtD2ZmmjjI4tjll4FQEBZX8YE_Piua7cVnZO57SHLIyuVwZIfCd_p-UpcLllTeEr_QySOLVLOW-_g9C-NiYw1qqcJa_wGXw-adYsM2di4u_Qx7OaNQslGDDEuokmw8W55ZI3LlYsILhQsuEWQ')` }}></div>
-<div className="hidden lg:flex flex-col">
-<span className="text-xs font-bold text-white">{user?.fullName || 'Admin User'}</span>
-<span className="text-[10px] text-text-secondary">{user?.publicMetadata?.role === 'ADMIN' ? 'Super Admin' : (user?.publicMetadata?.role as string) || 'Super Admin'}</span>
-</div>
-</div>
-</div>
-</header>
-<div className="flex flex-1 overflow-hidden">
-{/* Sidebar */}
-<aside className="w-64 flex flex-col justify-between border-r border-border-dark bg-background-dark hidden lg:flex overflow-y-auto">
-<div className="flex flex-col gap-4 p-4">
-<div className="flex gap-3 items-center mb-6 px-2">
-<div className="bg-center bg-no-repeat bg-cover rounded-xl size-12 shadow-lg shadow-primary/20" data-alt="Company Logo Abstract" style={{ backgroundImage: `url('https://lh3.googleusercontent.com/aida-public/AB6AXuCTIzB58bOXwyvWqMLpiG229fr0mK0Xx8xQOr_ij3bLnnz8zuLtjvY8p7bUY2gwFUuPXGPRBe8UkoK2Y8bkHg60CRNf_u4cZ-5j5s15sCrAYO9KkQQjpDhVaz8RtK7rX9r-1D_iGOK8GM8FgxAUoKeDhZucr82lsrNu_0Hl7btP3aKKe6TxEgAoF0jljhgVZC8jaFprvPPaW__8v5RQ2oZdxofbe6FgCLdmStoULGDyImiLnOC9qsXPeDDZrMOR6D8mBvnJ0hfuJw')` }}></div>
-<div className="flex flex-col">
-<h1 className="text-white text-base font-bold">Wanderlux</h1>
-<p className="text-text-secondary text-xs">Premium Travel</p>
-</div>
-</div>
-<div className="flex flex-col gap-1">
-<p className="px-3 py-2 text-xs font-semibold text-text-secondary uppercase tracking-wider">Main</p>
-<a className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary hover:bg-surface-dark transition-colors group" href="/admin">
-<span className="material-symbols-outlined text-text-secondary group-hover:text-primary">pie_chart</span>
-<span className="text-sm font-medium">Dashboard</span>
-</a>
-<a className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary border-l-4 border-primary transition-colors" href="#">
-<span className="material-symbols-outlined fill-current">calendar_month</span>
-<span className="text-sm font-bold">Bookings</span>
-</a>
-<a className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary hover:bg-surface-dark transition-colors group" href="#">
-<span className="material-symbols-outlined text-text-secondary group-hover:text-primary">group</span>
-<span className="text-sm font-medium">Clients</span>
-</a>
-<a className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary hover:bg-surface-dark transition-colors group" href="/admin/fleet">
-<span className="material-symbols-outlined text-text-secondary group-hover:text-primary">directions_car</span>
-<span className="text-sm font-medium">Fleet</span>
-</a>
-</div>
-<div className="flex flex-col gap-1 mt-4">
-<p className="px-3 py-2 text-xs font-semibold text-text-secondary uppercase tracking-wider">Management</p>
-<a className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary hover:bg-surface-dark transition-colors group" href="#">
-<span className="material-symbols-outlined text-text-secondary group-hover:text-primary">attach_money</span>
-<span className="text-sm font-medium">Financials</span>
-</a>
-<a className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary hover:bg-surface-dark transition-colors group" href="#">
-<span className="material-symbols-outlined text-text-secondary group-hover:text-primary">settings</span>
-<span className="text-sm font-medium">Settings</span>
-</a>
-</div>
-</div>
-<div className="p-4 border-t border-border-dark border-gray-200">
-<button className="flex w-full items-center justify-center gap-2 rounded-lg py-2.5 bg-card-dark border border-border-dark hover:bg-primary hover:border-primary hover:text-white text-text-secondary text-sm font-bold transition-all">
-<span className="material-symbols-outlined text-[20px]">add_circle</span>
-<span>Quick Booking</span>
-</button>
-<button className="flex w-full items-center gap-3 px-3 py-2.5 mt-2 rounded-lg text-text-secondary hover:text-primary transition-colors">
-<span className="material-symbols-outlined">logout</span>
-<span className="text-sm font-medium">Log Out</span>
-</button>
-</div>
-</aside>
-{/* Main Content Area */}
-<main className="flex-1 overflow-hidden flex flex-row relative bg-background-light dark:bg-[#120d0d]">
-{/* Table Section */}
-<div className="flex-1 flex flex-col h-full overflow-hidden">
-{/* Header Actions */}
-<div className="p-6 md:p-8 flex flex-col gap-6">
-<div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-<div>
-<h1 className="text-2xl md:text-3xl font-bold text-white tracking-tight">Bookings Management</h1>
-<p className="text-text-secondary mt-1 text-sm">Track, manage and schedule all premium travel reservations.</p>
-</div>
-<div className="flex gap-3">
-<button className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border-dark bg-background-dark text-text-secondary hover:bg-surface-dark hover:text-white text-sm font-medium transition-colors">
-<span className="material-symbols-outlined text-[20px]">file_download</span>
-                                    Export
-                                </button>
-<button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white shadow-lg shadow-primary/30 hover:bg-red-700 text-sm font-bold transition-all">
-<span className="material-symbols-outlined text-[20px]">add</span>
-                                    New Booking
-                                </button>
-</div>
-</div>
+      <div className="flex h-screen w-full">
+        {/* Sidebar */}
+        <AdminSidebar />
+        
+        {/* Main Content Area */}
+        <main className="flex-1 flex flex-col h-full overflow-hidden bg-background-light dark:bg-[#120d0d] relative">
+          <AdminHeader 
+            title="Bookings Management" 
+            description="Track, manage and schedule all premium travel reservations."
+          >
+            <div className="flex gap-3">
+              <button className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border-dark bg-background-dark text-text-secondary hover:bg-surface-dark hover:text-white text-sm font-medium transition-colors">
+                <span className="material-symbols-outlined text-[20px]">file_download</span>
+                Export
+              </button>
+              <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white shadow-lg shadow-primary/30 hover:bg-red-700 text-sm font-bold transition-all">
+                <span className="material-symbols-outlined text-[20px]">add</span>
+                New Booking
+              </button>
+            </div>
+          </AdminHeader>
+          
+          <div className="flex-1 flex flex-row overflow-hidden">
+            {/* Table Section */}
+            <div className="flex-1 flex flex-col h-full overflow-hidden">
+              <div className="p-6 md:p-8 flex flex-col gap-6">
 {/* Stats Cards Row */}
 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
 <div className="bg-surface-dark p-4 rounded-xl border border-border-dark flex items-center gap-4">
@@ -535,10 +455,10 @@ export default function AdminBookingsPage() {
                             Confirm
                         </button>
 </div>
-</div>
-</main>
-</div>
-</div>
+            </div>
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

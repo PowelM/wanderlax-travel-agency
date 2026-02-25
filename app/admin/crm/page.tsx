@@ -2,97 +2,30 @@
 /* eslint-disable react/no-unescaped-entities */
  
 import React from 'react';
-import { useUser } from '@clerk/nextjs';
+import { AdminSidebar } from '@/components/admin/AdminSidebar';
+import { AdminHeader } from '@/components/admin/AdminHeader';
 
 export default function WanderluxAdminCustomerCrmPage() {
-  const { user } = useUser();
-  const primaryEmail = user?.emailAddresses?.[0]?.emailAddress || 'admin@wanderlux.com';
-  const names = user?.fullName?.split(' ') || ['Admin', 'User'];
-  const initials = `${names[0]?.[0] || 'A'}${names[1]?.[0] || 'D'}`.toUpperCase();
   return (
     <div className="stitch-screen">
       <div className="flex h-screen w-full overflow-hidden">
 {/* Sidebar */}
-<div className="hidden lg:flex flex-col w-64 bg-surface-dark border-r border-border-dark flex-shrink-0">
-<div className="flex flex-col h-full p-4 justify-between">
-<div className="flex flex-col gap-6">
-{/* Brand */}
-<div className="flex items-center gap-3 px-2">
-<div className="bg-center bg-no-repeat bg-cover rounded-full h-10 w-10 border border-primary/20" data-alt="Wanderlux Logo" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuDzO-9NrkvxH1KFJe3_yTT8ES9CLPB1gDShLJ1s9uovijCQVWVlUXCzL2ILCq77TdJ4R6B6HZw-IVkPkrp1xsyZ4QN6khWenCEqeSAn49ztqRWVrpco4hx2FXncP3mSa0HbdeCuI7CoLyTt0Oh1R8z7uPUOPVrpjwrvcstE-xIvQNlmtkENjFUJPUAWAOYfLKK3OfIoIUXd15cZxINiyU1udJsEdm81T-xRsodDWKj75DjK1Yf3snxk0Mlqao23IRw6j3qHO8O3Ng')" }}></div>
-<div className="flex flex-col">
-<h1 className="text-white text-lg font-bold leading-tight">Wanderlux</h1>
-<p className="text-text-muted text-xs font-medium">Admin Panel</p>
-</div>
-</div>
-{/* Navigation */}
-<div className="flex flex-col gap-1">
-<a className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-muted hover:text-white hover:bg-white/5 transition-colors group" href="#">
-<span className="material-symbols-outlined text-text-muted group-hover:text-primary transition-colors">grid_view</span>
-<span className="text-sm font-medium">Dashboard</span>
-</a>
-<a className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary" href="#">
-<span className="material-symbols-outlined text-primary font-variation-settings-FILL-1">group</span>
-<span className="text-sm font-bold">Customers</span>
-</a>
-<a className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-muted hover:text-white hover:bg-white/5 transition-colors group" href="#">
-<span className="material-symbols-outlined text-text-muted group-hover:text-primary transition-colors">calendar_month</span>
-<span className="text-sm font-medium">Bookings</span>
-</a>
-<a className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-muted hover:text-white hover:bg-white/5 transition-colors group" href="#">
-<span className="material-symbols-outlined text-text-muted group-hover:text-primary transition-colors">location_on</span>
-<span className="text-sm font-medium">Destinations</span>
-</a>
-<a className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-muted hover:text-white hover:bg-white/5 transition-colors group" href="#">
-<span className="material-symbols-outlined text-text-muted group-hover:text-primary transition-colors">payments</span>
-<span className="text-sm font-medium">Finances</span>
-</a>
-</div>
-</div>
-<div className="flex flex-col gap-1">
-<a className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-muted hover:text-white hover:bg-white/5 transition-colors group" href="#">
-<span className="material-symbols-outlined text-text-muted group-hover:text-primary transition-colors">settings</span>
-<span className="text-sm font-medium">Settings</span>
-</a>
-<a className="flex items-center gap-3 px-3 py-2 rounded-lg text-text-muted hover:bg-surface-dark hover:text-white transition-colors group" href="#">
-<span className="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">extension</span>
-<span className="text-sm font-medium">Integrations</span>
-</a>
-<a className="flex items-center gap-3 px-3 py-2 rounded-lg text-primary/80 hover:bg-surface-dark hover:text-primary transition-colors group mt-2" href="/portal/dashboard">
-<span className="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">switch_account</span>
-<span className="text-sm font-medium">User Dashboard</span>
-</a>
-<div className="mt-4 pt-4 border-t border-border-dark flex items-center gap-3 px-2">
-{user?.imageUrl ? (
-  <div className="h-8 w-8 rounded-full bg-cover bg-center" style={{ backgroundImage: `url('${user.imageUrl}')` }}></div>
-) : (
-  <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-primary to-primary-dark flex items-center justify-center text-xs font-bold text-white">{initials}</div>
-)}
-<div className="flex flex-col">
-<p className="text-sm font-medium text-white">{user?.fullName || 'Admin User'}</p>
-<p className="text-xs text-text-muted truncate max-w-[140px]">{primaryEmail}</p>
-</div>
-</div>
-</div>
-</div>
-</div>
+<AdminSidebar />
 {/* Main Content Area */}
 <main className="flex-1 flex flex-col h-full overflow-hidden bg-background-dark relative">
 {/* Header */}
-<header className="flex items-center justify-between px-6 py-4 border-b border-border-dark bg-surface-dark/50 backdrop-blur-sm z-10">
-<div className="flex flex-col">
-<h2 className="text-2xl font-bold text-white tracking-tight">Customer Management</h2>
-<p className="text-text-muted text-sm">Manage high-net-worth clients and interactions</p>
-</div>
-<div className="flex items-center gap-3">
-<button className="flex items-center justify-center h-10 w-10 rounded-lg text-text-muted hover:text-white hover:bg-border-dark transition-colors">
-<span className="material-symbols-outlined">notifications</span>
-</button>
-<button className="flex items-center gap-2 px-4 h-10 rounded-lg bg-primary hover:bg-primary-dark text-white text-sm font-bold transition-colors shadow-lg shadow-primary/20">
-<span className="material-symbols-outlined text-[20px]">add</span>
-<span>Add Customer</span>
-</button>
-</div>
-</header>
+<AdminHeader 
+  title="Customer Management" 
+  description="Manage high-net-worth clients and interactions"
+>
+  <button className="flex items-center justify-center h-10 w-10 rounded-lg text-text-muted hover:text-white hover:bg-border-dark transition-colors">
+    <span className="material-symbols-outlined">notifications</span>
+  </button>
+  <button className="flex items-center gap-2 px-4 h-10 rounded-lg bg-primary hover:bg-primary-dark text-white text-sm font-bold transition-colors shadow-lg shadow-primary/20">
+    <span className="material-symbols-outlined text-[20px]">add</span>
+    <span>Add Customer</span>
+  </button>
+</AdminHeader>
 {/* Scrollable Content */}
 <div className="flex-1 overflow-auto p-6">
 <div className="grid grid-cols-12 gap-6 h-full min-h-[800px]">

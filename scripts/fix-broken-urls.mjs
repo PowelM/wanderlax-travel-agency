@@ -22,11 +22,9 @@ function fixUrlQuotes(filePath) {
   let content = fs.readFileSync(filePath, 'utf-8');
   let original = content;
 
-  // The Exact string we are looking to replace:
+// The Exact string we are looking to replace:
   // style={{"backgroundImage":"url("https"}}></div>
   // Wait, let's make it slightly more generic just in case:
-  const brokenPattern1 = /style=\{\{"backgroundImage":"url\("https"\}\}></g;
-  const brokenPattern2 = /style=\{\{"backgroundImage":"url\("https"\}\}>\s*<\/div>/g;
   
   // Actually, we know exactly what it says from the terminal error:
   // style={{"backgroundImage":"url("https"}}></div>

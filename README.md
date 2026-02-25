@@ -1,4 +1,4 @@
-<![CDATA[<div align="center">
+<div align="center">
 
 # ✦ Wanderlux — Luxury Travel Agency
 
@@ -344,4 +344,3 @@ This project is private and proprietary. All rights reserved.
 *Experience the Extraordinary.*
 
 </div>
-]]>

@@ -23,16 +23,20 @@ export default function Header() {
 
   // Fetch user role when signed in
   useEffect(() => {
-    if (isSignedIn) {
-      fetch('/api/auth/role')
-        .then((res) => res.json())
-        .then((data) => {
+    const checkRole = async () => {
+      if (isSignedIn) {
+        try {
+          const res = await fetch('/api/auth/role');
+          const data = await res.json();
           if (data.role) setUserRole(data.role);
-        })
-        .catch(() => setUserRole(null));
-    } else {
-      setUserRole(null);
-    }
+        } catch {
+          setUserRole(null);
+        }
+      } else {
+        setUserRole(null);
+      }
+    };
+    checkRole();
   }, [isSignedIn]);
 
   // Hide global header on admin pages (admin has its own sidebar)

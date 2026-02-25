@@ -2,119 +2,46 @@
  
 /* eslint-disable @next/next/no-img-element */
 import React from 'react';
-import { useUser } from '@clerk/nextjs';
+import { AdminSidebar } from '@/components/admin/AdminSidebar';
+import { AdminHeader } from '@/components/admin/AdminHeader';
 
 export default function AdminFleetManagementOverviewPage() {
-  const { user } = useUser();
   return (
     <div className="stitch-screen">
-      <div className="flex h-screen w-full flex-col overflow-hidden">
-{/* Top Navigation */}
-<header className="flex items-center justify-between border-b border-border-dark bg-surface-dark px-6 py-3 shrink-0">
-<div className="flex items-center gap-8">
-<div className="flex items-center gap-3 text-white">
-<div className="size-8 flex items-center justify-center bg-primary rounded-lg text-white">
-<span className="material-symbols-outlined text-xl">diamond</span>
-</div>
-<h2 className="text-white text-lg font-bold leading-tight tracking-tight">Wanderlux Admin</h2>
-</div>
-{/* Search Bar */}
-<div className="hidden md:flex relative w-64">
-<div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-text-secondary">
-<span className="material-symbols-outlined text-[20px]">search</span>
-</div>
-<input className="block w-full rounded-lg border-0 bg-background-dark py-2 pl-10 pr-4 text-white placeholder:text-text-secondary focus:ring-1 focus:ring-primary sm:text-sm sm:leading-6" placeholder="Search..." type="text"/>
-</div>
-</div>
-<div className="flex items-center gap-4">
-<button className="bg-primary hover:bg-red-700 text-white text-sm font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition-colors">
-<span className="material-symbols-outlined text-[20px]">add</span>
-<span className="hidden sm:inline">Add New Vehicle</span>
-</button>
-<div className="h-8 w-[1px] bg-border-dark mx-2"></div>
-<button className="text-text-secondary hover:text-white transition-colors relative">
-<span className="material-symbols-outlined">notifications</span>
-<span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-primary ring-2 ring-surface-dark"></span>
-</button>
-<button className="text-text-secondary hover:text-white transition-colors">
-<span className="material-symbols-outlined">settings</span>
-</button>
-<div className="flex items-center gap-3 pl-2">
-<div className="h-9 w-9 rounded-full bg-cover bg-center border border-border-dark" data-alt="User profile picture" style={{ backgroundImage: `url('${user?.imageUrl || 'https://lh3.googleusercontent.com/aida-public/AB6AXuC2aQtwcYkEoRI7I9Emfjrf_zR9-yU3hcR-PfXtffJWcqiSt7xtah4J5oWEu8gPDFmBNebYQEm8lUK68JOD3h8-_005I6T_BBm7fW2dv9IWWeYIkleHqmBGFDnUrPzq_wUsfY45QdZzZ8TMJWAirPVgxZ-oukizaXDHC8s_PtfKV9-DIq590UHWbWubxpfaw_IlNijrtczuabhKqI7YZqigizE_NVZ3BBwKpzFu6b0BZa2VFkSQAu8jdCZrYLyrNminZnlLYLpMYw'}')` }}></div>
-</div>
-</div>
-</header>
-<div className="flex flex-1 overflow-hidden">
-{/* Sidebar Navigation */}
-<nav className="hidden lg:flex w-64 flex-col justify-between border-r border-border-dark bg-background-dark p-4 shrink-0 overflow-y-auto">
-<div className="flex flex-col gap-6">
-<div>
-<p className="px-3 text-xs font-semibold uppercase tracking-wider text-text-secondary mb-2">Main Menu</p>
-<div className="flex flex-col gap-1">
-<a className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary hover:bg-surface-dark hover:text-white transition-colors group" href="#">
-<span className="material-symbols-outlined group-hover:text-primary transition-colors">dashboard</span>
-<span className="font-medium">Dashboard</span>
-</a>
-<a className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-surface-dark text-white border-l-2 border-primary group" href="#">
-<span className="material-symbols-outlined text-primary">directions_car</span>
-<span className="font-medium">Fleet</span>
-</a>
-<a className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary hover:bg-surface-dark hover:text-white transition-colors group" href="#">
-<span className="material-symbols-outlined group-hover:text-primary transition-colors">calendar_month</span>
-<span className="font-medium">Reservations</span>
-</a>
-<a className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary hover:bg-surface-dark hover:text-white transition-colors group" href="#">
-<span className="material-symbols-outlined group-hover:text-primary transition-colors">group</span>
-<span className="font-medium">Customers</span>
-</a>
-</div>
-</div>
-<div>
-<p className="px-3 text-xs font-semibold uppercase tracking-wider text-text-secondary mb-2">Fleet Management</p>
-<div className="flex flex-col gap-1">
-<a className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary hover:bg-surface-dark hover:text-white transition-colors group" href="#">
-<span className="material-symbols-outlined group-hover:text-primary transition-colors">build</span>
-<span className="font-medium">Maintenance</span>
-</a>
-<a className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary hover:bg-surface-dark hover:text-white transition-colors group" href="#">
-<span className="material-symbols-outlined group-hover:text-primary transition-colors">analytics</span>
-<span className="font-medium">Reports</span>
-</a>
-<a className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary hover:bg-surface-dark hover:text-white transition-colors group" href="#">
-<span className="material-symbols-outlined group-hover:text-primary transition-colors">local_gas_station</span>
-<span className="font-medium">Fuel Log</span>
-</a>
-<a className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-primary/80 hover:bg-surface-dark hover:text-primary transition-colors group mt-2" href="/portal/dashboard">
-<span className="material-symbols-outlined group-hover:text-primary transition-colors">switch_account</span>
-<span className="font-medium">User Dashboard</span>
-</a>
-</div>
-</div>
-</div>
-<div className="mt-auto pt-6 border-t border-border-dark">
-<a className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary hover:bg-surface-dark hover:text-primary transition-colors" href="#">
-<span className="material-symbols-outlined">logout</span>
-<span className="font-medium">Sign Out</span>
-</a>
-</div>
-</nav>
-{/* Main Content Area */}
-<main className="flex-1 flex flex-col min-w-0 overflow-hidden bg-background-dark">
-{/* Header & Stats */}
-<div className="p-6 pb-2 overflow-y-auto custom-scrollbar">
-<div className="mb-8">
-<div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
-<div>
-<h1 className="text-3xl font-bold text-white mb-1">Fleet Overview</h1>
-<p className="text-text-secondary">Manage and track all vehicles in the Wanderlux fleet.</p>
-</div>
-<div className="flex items-center gap-2 bg-surface-dark p-1 rounded-lg border border-border-dark self-start md:self-auto">
-<button className="p-2 rounded bg-background-dark text-white shadow-sm">
-<span className="material-symbols-outlined text-[20px]">grid_view</span>
-</button>
-<button className="p-2 rounded text-text-secondary hover:text-white transition-colors">
-<span className="material-symbols-outlined text-[20px]">list</span>
-</button>
+      <div className="flex h-screen w-full">
+        {/* Sidebar Navigation */}
+        <AdminSidebar />
+        
+        {/* Main Content Area */}
+        <main className="flex-1 flex flex-col h-full overflow-hidden bg-background-dark relative">
+          <AdminHeader 
+            title="Fleet Overview" 
+            description="Manage and track all vehicles in the Wanderlux fleet."
+          >
+            <div className="flex items-center gap-4">
+              <div className="hidden md:flex relative w-64">
+                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-text-secondary">
+                  <span className="material-symbols-outlined text-[20px]">search</span>
+                </div>
+                <input className="block w-full rounded-lg border-0 bg-surface-dark py-2 pl-10 pr-4 text-white placeholder-text-secondary focus:ring-1 focus:ring-primary sm:text-sm sm:leading-6" placeholder="Search vehicles..." type="text"/>
+              </div>
+              <button className="bg-primary hover:bg-red-700 text-white text-sm font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition-colors">
+                <span className="material-symbols-outlined text-[20px]">add</span>
+                <span className="hidden sm:inline">Add New Vehicle</span>
+              </button>
+            </div>
+          </AdminHeader>
+          
+          <div className="flex-1 overflow-y-auto p-4 lg:p-6 custom-scrollbar">
+            <div className="mb-8">
+              <div className="flex flex-col md:flex-row md:items-end justify-end gap-4 mb-6">
+                <div className="flex items-center gap-2 bg-surface-dark p-1 rounded-lg border border-border-dark self-start md:self-auto">
+                  <button className="p-2 rounded bg-background-dark text-white shadow-sm">
+                    <span className="material-symbols-outlined text-[18px]">grid_view</span>
+                  </button>
+                  <button className="p-2 rounded text-text-secondary hover:text-white transition-colors">
+                    <span className="material-symbols-outlined text-[20px]">list</span>
+                  </button>
 </div>
 </div>
 {/* Stats Cards */}
@@ -503,9 +430,8 @@ export default function AdminFleetManagementOverviewPage() {
 </div>
 </div>
 </div>
-</main>
-</div>
-</div>
+        </main>
+      </div>
     </div>
   );
 }

@@ -2,78 +2,45 @@
 /* eslint-disable react/no-unescaped-entities */
  
 import React from 'react';
-import { useUser } from '@clerk/nextjs';
+import { AdminSidebar } from '@/components/admin/AdminSidebar';
+import { AdminHeader } from '@/components/admin/AdminHeader';
 
 export default function FeaturedTestimonialsManagerPage() {
-  const { user } = useUser();
   return (
     <div className="stitch-screen">
       {/* Noise Overlay */}
 <div className="fixed inset-0 pointer-events-none z-50 bg-noise mix-blend-overlay"></div>
-<div className="relative flex h-full min-h-screen w-full flex-col">
-{/* Header */}
-<header className="flex items-center justify-between whitespace-nowrap border-b border-white/10 px-8 py-4 bg-background-dark/95 backdrop-blur-md sticky top-0 z-40">
-<div className="flex items-center gap-8">
-<div className="flex items-center gap-3 text-white">
-<div className="size-8 bg-primary rounded-lg flex items-center justify-center text-white shadow-lg shadow-primary/30">
-<span className="material-symbols-outlined !text-[20px]">flight_takeoff</span>
-</div>
-<h2 className="text-white text-xl font-bold tracking-tight">Wanderlux Admin</h2>
-</div>
-{/* Search */}
-<div className="hidden md:flex relative group w-64">
-<div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-white/40 group-focus-within:text-primary transition-colors">
-<span className="material-symbols-outlined">search</span>
-</div>
-<input className="block w-full rounded-lg border border-white/10 bg-surface-dark py-2 pl-10 pr-3 text-sm text-white placeholder-white/40 focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all shadow-inner" placeholder="Search testimonials..." type="text"/>
-</div>
-</div>
-{/* Nav & Profile */}
-<div className="flex items-center gap-6">
-<nav className="hidden lg:flex items-center gap-1 bg-surface-dark/50 p-1 rounded-lg border border-white/5">
-<a className="px-4 py-1.5 text-sm font-medium text-white/60 hover:text-white hover:bg-white/5 rounded-md transition-colors" href="#">Dashboard</a>
-<a className="px-4 py-1.5 text-sm font-medium text-white/60 hover:text-white hover:bg-white/5 rounded-md transition-colors" href="#">Bookings</a>
-<a className="px-4 py-1.5 text-sm font-medium text-white/60 hover:text-white hover:bg-white/5 rounded-md transition-colors" href="#">Destinations</a>
-<a className="px-4 py-1.5 text-sm font-medium bg-primary/20 text-primary rounded-md shadow-sm border border-primary/20" href="#">Testimonials</a>
-<a className="px-4 py-1.5 text-sm font-medium text-white/60 hover:text-white hover:bg-white/5 rounded-md transition-colors" href="#">Settings</a>
-<a className="px-4 py-1.5 text-sm font-medium text-primary/80 hover:text-primary hover:bg-white/5 rounded-md transition-colors border-l border-white/10 ml-1 pl-5" href="/portal/dashboard">User Dashboard</a>
-</nav>
-<div className="h-6 w-px bg-white/10 hidden lg:block"></div>
-<div className="flex items-center gap-4">
-<button className="relative text-white/60 hover:text-white transition-colors">
-<span className="material-symbols-outlined">notifications</span>
-<span className="absolute top-0 right-0 size-2 bg-primary rounded-full border-2 border-background-dark"></span>
-</button>
-<button className="flex items-center gap-3 pl-2 group">
-<div className="bg-center bg-no-repeat bg-cover rounded-full size-9 ring-2 ring-white/10 group-hover:ring-primary transition-all" data-alt="Admin user profile photo" style={{ backgroundImage: `url('${user?.imageUrl || 'https://lh3.googleusercontent.com/aida-public/AB6AXuB5svbe5QHCUxH1txbjtC1hfiyJBns4h4DSvF4d3n2GiQ7eYKT678opcb_1LpQL28YgAGJF2_ZQJXRgB0kXXChnUTJHX0LSLultPyRr3FSlm-sg2S0sfLd0NTrCt3eOf6dgwk0ECNHfqgptyhBJ1JJXtFDaCpQZRl-AV3cCElYl-lICDhVD1ufJ2jUYVGJDskJiKQamM9hanS4gizwdqLh79FgqwNr7JuRB5FqwlpQyHADZExxgeZBQCBsnCFKHBvGR5l_h-wZH_Q'}')` }}></div>
-</button>
-</div>
-</div>
-</header>
-{/* Main Content */}
-<main className="flex-1 flex justify-center py-8 px-4 md:px-8">
-<div className="flex flex-col w-full max-w-6xl">
-{/* Page Title Area */}
-<div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
-<div className="space-y-2">
-<div className="flex items-center gap-2 text-primary text-sm font-semibold uppercase tracking-wider">
-<span className="material-symbols-outlined !text-[18px]">verified</span>
-<span>Content Management</span>
-</div>
-<h1 className="text-3xl md:text-4xl font-bold text-white tracking-tight">Featured Testimonials</h1>
-<p className="text-slate-400 max-w-2xl text-base font-normal leading-relaxed">Drag and drop cards to reorder the testimonials displayed on the homepage marquee. Ensure a mix of destinations is prioritized.</p>
-</div>
-<div className="flex gap-3">
-<button className="glass-card flex items-center justify-center gap-2 h-10 px-5 text-white text-sm font-medium rounded-lg hover:bg-white/5 transition-all">
-<span className="material-symbols-outlined !text-[18px]">add</span>
-<span>Add New</span>
-</button>
-<button className="flex items-center justify-center gap-2 h-10 px-5 bg-primary hover:bg-primary/90 text-white text-sm font-bold rounded-lg transition-all shadow-lg shadow-primary/20">
-<span className="material-symbols-outlined !text-[18px]">visibility</span>
-<span>Preview on Site</span>
-</button>
-</div>
-</div>
+      <div className="flex h-screen w-full">
+        {/* Sidebar */}
+        <AdminSidebar />
+        
+        {/* Main Content */}
+        <main className="flex-1 flex flex-col h-full overflow-hidden bg-background-dark relative">
+          <AdminHeader 
+            title="Featured Testimonials" 
+            description="Drag and drop cards to reorder the testimonials displayed on the homepage marquee. Ensure a mix of destinations is prioritized."
+          >
+            {/* Search */}
+            <div className="hidden md:flex relative group w-64 mr-2">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 group-focus-within:text-primary transition-colors">
+                <span className="material-symbols-outlined text-[20px]">search</span>
+              </div>
+              <input className="block w-full rounded-lg border border-border-dark bg-surface-dark py-2 pl-10 pr-3 text-sm text-white placeholder-slate-400 focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all" placeholder="Search testimonials..." type="text"/>
+            </div>
+            <div className="flex gap-3">
+              <button className="glass-card flex items-center justify-center gap-2 h-10 px-5 text-white text-sm font-medium rounded-lg hover:bg-white/5 transition-all">
+                <span className="material-symbols-outlined !text-[18px]">add</span>
+                <span>Add New</span>
+              </button>
+              <button className="flex items-center justify-center gap-2 h-10 px-5 bg-primary hover:bg-primary/90 text-white text-sm font-bold rounded-lg transition-all shadow-lg shadow-primary/20">
+                <span className="material-symbols-outlined !text-[18px]">visibility</span>
+                <span>Preview on Site</span>
+              </button>
+            </div>
+          </AdminHeader>
+          
+          <div className="flex-1 overflow-y-auto p-4 md:p-8 flex justify-center">
+            <div className="flex flex-col w-full max-w-6xl">
 {/* Testimonials Grid (Drag & Drop Context) */}
 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 {/* Card 1 */}
@@ -294,8 +261,9 @@ export default function FeaturedTestimonialsManagerPage() {
 </div>
 </div>
 </div>
-</main>
-</div>
+            </div>
+        </main>
+      </div>
     </div>
   );
 }

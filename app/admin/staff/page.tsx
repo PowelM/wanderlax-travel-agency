@@ -2,99 +2,38 @@
  
  
 import React from 'react';
-import { useUser } from '@clerk/nextjs';
+import { AdminSidebar } from '@/components/admin/AdminSidebar';
+import { AdminHeader } from '@/components/admin/AdminHeader';
 
 export default function StaffDirectoryManagementPage() {
-  const { user } = useUser();
   return (
     <div className="stitch-screen">
-      {/* Side Navigation */}
-<aside className="w-64 flex flex-col border-r border-border-light dark:border-border-dark bg-surface-light dark:bg-[#111111] h-screen fixed left-0 top-0 z-50">
-<div className="p-6 border-b border-border-light dark:border-border-dark flex items-center gap-3">
-<div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-orange-600 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-primary/20">W</div>
-<div className="flex flex-col">
-<h1 className="text-base font-bold leading-tight">Wanderlux</h1>
-<p className="text-xs text-slate-500 dark:text-slate-400">Admin Console</p>
-</div>
-</div>
-<nav className="flex-1 overflow-y-auto py-6 px-3 flex flex-col gap-1">
-<a className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors group" href="#">
-<span className="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">dashboard</span>
-<span className="text-sm font-medium">Dashboard</span>
-</a>
-<a className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary dark:text-primary" href="#">
-<span className="material-symbols-outlined text-[20px] fill-1">group</span>
-<span className="text-sm font-medium">Staff</span>
-</a>
-<a className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors group" href="#">
-<span className="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">calendar_month</span>
-<span className="text-sm font-medium">Bookings</span>
-</a>
-<a className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors group" href="#">
-<span className="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">location_on</span>
-<span className="text-sm font-medium">Destinations</span>
-</a>
-<a className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors group" href="#">
-<span className="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">payments</span>
-<span className="text-sm font-medium">Finance</span>
-</a>
-<div className="my-2 border-t border-border-light dark:border-border-dark mx-3"></div>
-<a className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors group" href="#">
-<span className="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">settings</span>
-<span className="text-sm font-medium">Settings</span>
-</a>
-<a className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors group" href="#">
-<span className="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">help</span>
-<span className="text-sm font-medium">Help Center</span>
-</a>
-<a className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-primary/80 dark:text-primary/80 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-primary transition-colors group mt-2" href="/portal/dashboard">
-<span className="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">switch_account</span>
-<span className="text-sm font-medium">User Dashboard</span>
-</a>
-</nav>
-<div className="p-4 border-t border-border-light dark:border-border-dark">
-<button className="w-full flex items-center justify-center gap-2 rounded-lg h-10 px-4 border border-border-light dark:border-border-dark hover:bg-slate-100 dark:hover:bg-white/5 text-slate-600 dark:text-slate-300 text-sm font-medium transition-colors">
-<span className="material-symbols-outlined text-[18px]">logout</span>
-                Logout
-            </button>
-</div>
-</aside>
-{/* Main Content */}
-<main className="flex-1 ml-64 min-h-screen flex flex-col relative">
-{/* Header */}
-<header className="h-16 border-b border-border-light dark:border-border-dark bg-surface-light/80 dark:bg-[#0d0d0d]/80 backdrop-blur-md sticky top-0 z-40 px-8 flex items-center justify-between">
-<div className="flex items-center gap-4">
-<h2 className="text-xl font-bold tracking-tight">Staff Management</h2>
-</div>
-<div className="flex items-center gap-4">
-<button className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500 dark:text-slate-400 transition-colors relative">
-<span className="material-symbols-outlined">notifications</span>
-<span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-primary ring-2 ring-background-light dark:ring-background-dark"></span>
-</button>
-<div className="h-8 w-8 rounded-full bg-slate-200 dark:bg-slate-700 bg-cover bg-center ring-2 ring-border-light dark:ring-border-dark" data-alt="User profile picture" style={{ backgroundImage: `url('${user?.imageUrl || 'https://lh3.googleusercontent.com/aida-public/AB6AXuDfuKqcOkunrnvb9BkHNojuFUo4dWnDHGES5vcNX30EC2LWpQcTQG9mnVTKsJUQpVbi9RXkP8cs65vbiv4aYNE-OAI644VpovzXS0t5BONnmx8CTtZ9-fy87PpL8LDqbEVjVN7wIJN9KtENt6FWwvGMFKheOAfsikxOQOcdhZsER3G3pCTlzXFqaJmI8NlDF0eysXM3OvpU1TIZ-A0J4-9HpGgm9tl2luDVj1MB5xN9xNeotKGxD-HKE7gMEpI6PvcDOl-7CXYl6A'}')` }}></div>
-</div>
-</header>
-<div className="p-8 max-w-7xl mx-auto w-full flex flex-col gap-8">
-{/* Page Header + Actions */}
-<div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-<div className="flex flex-col gap-1">
-<h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white">Team Overview</h1>
-<p className="text-slate-500 dark:text-slate-400">Manage team members, roles, and access permissions.</p>
-</div>
-<div className="flex items-center gap-3">
-<div className="relative group">
-<span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-<span className="material-symbols-outlined text-[20px]">search</span>
-</span>
-<input className="pl-10 pr-4 py-2.5 rounded-lg border border-border-light dark:border-border-dark bg-surface-light dark:bg-[#141414] text-sm focus:ring-1 focus:ring-primary focus:border-primary outline-none w-64 transition-all" placeholder="Search staff..." type="text"/>
-</div>
-<button className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-lg text-sm font-semibold shadow-lg shadow-primary/25 transition-all">
-<span className="material-symbols-outlined text-[20px]">add</span>
-                        Add New Staff
-                    </button>
-</div>
-</div>
-{/* Stats Grid */}
+      <div className="flex h-screen w-full">
+        {/* Side Navigation */}
+        <AdminSidebar />
+        
+        {/* Main Content */}
+        <main className="flex-1 flex flex-col h-full overflow-hidden bg-background-dark relative">
+          <AdminHeader 
+            title="Team Overview" 
+            description="Manage team members, roles, and access permissions."
+          >
+            <div className="flex items-center gap-3">
+              <div className="relative group">
+                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                  <span className="material-symbols-outlined text-[20px]">search</span>
+                </span>
+                <input className="pl-10 pr-4 py-2.5 rounded-lg border border-border-dark bg-surface-dark text-white placeholder-slate-400 focus:ring-1 focus:ring-primary focus:border-primary outline-none w-64 transition-all" placeholder="Search staff..." type="text"/>
+              </div>
+              <button className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-lg text-sm font-semibold shadow-lg shadow-primary/25 transition-all">
+                  <span className="material-symbols-outlined text-[20px]">add</span>
+                  Add New Staff
+              </button>
+            </div>
+          </AdminHeader>
+
+          <div className="flex-1 overflow-y-auto p-4 lg:p-8 gap-8 flex flex-col">
+            {/* Stats Grid */}
 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 <div className="bg-surface-light dark:bg-[#141414] border border-border-light dark:border-border-dark p-5 rounded-xl flex flex-col gap-4 shadow-sm relative overflow-hidden group">
 <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
@@ -341,8 +280,9 @@ export default function StaffDirectoryManagementPage() {
 </div>
 </div>
 </div>
-</div>
-</main>
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

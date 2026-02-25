@@ -2,116 +2,39 @@
  
  
 import React from 'react';
-import { useUser } from '@clerk/nextjs';
+import { AdminSidebar } from '@/components/admin/AdminSidebar';
+import { AdminHeader } from '@/components/admin/AdminHeader';
 
 export default function WanderluxAdminReportsAnalyticsPage() {
-  const { user } = useUser();
   return (
     <div className="stitch-screen">
-      <div className="flex h-screen w-full flex-col">
-{/* Layout Container */}
-<div className="flex h-full grow flex-col">
-{/* Header */}
-<header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-surface-darker bg-background-dark px-6 py-3 lg:px-10">
-<div className="flex items-center gap-8">
-<div className="flex items-center gap-4 text-white">
-<div className="size-8 flex items-center justify-center rounded bg-primary/20 text-primary">
-<span className="material-symbols-outlined text-2xl">travel_explore</span>
-</div>
-<h2 className="text-white text-lg font-bold leading-tight tracking-[-0.015em]">Wanderlux Admin</h2>
-</div>
-{/* Search Bar */}
-<label className="hidden md:flex flex-col min-w-40 h-10 w-64">
-<div className="flex w-full flex-1 items-stretch rounded-lg h-full overflow-hidden">
-<div className="text-text-secondary flex border-none bg-surface-darker items-center justify-center pl-4 pr-2">
-<span className="material-symbols-outlined text-xl">search</span>
-</div>
-<input className="flex w-full min-w-0 flex-1 resize-none overflow-hidden text-white focus:outline-0 focus:ring-0 border-none bg-surface-darker focus:border-none h-full placeholder:text-text-secondary px-2 text-sm font-normal leading-normal" placeholder="Search..." value=""/>
-</div>
-</label>
-</div>
-<div className="flex items-center justify-end gap-6">
-<button className="relative text-text-secondary hover:text-white transition-colors">
-<span className="material-symbols-outlined">notifications</span>
-<span className="absolute top-0 right-0 size-2 bg-primary rounded-full"></span>
-</button>
-<div className="flex items-center gap-3">
-<div className="text-right hidden sm:block">
-<p className="text-sm font-medium text-white">{user?.fullName || 'Admin User'}</p>
-<p className="text-xs text-text-secondary">Admin</p>
-</div>
-<div className="bg-center bg-no-repeat bg-cover rounded-full size-10 ring-2 ring-surface-darker" data-alt="Profile picture of administrator" style={{ backgroundImage: `url('${user?.imageUrl || 'https://lh3.googleusercontent.com/aida-public/AB6AXuDlaj4eLp_oNwAb5Vw5QN9CKwUsKiSVrlWPX6ngyfjy_NtIRSJc-DDJl_365AeZt2QFN2vXU_KCe7k2nHsGMyVNTmuvRXeBECyBmgVwfRcZlQA_BuZeC-V-3iHbDJpf6czlRLJjxZ0ocdqVFFGzlSEVwFHzDcrUMvc4-kEguDtDlApLTcrAYpkLUnZZokwVztXBG0yvc8AlbzX8tCFJJpnIBtdO6Iu2_8sAKChra6KrfwH7DRgoPM3h0ehpn_APiktHsXxQT-rTXQ'}')` }}></div>
-<button className="flex items-center justify-center size-8 rounded-lg bg-surface-darker text-text-secondary hover:text-primary transition-colors ml-2">
-<span className="material-symbols-outlined text-xl">logout</span>
-</button>
-</div>
-</div>
-</header>
-<div className="flex flex-1 overflow-hidden">
-{/* Sidebar */}
-<aside className="hidden lg:flex w-64 flex-col border-r border-surface-darker bg-background-dark p-4 gap-4 overflow-y-auto">
-{/* Sidebar Navigation */}
-<nav className="flex flex-col gap-2">
-<a className="flex items-center gap-3 px-3 py-2 rounded-lg text-text-secondary hover:bg-surface-darker hover:text-white transition-colors group" href="#">
-<span className="material-symbols-outlined text-2xl group-hover:text-primary transition-colors">dashboard</span>
-<p className="text-sm font-medium leading-normal">Dashboard</p>
-</a>
-<a className="flex items-center gap-3 px-3 py-2 rounded-lg text-text-secondary hover:bg-surface-darker hover:text-white transition-colors group" href="#">
-<span className="material-symbols-outlined text-2xl group-hover:text-primary transition-colors">calendar_month</span>
-<p className="text-sm font-medium leading-normal">Bookings</p>
-</a>
-<a className="flex items-center gap-3 px-3 py-2 rounded-lg text-text-secondary hover:bg-surface-darker hover:text-white transition-colors group" href="#">
-<span className="material-symbols-outlined text-2xl group-hover:text-primary transition-colors">group</span>
-<p className="text-sm font-medium leading-normal">Clients</p>
-</a>
-{/* Active State */}
-<a className="flex items-center gap-3 px-3 py-2 rounded-lg bg-surface-darker text-white" href="#">
-<span className="material-symbols-outlined text-2xl text-primary">bar_chart</span>
-<p className="text-sm font-medium leading-normal">Reports</p>
-</a>
-<a className="flex items-center gap-3 px-3 py-2 rounded-lg text-text-secondary hover:bg-surface-darker hover:text-white transition-colors group" href="#">
-<span className="material-symbols-outlined text-2xl group-hover:text-primary transition-colors">flight_takeoff</span>
-<p className="text-sm font-medium leading-normal">Packages</p>
-</a>
-</nav>
-<div className="mt-auto flex flex-col gap-2 border-t border-surface-darker pt-4">
-<a className="flex items-center gap-3 px-3 py-2 rounded-lg text-text-secondary hover:bg-surface-darker hover:text-white transition-colors group" href="#">
-<span className="material-symbols-outlined text-2xl group-hover:text-primary transition-colors">settings</span>
-<p className="text-sm font-medium leading-normal">Settings</p>
-</a>
-<a className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary hover:bg-surface-darker hover:text-white transition-colors group" href="#">
-<span className="material-symbols-outlined text-2xl group-hover:text-primary transition-colors">help</span>
-<p className="text-sm font-medium leading-normal">Support</p>
-</a>
-<a className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-primary/80 hover:bg-surface-darker hover:text-primary transition-colors group mt-2" href="/portal/dashboard">
-<span className="material-symbols-outlined text-2xl group-hover:text-primary transition-colors">switch_account</span>
-<p className="text-sm font-medium leading-normal">User Dashboard</p>
-</a>
-</div>
-</aside>
-{/* Main Content */}
-<main className="flex-1 flex flex-col overflow-y-auto bg-background-dark p-4 lg:p-8 gap-8">
-{/* Page Header & Date Picker */}
-<div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-<div className="flex flex-col gap-2">
-<h1 className="text-white text-3xl font-bold tracking-tight">Reports &amp; Analytics</h1>
-<p className="text-text-secondary text-base">Overview of platform performance and booking metrics</p>
-</div>
-{/* Date Ranges */}
-<div className="flex bg-surface-darker p-1 rounded-lg overflow-x-auto max-w-full no-scrollbar">
-<button className="px-4 py-1.5 rounded text-sm font-medium text-text-secondary hover:text-white whitespace-nowrap">7 Days</button>
-<button className="px-4 py-1.5 rounded text-sm font-medium text-white bg-background-dark shadow-sm whitespace-nowrap">30 Days</button>
-<button className="px-4 py-1.5 rounded text-sm font-medium text-text-secondary hover:text-white whitespace-nowrap">This Month</button>
-<button className="px-4 py-1.5 rounded text-sm font-medium text-text-secondary hover:text-white whitespace-nowrap">Last Quarter</button>
-<div className="w-px h-5 bg-text-secondary/20 mx-1 my-auto"></div>
-<button className="px-4 py-1.5 rounded text-sm font-medium text-primary hover:text-primary/80 flex items-center gap-1 whitespace-nowrap">
-<span className="material-symbols-outlined text-sm">calendar_today</span>
-                                Custom
-                            </button>
-</div>
-</div>
-{/* Metrics Grid */}
-<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="flex h-screen w-full">
+        {/* Sidebar */}
+        <AdminSidebar />
+        
+        {/* Main Content */}
+        <main className="flex-1 flex flex-col h-full overflow-hidden bg-background-dark relative">
+          <AdminHeader 
+            title="Reports & Analytics" 
+            description="Overview of platform performance and booking metrics"
+          >
+            {/* Date Ranges */}
+            <div className="flex bg-surface-darker p-1 rounded-lg overflow-x-auto max-w-full no-scrollbar">
+              <button className="px-4 py-1.5 rounded text-sm font-medium text-text-secondary hover:text-white whitespace-nowrap">7 Days</button>
+              <button className="px-4 py-1.5 rounded text-sm font-medium text-white bg-background-dark shadow-sm whitespace-nowrap">30 Days</button>
+              <button className="px-4 py-1.5 rounded text-sm font-medium text-text-secondary hover:text-white whitespace-nowrap">This Month</button>
+              <button className="px-4 py-1.5 rounded text-sm font-medium text-text-secondary hover:text-white whitespace-nowrap">Last Quarter</button>
+              <div className="w-px h-5 bg-text-secondary/20 mx-1 my-auto"></div>
+              <button className="px-4 py-1.5 rounded text-sm font-medium text-primary hover:text-primary/80 flex items-center gap-1 whitespace-nowrap">
+                  <span className="material-symbols-outlined text-sm">calendar_today</span>
+                  Custom
+              </button>
+            </div>
+          </AdminHeader>
+
+          <div className="flex-1 overflow-y-auto p-4 lg:p-8 gap-8 flex flex-col">
+            {/* Metrics Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 {/* Card 1 */}
 <div className="flex flex-col gap-2 rounded-xl p-6 bg-surface-darker border border-surface-darker hover:border-surface-dark transition-colors">
 <div className="flex items-center justify-between">
@@ -419,10 +342,9 @@ export default function WanderluxAdminReportsAnalyticsPage() {
 </table>
 </div>
 </div>
-</main>
-</div>
-</div>
-</div>
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

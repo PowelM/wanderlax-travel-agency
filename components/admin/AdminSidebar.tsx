@@ -38,7 +38,7 @@ export function AdminSidebar() {
           <span className="material-symbols-outlined text-[24px]">calendar_month</span>
           <span className="text-sm font-medium">Bookings</span>
         </Link>
-        <Link className={getLinkClasses("/tours")} href="/tours">
+        <Link className={getLinkClasses("/admin/tours")} href="/admin/tours">
           <span className="material-symbols-outlined text-[24px]">map</span>
           <span className="text-sm font-medium">Tours</span>
         </Link>
@@ -49,6 +49,10 @@ export function AdminSidebar() {
         <Link className={getLinkClasses("/admin/crm")} href="/admin/crm">
           <span className="material-symbols-outlined text-[24px]">group</span>
           <span className="text-sm font-medium">Customers</span>
+        </Link>
+        <Link className={getLinkClasses("/admin/messages")} href="/admin/messages">
+          <span className="material-symbols-outlined text-[24px]">forum</span>
+          <span className="text-sm font-medium">Messages</span>
         </Link>
         <Link className={getLinkClasses("/admin/testimonials")} href="/admin/testimonials">
           <span className="material-symbols-outlined text-[24px]">reviews</span>

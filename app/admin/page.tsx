@@ -1,11 +1,24 @@
 "use client";
  
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { AdminHeader } from '@/components/admin/AdminHeader';
 
 export default function WanderluxAdminDashboardOverviewPage() {
+  const [revenuePeriod, setRevenuePeriod] = useState<'monthly' | 'weekly'>('monthly');
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [openDropdownId, setOpenDropdownId] = useState<number | null>(null);
+
+  // Close dropdown when clicking outside could be added here later
+
+  const toggleDropdown = (id: number) => {
+    if (openDropdownId === id) {
+      setOpenDropdownId(null);
+    } else {
+      setOpenDropdownId(id);
+    }
+  };
   return (
     <div className="stitch-screen">
       <div className="flex h-screen w-full">
@@ -24,10 +37,59 @@ export default function WanderluxAdminDashboardOverviewPage() {
     </span>
     <input className="w-64 py-2 pl-10 pr-4 bg-surface-dark border border-border-dark rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Search anything..." type="text"/>
   </div>
-  <button className="relative p-2 rounded-lg bg-surface-dark text-slate-300 hover:text-white hover:bg-border-dark transition-colors">
-    <span className="material-symbols-outlined">notifications</span>
-    <span className="absolute top-2 right-2 size-2 bg-primary rounded-full ring-2 ring-surface-dark"></span>
-  </button>
+  <div className="relative">
+    <button 
+      onClick={() => setShowNotifications(!showNotifications)}
+      className="relative p-2 rounded-lg bg-surface-dark text-slate-300 hover:text-white hover:bg-border-dark transition-colors"
+    >
+      <span className="material-symbols-outlined">notifications</span>
+      <span className="absolute top-2 right-2 size-2 bg-primary rounded-full ring-2 ring-surface-dark"></span>
+    </button>
+    
+    {showNotifications && (
+      <div className="absolute right-0 mt-2 w-80 bg-surface-dark border border-border-dark rounded-xl shadow-2xl z-50 overflow-hidden">
+        <div className="p-4 border-b border-border-dark flex justify-between items-center bg-background-dark/50">
+          <h3 className="text-white font-bold text-sm">Notifications</h3>
+          <button className="text-xs text-primary hover:text-white transition-colors border-none p-0 bg-transparent">Mark all as read</button>
+        </div>
+        <div className="max-h-96 overflow-y-auto">
+          <Link href="/admin/messages" className="block p-4 border-b border-border-dark hover:bg-white/5 transition-colors cursor-pointer text-left relative z-10">
+            <div className="flex gap-3">
+              <div className="h-8 w-8 rounded-full bg-primary/20 text-primary flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-[16px]">book_online</span>
+              </div>
+              <div>
+                <p className="text-sm text-white">New booking from <strong className="font-semibold text-primary">Alice Johnson</strong></p>
+                <p className="text-xs text-slate-400 mt-1">2 minutes ago</p>
+              </div>
+            </div>
+          </Link>
+          <Link href="/admin/messages" className="block p-4 border-b border-border-dark hover:bg-white/5 transition-colors cursor-pointer text-left relative z-10">
+            <div className="flex gap-3">
+              <div className="h-8 w-8 rounded-full bg-green-500/20 text-green-500 flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-[16px]">payments</span>
+              </div>
+              <div>
+                <p className="text-sm text-white">Payment of <strong className="font-semibold text-green-400">$1,250</strong> received</p>
+                <p className="text-xs text-slate-400 mt-1">1 hour ago</p>
+              </div>
+            </div>
+          </Link>
+          <Link href="/admin/messages" className="block p-4 hover:bg-white/5 transition-colors cursor-pointer text-left relative z-10">
+            <div className="flex gap-3">
+              <div className="h-8 w-8 rounded-full bg-yellow-500/20 text-yellow-500 flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-[16px]">directions_car</span>
+              </div>
+              <div>
+                <p className="text-sm text-white">Rental car <strong className="font-semibold text-yellow-500">#42</strong> returned</p>
+                <p className="text-xs text-slate-400 mt-1">5 hours ago</p>
+              </div>
+            </div>
+          </Link>
+        </div>
+      </div>
+    )}
+  </div>
 </AdminHeader>
 {/* Scrollable Area */}
 <div className="flex-1 overflow-y-auto p-8 space-y-8">
@@ -120,21 +182,43 @@ export default function WanderluxAdminDashboardOverviewPage() {
 <p className="text-slate-400 text-sm">Monthly revenue analytics</p>
 </div>
 <div className="flex items-center gap-2 bg-background-dark p-1 rounded-lg border border-border-dark">
-<button className="px-3 py-1 text-xs font-medium bg-primary text-white rounded shadow-sm">Monthly</button>
-<button className="px-3 py-1 text-xs font-medium text-slate-400 hover:text-white rounded transition-colors">Weekly</button>
+<button 
+  onClick={() => setRevenuePeriod('monthly')}
+  className={`px-3 py-1 text-xs font-medium rounded shadow-sm transition-colors ${revenuePeriod === 'monthly' ? 'bg-primary text-white' : 'text-slate-400 hover:text-white'}`}>
+  Monthly
+</button>
+<button 
+  onClick={() => setRevenuePeriod('weekly')}
+  className={`px-3 py-1 text-xs font-medium rounded transition-colors ${revenuePeriod === 'weekly' ? 'bg-primary text-white shadow-sm' : 'text-slate-400 hover:text-white'}`}>
+  Weekly
+</button>
 </div>
 </div>
 <div className="relative h-64 w-full">
 {/* Simulated Chart Area */}
 <div className="absolute inset-0 flex items-end justify-between px-2 gap-2">
-<div className="w-full bg-primary/10 hover:bg-primary/20 transition-all rounded-t-sm h-[40%] relative group"><div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">$12k</div></div>
-<div className="w-full bg-primary/10 hover:bg-primary/20 transition-all rounded-t-sm h-[65%] relative group"><div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">$34k</div></div>
-<div className="w-full bg-primary/10 hover:bg-primary/20 transition-all rounded-t-sm h-[50%] relative group"><div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">$22k</div></div>
-<div className="w-full bg-primary/10 hover:bg-primary/20 transition-all rounded-t-sm h-[75%] relative group"><div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">$45k</div></div>
-<div className="w-full bg-primary/20 hover:bg-primary/30 transition-all rounded-t-sm h-[60%] relative group"><div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">$28k</div></div>
-<div className="w-full bg-primary/30 hover:bg-primary/40 transition-all rounded-t-sm h-[85%] relative group"><div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">$56k</div></div>
-<div className="w-full bg-gradient-to-t from-primary/40 to-primary/80 hover:to-primary transition-all rounded-t-sm h-[95%] relative group shadow-[0_0_15px_rgba(198,16,16,0.3)]"><div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">$68k</div></div>
-<div className="w-full bg-primary/20 hover:bg-primary/30 transition-all rounded-t-sm h-[70%] relative group"><div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">$38k</div></div>
+{revenuePeriod === 'monthly' ? (
+  <>
+    <div className="w-full bg-primary/10 hover:bg-primary/20 transition-all rounded-t-sm h-[40%] relative group"><div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">$12k</div></div>
+    <div className="w-full bg-primary/10 hover:bg-primary/20 transition-all rounded-t-sm h-[65%] relative group"><div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">$34k</div></div>
+    <div className="w-full bg-primary/10 hover:bg-primary/20 transition-all rounded-t-sm h-[50%] relative group"><div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">$22k</div></div>
+    <div className="w-full bg-primary/10 hover:bg-primary/20 transition-all rounded-t-sm h-[75%] relative group"><div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">$45k</div></div>
+    <div className="w-full bg-primary/20 hover:bg-primary/30 transition-all rounded-t-sm h-[60%] relative group"><div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">$28k</div></div>
+    <div className="w-full bg-primary/30 hover:bg-primary/40 transition-all rounded-t-sm h-[85%] relative group"><div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">$56k</div></div>
+    <div className="w-full bg-gradient-to-t from-primary/40 to-primary/80 hover:to-primary transition-all rounded-t-sm h-[95%] relative group shadow-[0_0_15px_rgba(198,16,16,0.3)]"><div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">$68k</div></div>
+    <div className="w-full bg-primary/20 hover:bg-primary/30 transition-all rounded-t-sm h-[70%] relative group"><div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">$38k</div></div>
+  </>
+) : (
+  <>
+    <div className="w-full bg-primary/10 hover:bg-primary/20 transition-all rounded-t-sm h-[30%] relative group"><div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">$8k</div></div>
+    <div className="w-full bg-primary/20 hover:bg-primary/30 transition-all rounded-t-sm h-[45%] relative group"><div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">$14k</div></div>
+    <div className="w-full bg-primary/10 hover:bg-primary/20 transition-all rounded-t-sm h-[55%] relative group"><div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">$19k</div></div>
+    <div className="w-full bg-gradient-to-t from-primary/40 to-primary/80 hover:to-primary transition-all rounded-t-sm h-[85%] relative group shadow-[0_0_15px_rgba(198,16,16,0.3)]"><div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">$31k</div></div>
+    <div className="w-full bg-primary/20 hover:bg-primary/30 transition-all rounded-t-sm h-[65%] relative group"><div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">$23k</div></div>
+    <div className="w-full bg-primary/10 hover:bg-primary/20 transition-all rounded-t-sm h-[50%] relative group"><div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">$17k</div></div>
+    <div className="w-full bg-primary/30 hover:bg-primary/40 transition-all rounded-t-sm h-[75%] relative group"><div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">$26k</div></div>
+  </>
+)}
 </div>
 {/* Grid Lines */}
 <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
@@ -146,7 +230,11 @@ export default function WanderluxAdminDashboardOverviewPage() {
 </div>
 </div>
 <div className="flex justify-between mt-4 text-xs text-slate-500 font-medium px-2">
-<span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span><span>Jul</span><span>Aug</span>
+{revenuePeriod === 'monthly' ? (
+  <><span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span><span>Jul</span><span>Aug</span></>
+) : (
+  <><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></>
+)}
 </div>
 </div>
 {/* Quick Actions & Mini List */}
@@ -155,7 +243,7 @@ export default function WanderluxAdminDashboardOverviewPage() {
 <div className="bg-surface-dark rounded-xl border border-border-dark p-6 shadow-lg shadow-black/20">
 <h3 className="text-white text-lg font-bold mb-4">Quick Actions</h3>
 <div className="space-y-3">
-<button className="w-full flex items-center justify-between p-3 rounded-lg bg-background-dark border border-border-dark text-slate-300 hover:border-primary/50 hover:bg-primary/5 hover:text-white transition-all group">
+<Link href="/admin/tours" className="w-full flex items-center justify-between p-3 rounded-lg bg-background-dark border border-border-dark text-slate-300 hover:border-primary/50 hover:bg-primary/5 hover:text-white transition-all group">
 <div className="flex items-center gap-3">
 <div className="bg-primary/10 p-2 rounded-md text-primary group-hover:bg-primary group-hover:text-white transition-colors">
 <span className="material-symbols-outlined text-[20px]">add_location_alt</span>
@@ -163,8 +251,8 @@ export default function WanderluxAdminDashboardOverviewPage() {
 <span className="text-sm font-medium">Add New Tour</span>
 </div>
 <span className="material-symbols-outlined text-[18px]">chevron_right</span>
-</button>
-<button className="w-full flex items-center justify-between p-3 rounded-lg bg-background-dark border border-border-dark text-slate-300 hover:border-primary/50 hover:bg-primary/5 hover:text-white transition-all group">
+</Link>
+<Link href="/admin/fleet" className="w-full flex items-center justify-between p-3 rounded-lg bg-background-dark border border-border-dark text-slate-300 hover:border-primary/50 hover:bg-primary/5 hover:text-white transition-all group">
 <div className="flex items-center gap-3">
 <div className="bg-primary/10 p-2 rounded-md text-primary group-hover:bg-primary group-hover:text-white transition-colors">
 <span className="material-symbols-outlined text-[20px]">no_crash</span>
@@ -172,8 +260,8 @@ export default function WanderluxAdminDashboardOverviewPage() {
 <span className="text-sm font-medium">Add Rental Car</span>
 </div>
 <span className="material-symbols-outlined text-[18px]">chevron_right</span>
-</button>
-<button className="w-full flex items-center justify-between p-3 rounded-lg bg-background-dark border border-border-dark text-slate-300 hover:border-primary/50 hover:bg-primary/5 hover:text-white transition-all group">
+</Link>
+<Link href="/admin/crm" className="w-full flex items-center justify-between p-3 rounded-lg bg-background-dark border border-border-dark text-slate-300 hover:border-primary/50 hover:bg-primary/5 hover:text-white transition-all group">
 <div className="flex items-center gap-3">
 <div className="bg-primary/10 p-2 rounded-md text-primary group-hover:bg-primary group-hover:text-white transition-colors">
 <span className="material-symbols-outlined text-[20px]">person_add</span>
@@ -181,7 +269,7 @@ export default function WanderluxAdminDashboardOverviewPage() {
 <span className="text-sm font-medium">New Customer</span>
 </div>
 <span className="material-symbols-outlined text-[18px]">chevron_right</span>
-</button>
+</Link>
 </div>
 </div>
 {/* Mini Stats: Top Destinations */}
@@ -257,9 +345,27 @@ export default function WanderluxAdminDashboardOverviewPage() {
                                         </span>
 </td>
 <td className="p-4 text-right">
-<button className="text-slate-400 hover:text-white p-1 rounded hover:bg-background-dark">
+<div className="relative">
+<button 
+  onClick={() => toggleDropdown(1)}
+  className="text-slate-400 hover:text-white p-1 rounded hover:bg-background-dark">
 <span className="material-symbols-outlined text-[18px]">more_vert</span>
 </button>
+{openDropdownId === 1 && (
+  <div className="absolute right-0 mt-2 w-48 bg-surface-dark border border-border-dark rounded-xl shadow-2xl z-50 py-1">
+    <Link href="/admin/bookings" className="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors flex items-center gap-2">
+      <span className="material-symbols-outlined text-[16px]">visibility</span> View Details
+    </Link>
+    <Link href="/admin/bookings" className="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors flex items-center gap-2">
+      <span className="material-symbols-outlined text-[16px]">edit</span> Edit Booking
+    </Link>
+    <div className="border-t border-border-dark my-1"></div>
+    <button onClick={() => alert('Booking cancelled successfully')} className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 transition-colors flex items-center gap-2">
+      <span className="material-symbols-outlined text-[16px]">cancel</span> Cancel Booking
+    </button>
+  </div>
+)}
+</div>
 </td>
 </tr>
 <tr className="hover:bg-white/5 transition-colors group">
@@ -278,9 +384,27 @@ export default function WanderluxAdminDashboardOverviewPage() {
                                         </span>
 </td>
 <td className="p-4 text-right">
-<button className="text-slate-400 hover:text-white p-1 rounded hover:bg-background-dark">
+<div className="relative">
+<button 
+  onClick={() => toggleDropdown(2)}
+  className="text-slate-400 hover:text-white p-1 rounded hover:bg-background-dark">
 <span className="material-symbols-outlined text-[18px]">more_vert</span>
 </button>
+{openDropdownId === 2 && (
+  <div className="absolute right-0 mt-2 w-48 bg-surface-dark border border-border-dark rounded-xl shadow-2xl z-50 py-1">
+    <Link href="/admin/bookings" className="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors flex items-center gap-2">
+      <span className="material-symbols-outlined text-[16px]">visibility</span> View Details
+    </Link>
+    <Link href="/admin/bookings" className="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors flex items-center gap-2">
+      <span className="material-symbols-outlined text-[16px]">edit</span> Edit Booking
+    </Link>
+    <div className="border-t border-border-dark my-1"></div>
+    <button onClick={() => alert('Booking cancelled successfully')} className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 transition-colors flex items-center gap-2">
+      <span className="material-symbols-outlined text-[16px]">cancel</span> Cancel Booking
+    </button>
+  </div>
+)}
+</div>
 </td>
 </tr>
 <tr className="hover:bg-white/5 transition-colors group">
@@ -299,9 +423,27 @@ export default function WanderluxAdminDashboardOverviewPage() {
                                         </span>
 </td>
 <td className="p-4 text-right">
-<button className="text-slate-400 hover:text-white p-1 rounded hover:bg-background-dark">
+<div className="relative">
+<button 
+  onClick={() => toggleDropdown(3)}
+  className="text-slate-400 hover:text-white p-1 rounded hover:bg-background-dark">
 <span className="material-symbols-outlined text-[18px]">more_vert</span>
 </button>
+{openDropdownId === 3 && (
+  <div className="absolute right-0 mt-2 w-48 bg-surface-dark border border-border-dark rounded-xl shadow-2xl z-50 py-1">
+    <Link href="/admin/bookings" className="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors flex items-center gap-2">
+      <span className="material-symbols-outlined text-[16px]">visibility</span> View Details
+    </Link>
+    <Link href="/admin/bookings" className="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors flex items-center gap-2">
+      <span className="material-symbols-outlined text-[16px]">edit</span> Edit Booking
+    </Link>
+    <div className="border-t border-border-dark my-1"></div>
+    <button onClick={() => alert('Booking cancelled successfully')} className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 transition-colors flex items-center gap-2">
+      <span className="material-symbols-outlined text-[16px]">cancel</span> Cancel Booking
+    </button>
+  </div>
+)}
+</div>
 </td>
 </tr>
 <tr className="hover:bg-white/5 transition-colors group">
@@ -320,9 +462,27 @@ export default function WanderluxAdminDashboardOverviewPage() {
                                         </span>
 </td>
 <td className="p-4 text-right">
-<button className="text-slate-400 hover:text-white p-1 rounded hover:bg-background-dark">
+<div className="relative">
+<button 
+  onClick={() => toggleDropdown(4)}
+  className="text-slate-400 hover:text-white p-1 rounded hover:bg-background-dark">
 <span className="material-symbols-outlined text-[18px]">more_vert</span>
 </button>
+{openDropdownId === 4 && (
+  <div className="absolute right-0 mt-2 w-48 bg-surface-dark border border-border-dark rounded-xl shadow-2xl z-50 py-1">
+    <Link href="/admin/bookings" className="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors flex items-center gap-2">
+      <span className="material-symbols-outlined text-[16px]">visibility</span> View Details
+    </Link>
+    <Link href="/admin/bookings" className="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors flex items-center gap-2">
+      <span className="material-symbols-outlined text-[16px]">edit</span> Edit Booking
+    </Link>
+    <div className="border-t border-border-dark my-1"></div>
+    <button onClick={() => alert('Booking cancelled successfully')} className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 transition-colors flex items-center gap-2">
+      <span className="material-symbols-outlined text-[16px]">cancel</span> Cancel Booking
+    </button>
+  </div>
+)}
+</div>
 </td>
 </tr>
 </tbody>

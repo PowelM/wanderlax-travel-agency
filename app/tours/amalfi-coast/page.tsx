@@ -278,7 +278,6 @@ export default function AmalfiCoastPage() {
           <span className="material-symbols-outlined">bolt</span>
         </Link>
       </div>
-      </div>
     </div>
   );
 }

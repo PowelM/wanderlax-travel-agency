@@ -1,9 +1,6 @@
 "use client";
 
 import React from 'react';
-import Link from 'react-router-dom'; // Note: In Next.js we use next/link usually, but the design uses <a> for many things. I'll use next/link where appropriate.
-// Correcting: I should use next/link instead of react-router-dom
-import NextLink from 'next/link';
 import Image from 'next/image';
 
 export default function HotelsPage() {

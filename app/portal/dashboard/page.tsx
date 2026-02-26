@@ -16,7 +16,6 @@ export default async function TravelerProfileDashboardPage() {
   const { userId } = await auth();
   
   if (!userId) {
-    // This shouldn't normally happen due to middleware, but as a safety:
     return null;
   }
 
@@ -25,7 +24,6 @@ export default async function TravelerProfileDashboardPage() {
     user = await currentUser();
   } catch (err: unknown) {
     console.error("Clerk currentUser() Error:", err);
-    // Continue with just userId if needed, or handle as error
   }
 
   let dbUser = null;

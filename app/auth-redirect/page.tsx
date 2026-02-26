@@ -3,7 +3,12 @@ import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 
 export default async function AuthRedirectPage() {
-  const user = await currentUser();
+  let user = null;
+  try {
+    user = await currentUser();
+  } catch (err) {
+    console.error("Clerk currentUser() Error in auth-redirect:", err);
+  }
 
   // If not authenticated, send to login
   if (!user) {

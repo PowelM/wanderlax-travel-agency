@@ -1,7 +1,13 @@
-import React from 'react';
+"use client";
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 export default function Footer() {
+  const pathname = usePathname();
+  
+  // Hide global footer on checkout page
+  if (pathname === '/portal/checkout') return null;
+
   return (
     <footer className="bg-black border-t border-white/5 pt-20 pb-10 px-6 lg:px-10 relative overflow-hidden">
       {/* Subtle background glow */}

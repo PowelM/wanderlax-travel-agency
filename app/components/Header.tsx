@@ -51,8 +51,8 @@ export default function Header() {
     checkRole();
   }, [isSignedIn]);
 
-  // Hide global header on admin pages (admin has its own sidebar)
-  if (pathname.startsWith('/admin')) return null;
+  // Hide global header on admin pages (admin has its own sidebar) and checkout page
+  if (pathname.startsWith('/admin') || pathname === '/portal/checkout') return null;
 
   const handleBookNow = () => {
     if (!isSignedIn) {

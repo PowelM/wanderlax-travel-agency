@@ -9,7 +9,13 @@ export default async function AdminLayout({
 }) {
   const authObject = await auth();
   const userId = authObject?.userId ?? null;
-  const user = await currentUser();
+  
+  let user = null;
+  try {
+    user = await currentUser();
+  } catch (err) {
+    console.error("Clerk currentUser() Error in AdminLayout:", err);
+  }
 
   // If not authenticated, redirect to login
   if (!userId || !user) {

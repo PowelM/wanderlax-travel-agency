@@ -23,7 +23,7 @@ export default function CheckoutPaymentPage() {
                 <span className="material-symbols-outlined text-sm">verified_user</span>
                 Secure Checkout
               </div>
-              <button className="flex items-center justify-center rounded-lg h-10 w-10 bg-primary/10 text-primary border border-primary/20">
+              <button aria-label="View shopping bag" className="flex items-center justify-center rounded-lg h-10 w-10 bg-primary/10 text-primary border border-primary/20">
                 <span className="material-symbols-outlined">shopping_bag</span>
               </button>
             </div>
@@ -90,7 +90,7 @@ export default function CheckoutPaymentPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
                     <div className="col-span-1 md:col-span-2 space-y-2">
                       <label htmlFor="cc-name" className="text-sm font-semibold uppercase tracking-wider text-slate-400">Cardholder Name</label>
-                      <input id="cc-name" autoComplete="cc-name" className="w-full bg-background-dark border-slate-700 focus:border-primary focus:ring-primary rounded-lg py-4 px-4 text-white placeholder:text-slate-600 transition-all outline-none" placeholder="ALEXANDER VANDERGRIFT" type="text" />
+                      <input id="cc-name" autoComplete="cc-name" className="w-full bg-background-dark border border-slate-700 focus:border-primary focus:ring-primary rounded-lg py-4 px-4 text-white placeholder:text-slate-600 transition-all outline-none" placeholder="ALEXANDER VANDERGRIFT" type="text" />
                     </div>
                     <div className="col-span-1 md:col-span-2 space-y-2">
                       <label htmlFor="cc-number" className="text-sm font-semibold uppercase tracking-wider text-slate-400">Card Number</label>

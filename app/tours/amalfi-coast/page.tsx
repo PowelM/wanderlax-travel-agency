@@ -209,18 +209,10 @@ export default function AmalfiCoastPage() {
               <span className="text-primary font-bold text-sm tracking-widest uppercase mb-4 block">Expand Your Horizons</span>
               <h2 className="text-4xl font-black tracking-tighter uppercase text-white">You Might Also Like</h2>
             </div>
-            <div className="flex gap-3">
-              <button className="size-12 rounded-full border border-border-dark flex items-center justify-center hover:bg-primary hover:border-primary transition-all text-white">
-                <span className="material-symbols-outlined">chevron_left</span>
-              </button>
-              <button className="size-12 rounded-full border border-border-dark flex items-center justify-center hover:bg-primary hover:border-primary transition-all text-white">
-                <span className="material-symbols-outlined">chevron_right</span>
-              </button>
-            </div>
           </div>
           <div className="grid md:grid-cols-3 gap-8 text-white">
             {/* Iceland */}
-            <div className="group cursor-pointer">
+            <Link href="/tours/iceland" className="group cursor-pointer block">
               <div className="aspect-[4/5] overflow-hidden rounded-2xl relative mb-6">
                 <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBhW-OdqzIMU2BYXfD0K6fr71A-7Bye9GT4DRvsrw-xbkdb3DZT4jCZEK790En_X9ZRQB2gOg0lIz_ez90WUN0ZQsA65aQnfiI3bIrWf1WzTKg0isWgNwWDKS0Pgi6EOXllTFOWARlhyUKNIAStqebEXSf4tWq8wcJBJbQJy0v69CcbLrUDPyHDJEB5-_qMewGehm1tNYw1TG8hU8oCU1vAmlVSV2o1fNUKZGBuVtpnbnU812062e32Ed25cdbhYG-uJmgr-Ek2AQ" alt="Iceland" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
@@ -233,7 +225,7 @@ export default function AmalfiCoastPage() {
                 <span className="text-white/50 text-sm">8 Days • Private</span>
                 <span className="font-bold text-primary">From $9,200</span>
               </div>
-            </div>
+            </Link>
             {/* Japan */}
             <div className="group cursor-pointer">
               <div className="aspect-[4/5] overflow-hidden rounded-2xl relative mb-6">

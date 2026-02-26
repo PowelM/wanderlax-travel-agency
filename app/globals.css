@@ -250,6 +250,14 @@ a {
   border-radius: 10px;
 }
 
+/* ===== Glass Panel Styles ===== */
+.glass-panel {
+  background: rgba(29, 15, 17, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(219, 20, 60, 0.1);
+}
+
 /* ===== Checkout Specific Animations ===== */
 .glare-sweep {
     position: relative;
@@ -272,4 +280,15 @@ a {
 .glare-sweep:hover::after {
     left: 100%;
     top: 100%;
+}
+
+/* ===== Profile Page Styles ===== */
+.premium-gradient {
+  background: linear-gradient(135deg, rgba(198, 16, 16, 0.15) 0%, rgba(10, 10, 10, 0) 100%);
+}
+
+.glass-panel {
+  background: rgba(20, 20, 20, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(198, 16, 16, 0.1);
 }

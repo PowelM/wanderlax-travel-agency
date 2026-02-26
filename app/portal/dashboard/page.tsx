@@ -4,12 +4,26 @@ import Link from 'next/link';
 import { currentUser, auth } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/prisma';
 
-const quickLinks = [
+const travelerLinks = [
   { icon: 'person', label: 'My Profile', href: '/portal/profile', description: 'View & edit your info' },
   { icon: 'explore', label: 'Browse Tours', href: '/tours', description: 'Find your next adventure' },
   { icon: 'favorite', label: 'My Wishlist', href: '/portal/wishlist', description: 'Saved destinations' },
   { icon: 'loyalty', label: 'Loyalty Points', href: '/portal/loyalty', description: '2,450 points available' },
   { icon: 'support_agent', label: 'Private Consultation', href: '/portal/consultation', description: 'Bespoke planning' },
+];
+
+const adminQuickLinks = [
+  { icon: 'directions_car', label: 'Fleet Management', href: '/admin/fleet', description: 'Manage luxury fleet' },
+  { icon: 'confirmation_number', label: 'Manage Bookings', href: '/admin/bookings', description: 'Oversee all reservations' },
+  { icon: 'analytics', label: 'CRM & Users', href: '/admin/crm', description: 'Customer relationships' },
+  { icon: 'forum', label: 'Inquiries', href: '/admin/messages', description: 'Handle client inquiries' },
+  { icon: 'payments', label: 'Payments', href: '/admin/payments', description: 'Revenue & transactions' },
+];
+
+const consultantQuickLinks = [
+  { icon: 'calendar_today', label: 'Appointments', href: '/portal/consultation', description: 'View scheduled meetings' },
+  { icon: 'forum', label: 'Inquiries', href: '/admin/messages', description: 'Respond to client inquiries' },
+  { icon: 'person', label: 'My Profile', href: '/portal/profile', description: 'View your profile' },
 ];
 
 export default async function TravelerProfileDashboardPage() {
@@ -19,93 +33,103 @@ export default async function TravelerProfileDashboardPage() {
     return null;
   }
 
-  let user = null;
-  try {
-    user = await currentUser();
-  } catch (err: unknown) {
-    console.error("Clerk currentUser() Error:", err);
-  }
-
   let dbUser = null;
   
-  if (user) {
-    try {
-      dbUser = await prisma.user.findUnique({
-        where: { clerkId: user.id },
-        include: {
-          bookings: {
-            include: {
-              tourBooking: { include: { tourPackage: true } },
-              hotelBooking: { include: { hotel: true } },
-              carHireBooking: { include: { car: true } },
-            },
-            orderBy: { createdAt: 'desc' },
-            take: 5
+  try {
+    // 1. Try to find the user in our database using the Clerk ID from the fast auth() call
+    dbUser = await prisma.user.findUnique({
+      where: { clerkId: userId },
+      include: {
+        bookings: {
+          include: {
+            tourBooking: { include: { tourPackage: true } },
+            hotelBooking: { include: { hotel: true } },
+            carHireBooking: { include: { car: true } },
           },
-          notifications: {
-            orderBy: { createdAt: 'desc' },
-            take: 3
-          },
-          activityLogs: {
-            orderBy: { createdAt: 'desc' },
-            take: 5
-          },
-          wishlistItems: true
-        }
-      });
-    } catch (prismaError) {
-      console.error("Prisma error in dashboard:", prismaError);
-    }
+          orderBy: { createdAt: 'desc' },
+          take: 5
+        },
+        notifications: {
+          orderBy: { createdAt: 'desc' },
+          take: 3
+        },
+        activityLogs: {
+          orderBy: { createdAt: 'desc' },
+          take: 5
+        },
+        wishlistItems: true
+      }
+    });
+  } catch (prismaError) {
+    console.error("Prisma error fetching dashboard user:", prismaError);
   }
 
-  // Handle case where user exists in Clerk but not in DB
-  if (user && !dbUser) {
-    const primaryEmail = user.emailAddresses?.[0]?.emailAddress || '';
-    const isAdminEmail = primaryEmail.toLowerCase() === 'poweldayck@gmail.com';
-    
+  // 2. If user doesn't exist in DB yet, or if we need their current info, we fetch the full Clerk user
+  let clerkUser = null;
+  if (!dbUser) {
     try {
-      // 1. Try to find by clerkId (standard case)
-      dbUser = await prisma.user.findUnique({
-        where: { clerkId: user.id },
-        include: {
-          bookings: {
+      clerkUser = await currentUser();
+    } catch (err: unknown) {
+      console.error("Clerk currentUser() Error:", err);
+    }
+
+    if (clerkUser) {
+      const primaryEmail = clerkUser.emailAddresses?.[0]?.emailAddress || '';
+      const isAdminEmail = primaryEmail.toLowerCase() === 'poweldayck@gmail.com';
+      
+      try {
+        // Try to find by email first (in case they exist but clerkId isn't linked)
+        if (primaryEmail) {
+          dbUser = await prisma.user.findUnique({
+            where: { email: primaryEmail },
             include: {
-              tourBooking: { include: { tourPackage: true } },
-              hotelBooking: { include: { hotel: true } },
-              carHireBooking: { include: { car: true } },
-            },
-            take: 5
-          },
-          notifications: { take: 3 },
-          activityLogs: { take: 5 },
-          wishlistItems: true
-        }
-      });
-
-      // 2. If not found by clerkId, try to find by email
-      if (!dbUser && primaryEmail) {
-        dbUser = await prisma.user.findUnique({
-          where: { email: primaryEmail },
-          include: {
-            bookings: {
-              include: {
-                tourBooking: { include: { tourPackage: true } },
-                hotelBooking: { include: { hotel: true } },
-                carHireBooking: { include: { car: true } },
+              bookings: {
+                include: {
+                  tourBooking: { include: { tourPackage: true } },
+                  hotelBooking: { include: { hotel: true } },
+                  carHireBooking: { include: { car: true } },
+                },
+                take: 5
               },
-              take: 5
-            },
-            notifications: { take: 3 },
-            activityLogs: { take: 5 },
-            wishlistItems: true
-          }
-        });
+              notifications: { take: 3 },
+              activityLogs: { take: 5 },
+              wishlistItems: true
+            }
+          });
 
-        // If found by email, link the Clerk ID to this record
-        if (dbUser) {
-          dbUser = await prisma.user.update({
-            where: { id: dbUser.id },
-            data: { clerkId: user.id },
+          // If found by email, link the Clerk ID to this record
+          if (dbUser) {
+            dbUser = await prisma.user.update({
+              where: { id: dbUser.id },
+              data: { clerkId: userId },
+              include: {
+                bookings: {
+                  include: {
+                    tourBooking: { include: { tourPackage: true } },
+                    hotelBooking: { include: { hotel: true } },
+                    carHireBooking: { include: { car: true } },
+                  },
+                  take: 5
+                },
+                notifications: { take: 3 },
+                activityLogs: { take: 5 },
+                wishlistItems: true
+              }
+            });
+          }
+        }
+
+        // If still not found, create a new user record
+        if (!dbUser) {
+          dbUser = await prisma.user.create({
+            data: {
+              clerkId: userId,
+              email: primaryEmail,
+              firstName: clerkUser.firstName,
+              lastName: clerkUser.lastName,
+              avatarUrl: clerkUser.imageUrl,
+              role: isAdminEmail ? 'ADMIN' : 'CUSTOMER',
+            },
             include: {
               bookings: {
                 include: {
@@ -121,40 +145,13 @@ export default async function TravelerProfileDashboardPage() {
             }
           });
         }
+      } catch (error) {
+        console.error("Error identifying/creating user in dashboard:", error);
       }
-
-      // 3. If still not found, create a new user record
-      if (!dbUser) {
-        dbUser = await prisma.user.create({
-          data: {
-            clerkId: user.id,
-            email: primaryEmail,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            avatarUrl: user.imageUrl,
-            role: isAdminEmail ? 'ADMIN' : 'CUSTOMER',
-          },
-          include: {
-            bookings: {
-              include: {
-                tourBooking: { include: { tourPackage: true } },
-                hotelBooking: { include: { hotel: true } },
-                carHireBooking: { include: { car: true } },
-              },
-              take: 5
-            },
-            notifications: { take: 3 },
-            activityLogs: { take: 5 },
-            wishlistItems: true
-          }
-        });
-      }
-    } catch (error) {
-      console.error("Error identifying/creating user in dashboard:", error);
     }
   }
 
-  const userName = user?.firstName || 'Traveler';
+  const userName = dbUser?.firstName || clerkUser?.firstName || 'Traveler';
   const bookingsCount = dbUser?.bookings?.length || 0;
   
   // Maps the database bookings to the UI format
@@ -232,7 +229,7 @@ export default async function TravelerProfileDashboardPage() {
                 <span className="material-symbols-outlined">loyalty</span>
               </div>
             </div>
-            <p className="text-2xl font-bold text-white">0</p>
+            <p className="text-2xl font-bold text-white">{(dbUser?.loyaltyPoints || 0).toLocaleString()}</p>
             <p className="text-sm text-slate-400">Reward Points</p>
           </div>
           <div className="bg-surface-dark border border-border-dark rounded-xl p-5">
@@ -337,7 +334,12 @@ export default async function TravelerProfileDashboardPage() {
           <div className="space-y-6">
             <h2 className="text-xl font-bold text-white">Quick Links</h2>
             <div className="space-y-3">
-              {quickLinks.map((link) => (
+              {(dbUser?.role === 'ADMIN' || dbUser?.role === 'SUPER_ADMIN' 
+                ? adminQuickLinks 
+                : dbUser?.role === 'CONSULTANT' 
+                  ? consultantQuickLinks 
+                  : travelerLinks
+              ).map((link) => (
                 <Link
                   key={link.label}
                   href={link.href}

@@ -1,224 +1,334 @@
-"use client";
- 
- 
 import React from 'react';
-export default function LoyaltyRewardsPointsLedgerIntegratedPage() {
+import { currentUser, auth } from '@clerk/nextjs/server';
+import { prisma } from '@/lib/prisma';
+import { redirect } from 'next/navigation';
+import { ActivityLog } from '@prisma/client';
+import { ClaimButton, RedeemButton } from './LoyaltyButtons';
+
+export default async function LoyaltyRewardsPointsLedgerIntegratedPage() {
+  const { userId } = await auth();
+  
+  if (!userId) {
+    redirect('/portal/login');
+  }
+
+  let user = null;
+  try {
+    user = await currentUser();
+  } catch (err: unknown) {
+    console.error("Clerk currentUser() Error:", err);
+  }
+
+  if (!user) {
+    redirect('/portal/login');
+  }
+
+  let dbUser = await prisma.user.findUnique({
+    where: { clerkId: user.id },
+    include: {
+      bookings: true,
+      activityLogs: {
+        where: { module: 'LOYALTY' },
+        orderBy: { createdAt: 'desc' },
+        take: 10
+      }
+    }
+  });
+
+  if (!dbUser) {
+    const primaryEmail = user.emailAddresses?.[0]?.emailAddress || '';
+    dbUser = await prisma.user.create({
+      data: {
+        clerkId: user.id,
+        email: primaryEmail,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        avatarUrl: user.imageUrl,
+        role: 'CUSTOMER',
+      },
+      include: {
+        bookings: true,
+        activityLogs: {
+          where: { module: 'LOYALTY' },
+          orderBy: { createdAt: 'desc' },
+          take: 10
+        }
+      }
+    });
+  }
+
+  const loyaltyPoints = dbUser.loyaltyPoints || 0;
+  
+  // Specific check for daily reward in the last 24 hours
+  const now = new Date();
+  const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+  
+  const lastRewardClaim = await prisma.activityLog.findFirst({
+    where: {
+      userId: dbUser.id,
+      action: 'CLAIM_DAILY_REWARD',
+      createdAt: { gte: twentyFourHoursAgo }
+    }
+  });
+  
+  const canClaimReward = !lastRewardClaim;
+
+  // Tier calculation logic
+  let tier = "Bronze";
+  let pointsToNext = 0;
+  let nextTier = "Silver";
+  let progress = 0;
+
+  if (loyaltyPoints < 1000) {
+    tier = "Bronze";
+    nextTier = "Silver";
+    pointsToNext = 1000 - loyaltyPoints;
+    progress = (loyaltyPoints / 1000) * 100;
+  } else if (loyaltyPoints < 5000) {
+    tier = "Silver";
+    nextTier = "Gold";
+    pointsToNext = 5000 - loyaltyPoints;
+    progress = ((loyaltyPoints - 1000) / 4000) * 100;
+  } else if (loyaltyPoints < 10000) {
+    tier = "Gold";
+    nextTier = "Platinum";
+    pointsToNext = 10000 - loyaltyPoints;
+    progress = ((loyaltyPoints - 5000) / 5000) * 100;
+  } else if (loyaltyPoints < 25000) {
+    tier = "Platinum";
+    nextTier = "Emerald";
+    pointsToNext = 25000 - loyaltyPoints;
+    progress = ((loyaltyPoints - 10000) / 15000) * 100;
+  } else if (loyaltyPoints < 50000) {
+    tier = "Emerald";
+    nextTier = "Diamond";
+    pointsToNext = 50000 - loyaltyPoints;
+    progress = ((loyaltyPoints - 25000) / 25000) * 100;
+  } else {
+    tier = "Diamond";
+    nextTier = "Legendary";
+    pointsToNext = 0;
+    progress = 100;
+  }
+
+  const memberSince = dbUser.createdAt ? new Date(dbUser.createdAt).getFullYear() : now.getFullYear();
+
   return (
     <div className="stitch-screen">
       <div className="noise-overlay"></div>
-<div className="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden pt-[72px]">
-<div className="layout-container flex h-full grow flex-col">
-<main className="flex-1 px-6 md:px-20 lg:px-40 py-12">
-{/* Hero Section: User Status */}
-<section className="mb-16">
-<div className="flex flex-col md:flex-row items-center gap-8 glass-card p-10 rounded-xl relative overflow-hidden">
-<div className="absolute top-0 right-0 p-8 opacity-10">
-<span className="material-symbols-outlined text-[120px] text-primary">diamond</span>
-</div>
-<div className="relative z-10">
-<div className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-24 border-2 border-primary" data-alt="Portrait of a professional man in a suit" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuDeM6xKTvg88oYOVLkgOhVJNDPxCcKqpOYCCLOVcQbKlfbNz0Wza3qDx6Cjyfy8Z710NdSv4Er5sFTDKa4TaoUvIf5w_VgC6uYXgSdbsLwyl9iObPmc4FUfR6xWbASG4VNQjZgArIBOpo3R2afH21XzN5-ID3jRpvKNmEUQNp1xK_EqIsY8q-puHHhgNYZqd4wqLi0tGtLllSREcdgKAdjZyezFC_lB8iIx2iQyhkfSYd4oQ0qWQQCimOtREI5mx1tE-x6BFVa4Mw')" }}></div>
-</div>
-<div className="flex-1 flex flex-col gap-4 text-center md:text-left relative z-10">
-<div>
-<h1 className="text- editorial text-5xl font-bold text-white mb-2 uppercase italic tracking-tighter">Emerald Tier</h1>
-<p className="text-slate-400 text-lg">Elite Status • Member since 2021</p>
-</div>
-<div className="w-full max-w-md">
-<div className="flex justify-between items-end mb-2">
-<span className="text-sm font-medium text-slate-300">Points to Diamond Level</span>
-<span className="text-sm font-bold text-white">8,500 / 10,000</span>
-</div>
-<div className="h-2 w-full bg-white/10 rounded-full overflow-hidden">
-<div className="h-full bg-primary rounded-full" style={{ width: "85%" }}></div>
-</div>
-<p className="text-xs text-slate-500 mt-2">Just 1,500 points remaining to unlock Diamond benefits</p>
-</div>
-</div>
-<div className="flex flex-col gap-3 relative z-10 min-w-[200px]">
-<button className="w-full py-3 bg-primary hover:bg-primary/90 text-white font-bold rounded-lg transition-all uppercase tracking-widest text-sm">Redeem Points</button>
-<button className="w-full py-3 bg-white/5 hover:bg-white/10 text-white font-bold rounded-lg border border-white/10 transition-all uppercase tracking-widest text-sm">View Activity</button>
-</div>
-</div>
-</section>
-{/* How to Earn Section */}
-<section className="mb-20">
-<div className="flex flex-col gap-8">
-<div className="border-l-4 border-primary pl-6">
-<h2 className="text-3xl font-bold text-white uppercase tracking-tight">How to Earn</h2>
-<p className="text-slate-400">Maximize your rewards on every luxury booking</p>
-</div>
-<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-<div className="glass-card p-8 rounded-xl flex flex-col gap-4">
-<span className="material-symbols-outlined text-primary text-4xl">travel_explore</span>
-<h3 className="text-xl font-bold text-white uppercase italic">Bespoke Tours</h3>
-<p className="text-slate-400">Earn 10 points for every $1 spent on curated global experiences.</p>
-</div>
-<div className="glass-card p-8 rounded-xl flex flex-col gap-4">
-<span className="material-symbols-outlined text-primary text-4xl">hotel</span>
-<h3 className="text-xl font-bold text-white uppercase italic">Luxury Hotels</h3>
-<p className="text-slate-400">Earn 5 points for every $1 spent on partner 5-star accommodations.</p>
-</div>
-<div className="glass-card p-8 rounded-xl flex flex-col gap-4">
-<span className="material-symbols-outlined text-primary text-4xl">directions_car</span>
-<h3 className="text-xl font-bold text-white uppercase italic">Elite Transport</h3>
-<p className="text-slate-400">Earn 3 points for every $1 spent on chauffeur and car hires.</p>
-</div>
-</div>
-</div>
-</section>
-{/* Tier Benefits Comparison */}
-<section className="mb-20">
-<div className="border-l-4 border-primary pl-6 mb-8">
-<h2 className="text-3xl font-bold text-white uppercase tracking-tight">Tier Benefits</h2>
-</div>
-<div className="overflow-x-auto rounded-xl glass-card">
-<table className="w-full text-left min-w-[800px]">
-<thead>
-<tr className="border-b border-white/10 bg-white/5">
-<th className="p-6 text-sm font-bold uppercase tracking-widest text-slate-400">Benefit</th>
-<th className="p-6 text-sm font-bold uppercase tracking-widest text-slate-300">Silver</th>
-<th className="p-6 text-sm font-bold uppercase tracking-widest text-slate-300">Gold</th>
-<th className="p-6 text-sm font-bold uppercase tracking-widest text-slate-300">Platinum</th>
-<th className="p-6 text-sm font-bold uppercase tracking-widest text-primary italic">Emerald</th>
-</tr>
-</thead>
-<tbody className="divide-y divide-white/5">
-<tr>
-<td className="p-6 font-medium text-white">Concierge Access</td>
-<td className="p-6 text-slate-500 text-sm">Online only</td>
-<td className="p-6 text-slate-400 text-sm">24/7 Phone</td>
-<td className="p-6 text-slate-400 text-sm">Priority Support</td>
-<td className="p-6 text-white text-sm font-bold italic">Personal Assistant</td>
-</tr>
-<tr>
-<td className="p-6 font-medium text-white">Private Jet Upgrades</td>
-<td className="p-6 text-slate-500 text-sm">None</td>
-<td className="p-6 text-slate-500 text-sm">Discounted</td>
-<td className="p-6 text-slate-400 text-sm">Annual Credit</td>
-<td className="p-6 text-white text-sm font-bold italic">Unlimited Priority</td>
-</tr>
-<tr>
-<td className="p-6 font-medium text-white">Luxury Chauffeur</td>
-<td className="p-6 text-slate-500 text-sm">None</td>
-<td className="p-6 text-slate-400 text-sm">Airport Only</td>
-<td className="p-6 text-slate-400 text-sm">Airport &amp; Hotel</td>
-<td className="p-6 text-white text-sm font-bold italic">Global On-Demand</td>
-</tr>
-<tr>
-<td className="p-6 font-medium text-white">Exclusive Events</td>
-<td className="p-6 text-slate-500 text-sm">Newsletter</td>
-<td className="p-6 text-slate-400 text-sm">Advance Booking</td>
-<td className="p-6 text-slate-400 text-sm">VIP Seating</td>
-<td className="p-6 text-white text-sm font-bold italic">Backstage Pass</td>
-</tr>
-</tbody>
-</table>
-</div>
-</section>
-{/* Rewards Gallery */}
-<section className="mb-20">
-<div className="border-l-4 border-primary pl-6 mb-8 flex justify-between items-end">
-<div>
-<h2 className="text-3xl font-bold text-white uppercase tracking-tight">Rewards Gallery</h2>
-<p className="text-slate-400">Exclusive experiences for your consideration</p>
-</div>
-<button className="text-primary font-bold uppercase tracking-widest text-sm hover:underline">View All</button>
-</div>
-<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-<div className="group relative overflow-hidden rounded-xl h-[400px]">
-<div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110" data-alt="Romantic private dinner on a tropical beach at sunset" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuBBkBfgSC0DVPsZCKcVmSMad2SojG-3-6tcFkV20PaFn78r-JmOi3q_CGj_2jTf-QpzeL9RypY6awSQIHRW8KrIpau-c2RR4hVxxNAHWbAf9S_aI4FemWwROj6UIEinDJD0ywottZbb6rnmd0BT-eXjOs7DPF6VP4I-Q_tbcwmhDxTth7omSg39wVhtiJNdNlZ_wHI93E4vV5VkUfCfkvKyXL3TjNCTu3Nc9pCVSu1TCL77F6D5ScKYzN8lADlOV8wfcXxHv1F1Rw')" }}></div>
-<div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent"></div>
-<div className="absolute bottom-0 left-0 p-8 flex flex-col gap-2">
-<span className="bg-primary px-3 py-1 rounded-full text-[10px] uppercase font-bold tracking-widest self-start">50,000 Points</span>
-<h3 className="text-2xl font-bold text-white uppercase italic">Private Island Dinner</h3>
-<p className="text-slate-300 text-sm opacity-0 group-hover:opacity-100 transition-opacity">A secluded 5-course feast under the stars in the Maldives.</p>
-</div>
-</div>
-<div className="group relative overflow-hidden rounded-xl h-[400px]">
-<div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110" data-alt="Luxury helicopter flying over a mountain range" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuB5tqPb7TrLWrf8jEiY1rM6KyIgTYtzc9xc7VGR9whCa7T1ELsmZK6y2ujh-bsbWpcz-0QWTCysEFxlqL4zxLeYWwVVJ6gD2UGAII2pzdLi7PhayJaSYhwxNuQ3zXAkOZVOvdkkbKTU3GkT_raJy-24axed9efMhgh6UO_xNlXxBeubV4z4KJT33L87_24NNl4NaMMAln59qIm5dE_P0rWdtwP0CETcGhJHffR92zROVOQwrVjY6oO6llzWLL5a5JjnFe4VaNNQUA')" }}></div>
-<div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent"></div>
-<div className="absolute bottom-0 left-0 p-8 flex flex-col gap-2">
-<span className="bg-primary px-3 py-1 rounded-full text-[10px] uppercase font-bold tracking-widest self-start">25,000 Points</span>
-<h3 className="text-2xl font-bold text-white uppercase italic">Helicopter Transfer</h3>
-<p className="text-slate-300 text-sm opacity-0 group-hover:opacity-100 transition-opacity">Avoid the traffic with a panoramic flight to your destination.</p>
-</div>
-</div>
-<div className="group relative overflow-hidden rounded-xl h-[400px]">
-<div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110" data-alt="Infinity pool overlooking the Mediterranean sea" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuC6BP5gjw_VqHIMjWFb9-XQqNo1vJ9e0dg2jNngjIWcm_4RA-gEsr4PmJjoo7837aCJsnL035GTQyxhPhxgyDf2xPn4FLBt5epeEFOI58NyPpbX7mkLpJ2_ecUQZ3Lfjl3wRvaF86jT_DXHVv1tBG2hhGPzwI3OpFhX7DC89AOpVKTnK7J6vUGJuqVsTNCqeeJbCVpQacz1uVfoQKeM2U8Uz1l7yRUVTKTNnxq8gF0ahW4lY-m_a4jUpQongqPENt8XG1ASgb2uNw')" }}></div>
-<div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent"></div>
-<div className="absolute bottom-0 left-0 p-8 flex flex-col gap-2">
-<span className="bg-primary px-3 py-1 rounded-full text-[10px] uppercase font-bold tracking-widest self-start">75,000 Points</span>
-<h3 className="text-2xl font-bold text-white uppercase italic">Royal Suite Stay</h3>
-<p className="text-slate-300 text-sm opacity-0 group-hover:opacity-100 transition-opacity">Two nights in the flagship suite of our Amalfi Coast partner.</p>
-</div>
-</div>
-</div>
-</section><section className="mb-20">
-<div className="border-l-4 border-primary pl-6 mb-8">
-<h2 className="text-3xl font-bold text-white uppercase tracking-tight">Points History</h2>
-<p className="text-slate-400">Your recent earning and redemption activity</p>
-</div>
-<div className="overflow-x-auto rounded-xl glass-card">
-<table className="w-full text-left min-w-[800px]">
-<thead>
-<tr className="border-b border-white/10 bg-white/5">
-<th className="p-6 text-sm font-bold uppercase tracking-widest text-slate-400">Date</th>
-<th className="p-6 text-sm font-bold uppercase tracking-widest text-slate-400">Description</th>
-<th className="p-6 text-sm font-bold uppercase tracking-widest text-slate-400">Category</th>
-<th className="p-6 text-sm font-bold uppercase tracking-widest text-slate-400">Points</th>
-<th className="p-6 text-sm font-bold uppercase tracking-widest text-slate-400">Status</th>
-</tr>
-</thead>
-<tbody className="divide-y divide-white/5">
-<tr>
-<td className="p-6 text-slate-400 text-sm">Oct 24, 2023</td>
-<td className="p-6 font-medium text-white">Aman Tokyo Booking</td>
-<td className="p-6">
-<span className="px-2 py-1 rounded bg-white/5 text-slate-300 text-[10px] uppercase font-bold tracking-widest">Hotel</span>
-</td>
-<td className="p-6 text-primary font-bold italic">+12,450</td>
-<td className="p-6">
-<div className="flex items-center gap-2">
-<span className="size-1.5 rounded-full bg-green-500"></span>
-<span className="text-slate-400 text-sm">Settled</span>
-</div>
-</td>
-</tr>
-<tr>
-<td className="p-6 text-slate-400 text-sm">Oct 12, 2023</td>
-<td className="p-6 font-medium text-white">Helicopter Transfer Redemption</td>
-<td className="p-6">
-<span className="px-2 py-1 rounded bg-white/5 text-slate-300 text-[10px] uppercase font-bold tracking-widest">Transport</span>
-</td>
-<td className="p-6 text-slate-300 font-bold italic">-25,000</td>
-<td className="p-6">
-<div className="flex items-center gap-2">
-<span className="size-1.5 rounded-full bg-green-500"></span>
-<span className="text-slate-400 text-sm">Settled</span>
-</div>
-</td>
-</tr>
-<tr>
-<td className="p-6 text-slate-400 text-sm">Oct 01, 2023</td>
-<td className="p-6 font-medium text-white">Seasonal Loyalty Bonus</td>
-<td className="p-6">
-<span className="px-2 py-1 rounded bg-white/5 text-slate-300 text-[10px] uppercase font-bold tracking-widest">Bonus</span>
-</td>
-<td className="p-6 text-primary font-bold italic">+5,000</td>
-<td className="p-6">
-<div className="flex items-center gap-2">
-<span className="size-1.5 rounded-full bg-amber-500"></span>
-<span className="text-slate-400 text-sm">Pending</span>
-</div>
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</section>
-</main>
-</div>
-</div>
+      <div className="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden pt-[72px]">
+        <div className="layout-container flex h-full grow flex-col">
+          <main className="flex-1 px-6 md:px-20 lg:px-40 py-12">
+            {/* Hero Section: User Status */}
+            <section className="mb-16">
+              <div className="flex flex-col md:flex-row items-center gap-8 glass-card p-10 rounded-xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-8 opacity-10">
+                  <span className="material-symbols-outlined text-[120px] text-primary">diamond</span>
+                </div>
+                <div className="relative z-10">
+                  <div 
+                    className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-24 border-2 border-primary" 
+                    style={{ backgroundImage: `url('${dbUser.avatarUrl || 'https://via.placeholder.com/150'}')` }}
+                  ></div>
+                </div>
+                <div className="flex-1 flex flex-col gap-4 text-center md:text-left relative z-10">
+                  <div>
+                    <h1 className="text-editorial text-5xl font-bold text-white mb-2 uppercase italic tracking-tighter">{tier} Tier</h1>
+                    <p className="text-slate-400 text-lg">{dbUser.firstName} {dbUser.lastName} • Member since {memberSince}</p>
+                  </div>
+                  <div className="w-full max-w-md">
+                    <div className="flex justify-between items-end mb-2">
+                      <span className="text-sm font-medium text-slate-300">Points to {nextTier} Level</span>
+                      <span className="text-sm font-bold text-white">{loyaltyPoints.toLocaleString()} / {(loyaltyPoints + pointsToNext).toLocaleString()}</span>
+                    </div>
+                    <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden">
+                      <div className="h-full bg-primary rounded-full transition-all duration-1000" style={{ width: `${progress}%` }}></div>
+                    </div>
+                    <p className="text-xs text-slate-500 mt-2">
+                      {pointsToNext > 0 
+                        ? `Just ${pointsToNext.toLocaleString()} points remaining to unlock ${nextTier} benefits`
+                        : `You have reached the highest tier! Enjoy your legendary status.`}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-3 relative z-10 min-w-[200px]">
+                  <ClaimButton canClaim={canClaimReward} />
+                  <a href="#history" className="w-full py-3 bg-white/5 hover:bg-white/10 text-center text-white font-bold rounded-lg border border-white/10 transition-all uppercase tracking-widest text-sm">
+                    View Activity
+                  </a>
+                </div>
+              </div>
+            </section>
+            
+            {/* How to Earn Section */}
+            <section className="mb-20">
+              <div className="flex flex-col gap-8">
+                <div className="border-l-4 border-primary pl-6">
+                  <h2 className="text-3xl font-bold text-white uppercase tracking-tight">How to Earn</h2>
+                  <p className="text-slate-400">Maximize your rewards on every luxury booking</p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="glass-card p-8 rounded-xl flex flex-col gap-4">
+                    <span className="material-symbols-outlined text-primary text-4xl">travel_explore</span>
+                    <h3 className="text-xl font-bold text-white uppercase italic">Bespoke Tours</h3>
+                    <p className="text-slate-400">Earn 10 points for every $1 spent on curated global experiences.</p>
+                  </div>
+                  <div className="glass-card p-8 rounded-xl flex flex-col gap-4">
+                    <span className="material-symbols-outlined text-primary text-4xl">hotel</span>
+                    <h3 className="text-xl font-bold text-white uppercase italic">Luxury Hotels</h3>
+                    <p className="text-slate-400">Earn 5 points for every $1 spent on partner 5-star accommodations.</p>
+                  </div>
+                  <div className="glass-card p-8 rounded-xl flex flex-col gap-4">
+                    <span className="material-symbols-outlined text-primary text-4xl">directions_car</span>
+                    <h3 className="text-xl font-bold text-white uppercase italic">Elite Transport</h3>
+                    <p className="text-slate-400">Earn 3 points for every $1 spent on chauffeur and car hires.</p>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* Tier Benefits Comparison */}
+            <section className="mb-20">
+              <div className="border-l-4 border-primary pl-6 mb-8">
+                <h2 className="text-3xl font-bold text-white uppercase tracking-tight">Tier Benefits</h2>
+              </div>
+              <div className="overflow-x-auto rounded-xl glass-card">
+                <table className="w-full text-left min-w-[800px]">
+                  <thead>
+                    <tr className="border-b border-white/10 bg-white/5">
+                      <th className="p-6 text-sm font-bold uppercase tracking-widest text-slate-400">Benefit</th>
+                      <th className={`p-6 text-sm font-bold uppercase tracking-widest ${tier === 'Bronze' ? 'text-primary italic' : 'text-slate-300'}`}>Bronze</th>
+                      <th className={`p-6 text-sm font-bold uppercase tracking-widest ${tier === 'Silver' ? 'text-primary italic' : 'text-slate-300'}`}>Silver</th>
+                      <th className={`p-6 text-sm font-bold uppercase tracking-widest ${tier === 'Gold' ? 'text-primary italic' : 'text-slate-300'}`}>Gold</th>
+                      <th className={`p-6 text-sm font-bold uppercase tracking-widest ${tier === 'Platinum' ? 'text-primary italic' : 'text-slate-300'}`}>Platinum</th>
+                      <th className={`p-6 text-sm font-bold uppercase tracking-widest ${tier === 'Emerald' ? 'text-primary italic' : 'text-slate-300'}`}>Emerald</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    <tr>
+                      <td className="p-6 font-medium text-white">Concierge Access</td>
+                      <td className="p-6 text-slate-500 text-sm">Online only</td>
+                      <td className="p-6 text-slate-400 text-sm">24/7 Phone</td>
+                      <td className="p-6 text-slate-400 text-sm">Priority Support</td>
+                      <td className="p-6 text-slate-300 text-sm">Dedicated Agent</td>
+                      <td className="p-6 text-white text-sm font-bold italic">Personal Assistant</td>
+                    </tr>
+                    <tr>
+                      <td className="p-6 font-medium text-white">Private Jet Upgrades</td>
+                      <td className="p-6 text-slate-500 text-sm">None</td>
+                      <td className="p-6 text-slate-500 text-sm">Discounted</td>
+                      <td className="p-6 text-slate-400 text-sm">Annual Credit</td>
+                      <td className="p-6 text-slate-300 text-sm">Bi-Annual Flight</td>
+                      <td className="p-6 text-white text-sm font-bold italic">Unlimited Priority</td>
+                    </tr>
+                    <tr>
+                      <td className="p-6 font-medium text-white">Luxury Chauffeur</td>
+                      <td className="p-6 text-slate-500 text-sm">None</td>
+                      <td className="p-6 text-slate-400 text-sm">Airport Only</td>
+                      <td className="p-6 text-slate-400 text-sm">Airport & Hotel</td>
+                      <td className="p-6 text-slate-300 text-sm">City-wide</td>
+                      <td className="p-6 text-white text-sm font-bold italic">Global On-Demand</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            {/* Rewards Gallery */}
+            <section className="mb-20">
+              <div className="border-l-4 border-primary pl-6 mb-8 flex justify-between items-end">
+                <div>
+                  <h2 className="text-3xl font-bold text-white uppercase tracking-tight">Rewards Gallery</h2>
+                  <p className="text-slate-400">Exclusive experiences for your consideration</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {[
+                  { name: 'Private Island Dinner', points: 50000, img: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&q=80', desc: 'A secluded 5-course feast under the stars in the Maldives.' },
+                  { name: 'Helicopter Transfer', points: 25000, img: 'https://images.unsplash.com/photo-1540944158204-287d4ad0dc0c?auto=format&fit=crop&q=80', desc: 'Avoid the traffic with a panoramic flight to your destination.' },
+                  { name: 'Royal Suite Stay', points: 75000, img: 'https://images.unsplash.com/photo-1510017803434-a899398421b3?auto=format&fit=crop&q=80', desc: 'Two nights in the flagship suite of our Amalfi Coast partner.' }
+                ].map((reward) => (
+                  <div key={reward.name} className="group relative overflow-hidden rounded-xl h-[450px] border border-white/10">
+                    <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110" style={{ backgroundImage: `url('${reward.img}')` }}></div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
+                    <div className="absolute bottom-0 left-0 p-8 flex flex-col gap-4 w-full">
+                      <div className="flex flex-col gap-1">
+                        <span className="bg-primary px-3 py-1 rounded-full text-[10px] uppercase font-bold tracking-widest self-start shadow-lg">
+                          {reward.points.toLocaleString()} Points
+                        </span>
+                        <h3 className="text-2xl font-bold text-white uppercase italic">{reward.name}</h3>
+                        <p className="text-slate-300 text-sm">{reward.desc}</p>
+                      </div>
+                      <RedeemButton reward={reward} userPoints={loyaltyPoints} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* Points History */}
+            <section id="history" className="mb-20 scroll-mt-24">
+              <div className="border-l-4 border-primary pl-6 mb-8">
+                <h2 className="text-3xl font-bold text-white uppercase tracking-tight">Points History</h2>
+                <p className="text-slate-400">Your recent earning and redemption activity</p>
+              </div>
+              
+              {dbUser.activityLogs.length > 0 ? (
+                <div className="overflow-x-auto rounded-xl glass-card">
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr className="border-b border-white/10 bg-white/5">
+                        <th className="p-6 text-sm font-bold uppercase tracking-widest text-slate-400">Date</th>
+                        <th className="p-6 text-sm font-bold uppercase tracking-widest text-slate-400">Action</th>
+                        <th className="p-6 text-sm font-bold uppercase tracking-widest text-slate-400">Details</th>
+                        <th className="p-6 text-sm font-bold uppercase tracking-widest text-slate-400">Points</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/5">
+                      {dbUser.activityLogs.map((log: ActivityLog) => {
+                        const details = (log.details as { reward?: string, points?: number }) || {};
+                        const isPositive = log.action === 'CLAIM_DAILY_REWARD' || log.action?.includes('EARN');
+                        return (
+                          <tr key={log.id} className="hover:bg-white/5 transition-colors">
+                            <td className="p-6 text-slate-400 text-sm">
+                              {new Date(log.createdAt).toLocaleDateString()}
+                            </td>
+                            <td className="p-6">
+                              <span className="text-white font-medium uppercase text-xs tracking-wider">
+                                {log.action.replace(/_/g, ' ')}
+                              </span>
+                            </td>
+                            <td className="p-6 text-slate-400 text-sm">
+                              {details.reward || rewardDetails(log.action)}
+                            </td>
+                            <td className={`p-6 font-bold ${isPositive ? 'text-green-500' : 'text-primary'}`}>
+                              {isPositive ? '+' : '-'}{details.points || 0}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="overflow-x-auto rounded-xl glass-card text-center p-20">
+                  <span className="material-symbols-outlined text-4xl text-slate-600 mb-4">history</span>
+                  <p className="text-white font-medium">No points history yet</p>
+                  <p className="text-slate-400 text-sm">Start earning points with your first booking.</p>
+                </div>
+              )}
+            </section>
+          </main>
+        </div>
+      </div>
     </div>
   );
+}
+
+function rewardDetails(action: string) {
+  switch (action) {
+    case 'CLAIM_DAILY_REWARD': return 'Daily loyalty check-in';
+    case 'BOOKING_EARN': return 'Points from travel booking';
+    default: return 'Loyalty adjustment';
+  }
 }

@@ -2,14 +2,15 @@
 import React, { useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useUser } from '@clerk/nextjs';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { createTourBooking } from '@/app/actions/bookingActions';
 
 const tourData: Record<string, { price: string; duration: string; description: string; image: string }> = {
   'Maldives Escape': {
     price: '$5,400',
     duration: '7 Days',
     description: '7 nights in an overwater villa with all-inclusive dining and private sunset cruises.',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAUV2tyz6So6VwYE94GJFnhBGH8Dco3cLebnCAULJDZHqwUaLKIqIveE5DwU8t3QvmDynrG_oH8wB05jvBSSYmKWDU4ZVpmqanjb_8tZy8F9eF5tAr1F2TKEcj44BhRPocSSrw9Rc9e1rbRP4lLUSbOTf5FmQ0mrjFn3mzuperyO0o04qCNpg6x45XYXnCM-Hl2jeisCIPLdS1kudpqrnBlZAcLn8IQdcc2mjxxjTEfbGQoPF4q-JHwrfR63xUONYmT0Zvpkc1Xfw',
+    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAUV2tyz6So6VwYE94GJFnhBGH8Dco3cLebnCAULJDZHqwUaLKIvIveE5DwU8t3QvmDynrG_oH8wB05jvBSSYmKWDU4ZVpmRanjb_8tZy8F9eF5tAr1F2TKEcj44BhRPocSSrw9Rc9e1rbRP4lLUSbOTf5FmQ0mrjFn3mzuperyO0o04qCNpg6x45XYXnCM-Hl2jeisCIPLdS1kudpqrnBlZAcLn8IQdcc2mjxxjTEfbGQoPF4q-JHwrfR63xUONYmT0Zvpkc1Xfw',
   },
   'Ancient Kyoto': {
     price: '$3,200',
@@ -61,6 +62,10 @@ function BookingFormContent() {
   const [specialRequirements, setSpecialRequirements] = useState('');
   const [submitted, setSubmitted] = useState(false);
 
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   if (!isLoaded) {
     return (
       <div className="flex items-center justify-center min-h-screen pt-[72px]">
@@ -69,9 +74,43 @@ function BookingFormContent() {
     );
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    if (!user) return;
+    
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      // Find the slug from tourData if possible, or fall back to name-based logic
+      const tourSlug = tourName.toLowerCase().replace(/ /g, '-');
+      
+      const result = await createTourBooking({
+        tourSlug,
+        tourName,
+        startDate,
+        endDate,
+        guestCount: guests,
+        totalAmount: parseFloat(tour.price.replace(/[^0-9.]/g, '')) * guests,
+        specialRequirements,
+        clerkId: user.id,
+        email: user.emailAddresses[0]?.emailAddress || '',
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
+        avatarUrl: user.imageUrl,
+      });
+
+      if (result.success) {
+        setSubmitted(true);
+      } else {
+        setError(result.error || "Something went wrong. Please try again.");
+      }
+    } catch (err) {
+      console.error("Booking submission error:", err);
+      setError("An unexpected error occurred. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (submitted) {
@@ -232,12 +271,22 @@ function BookingFormContent() {
                       className="w-full bg-background-dark border border-slate-700 focus:border-primary focus:ring-primary rounded-lg py-3 px-4 text-white placeholder:text-slate-600 transition-all resize-none"
                     />
                   </div>
+                  {error && (
+                    <div className="bg-red-500/10 border border-red-500/30 text-red-500 p-4 rounded-xl text-sm">
+                      {error}
+                    </div>
+                  )}
                   <button
                     type="submit"
-                    className="w-full bg-primary hover:bg-red-700 text-white font-extrabold py-4 rounded-xl shadow-[0_0_20px_rgba(195,9,9,0.3)] transition-all active:scale-[0.98] flex items-center justify-center gap-2 text-lg mt-4"
+                    disabled={isSubmitting || !tour}
+                    className="w-full bg-primary hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-extrabold py-4 rounded-xl shadow-[0_0_20px_rgba(195,9,9,0.3)] transition-all active:scale-[0.98] flex items-center justify-center gap-2 text-lg mt-4"
                   >
-                    <span className="material-symbols-outlined">bookmark_check</span>
-                    Confirm Booking Request
+                    {isSubmitting ? (
+                      <div className="animate-spin size-5 border-2 border-white border-t-transparent rounded-full"></div>
+                    ) : (
+                      <span className="material-symbols-outlined">bookmark_check</span>
+                    )}
+                    {isSubmitting ? 'Confirming...' : 'Confirm Booking Request'}
                   </button>
                 </section>
               </form>

@@ -11,14 +11,28 @@ const experiencesLinks = [
 ];
 
 const companyLinks = [
+  { label: 'Concierge', href: '/concierge' },
   { label: 'About', href: '/about' },
   { label: 'Contact', href: '/contact' },
 ];
 
-const memberLinks = [
-  { label: 'Dashboard', href: '/portal/dashboard', icon: 'dashboard' },
-  { label: 'Loyalty', href: '/portal/loyalty', icon: 'card_giftcard' },
+const adminLinks = [
+  { label: 'Fleet', href: '/admin/fleet', icon: 'directions_car' },
+  { label: 'Bookings', href: '/admin/bookings', icon: 'confirmation_number' },
+  { label: 'CRM', href: '/admin/crm', icon: 'analytics' },
+  { label: 'Messages', href: '/admin/messages', icon: 'forum' },
+];
+
+const consultantLinks = [
+  { label: 'Appointments', href: '/portal/consultation', icon: 'calendar_today' },
+  { label: 'Inquiries', href: '/admin/messages', icon: 'forum' },
+];
+
+const portalLinks = [
   { label: 'Itinerary', href: '/portal/itinerary', icon: 'event_available' },
+  { label: 'Trip History', href: '/portal/history', icon: 'history_edu' },
+  { label: 'Loyalty Rewards', href: '/portal/loyalty', icon: 'card_giftcard' },
+  { label: 'My Wishlist', href: '/portal/wishlist', icon: 'favorite' },
 ];
 
 export default function Header() {
@@ -31,24 +45,68 @@ export default function Header() {
 
   const isActive = (href: string) => pathname === href;
   const isExperiencesActive = experiencesLinks.some(link => pathname === link.href);
+  const isManagementActive = adminLinks.some(link => pathname === link.href);
+  const isPortalActive = portalLinks.some(link => pathname === link.href);
   const isAdmin = userRole === 'ADMIN' || userRole === 'SUPER_ADMIN';
+  const isConsultant = userRole === 'CONSULTANT';
 
   // Fetch user role when signed in
   useEffect(() => {
-    const checkRole = async () => {
-      if (isSignedIn) {
-        try {
-          const res = await fetch('/api/auth/role');
-          const data = await res.json();
-          if (data.role) setUserRole(data.role);
-        } catch {
-          setUserRole(null);
-        }
-      } else {
+    let isMounted = true;
+    const checkRole = async (retryCount = 0) => {
+      if (!isSignedIn) {
         setUserRole(null);
+        return;
+      }
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000); // Increased to 15 second timeout
+
+      try {
+        const res = await fetch('/api/auth/role', {
+          signal: controller.signal,
+          headers: {
+            'Accept': 'application/json',
+          },
+        });
+        
+        clearTimeout(timeoutId);
+        
+        if (!res.ok) {
+          throw new Error(`Status ${res.status}`);
+        }
+        
+        const data = await res.json();
+        if (isMounted && data.role) {
+          setUserRole(data.role);
+        }
+      } catch (error: unknown) {
+        clearTimeout(timeoutId);
+        const isAbortError = error instanceof Error && error.name === 'AbortError';
+        
+        if (retryCount < 2) {
+          console.warn(`Retrying /api/auth/role fetch (attempt ${retryCount + 1})...`);
+          // Use a small backoff before retrying
+          setTimeout(() => {
+            if (isMounted) checkRole(retryCount + 1);
+          }, 1000 * (retryCount + 1));
+          return;
+        }
+
+        if (isAbortError) {
+          console.error('Request to /api/auth/role timed out after multiple attempts');
+        } else {
+          console.error('NetworkError/FetchError in Header.tsx:', error);
+        }
+        if (isMounted) setUserRole(null);
       }
     };
+    
     checkRole();
+    
+    return () => {
+      isMounted = false;
+    };
   }, [isSignedIn]);
 
   // Hide global header on admin pages (admin has its own sidebar) and checkout page
@@ -77,7 +135,7 @@ export default function Header() {
         </Link>
 
         {/* Desktop Nav */}
-        <nav className="hidden xl:flex items-center gap-8">
+        <nav className="hidden xl:flex items-center gap-10">
           {/* Experiences Dropdown */}
           <div 
             className="relative group"
@@ -122,6 +180,86 @@ export default function Header() {
             </div>
           </div>
 
+          {/* Member Portal Dropdown */}
+          <SignedIn>
+            <div 
+              className="relative group"
+              onMouseEnter={() => setDropdownOpen('portal')}
+              onMouseLeave={() => setDropdownOpen(null)}
+            >
+              <button
+                className={`flex items-center gap-1 text-sm font-medium tracking-wide transition-all duration-300 py-2 ${
+                  isPortalActive || dropdownOpen === 'portal'
+                    ? 'text-white'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                Member Portal
+                <span className={`material-symbols-outlined text-[18px] transition-transform duration-300 ${dropdownOpen === 'portal' ? 'rotate-180' : ''}`}>expand_more</span>
+              </button>
+              <span className={`absolute bottom-0 left-0 w-full h-[2px] bg-primary transition-transform duration-300 origin-left ${isPortalActive ? 'scale-x-100' : 'scale-x-0'}`}></span>
+
+              <div className={`absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 rounded-2xl bg-black border border-white/10 shadow-2xl overflow-hidden transition-all duration-300 ${
+                dropdownOpen === 'portal' ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
+              }`}>
+                <div className="p-4 bg-gradient-to-br from-white/[0.03] to-transparent">
+                  <div className="space-y-1">
+                    {portalLinks.map((link) => (
+                      <Link
+                        key={link.label}
+                        href={link.href}
+                        className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-all group/item"
+                      >
+                        <span className={`material-symbols-outlined text-[20px] transition-colors ${isActive(link.href) ? 'text-primary' : 'text-slate-400 group-hover/item:text-primary'}`}>{link.icon}</span>
+                        <span className={`text-sm font-bold transition-colors ${isActive(link.href) ? 'text-primary' : 'text-white group-hover/item:text-primary'}`}>{link.label}</span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </SignedIn>
+
+          {/* Admin/Management Dropdown */}
+          {(isAdmin || isConsultant) && (
+            <div 
+              className="relative group"
+              onMouseEnter={() => setDropdownOpen('management')}
+              onMouseLeave={() => setDropdownOpen(null)}
+            >
+              <button
+                className={`flex items-center gap-1 text-sm font-medium tracking-wide transition-all duration-300 py-2 ${
+                  isManagementActive || dropdownOpen === 'management'
+                    ? 'text-white'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                Management
+                <span className={`material-symbols-outlined text-[18px] transition-transform duration-300 ${dropdownOpen === 'management' ? 'rotate-180' : ''}`}>expand_more</span>
+              </button>
+              <span className={`absolute bottom-0 left-0 w-full h-[2px] bg-primary transition-transform duration-300 origin-left ${isManagementActive ? 'scale-x-100' : 'scale-x-0'}`}></span>
+
+              <div className={`absolute top-full left-0 mt-2 w-64 rounded-2xl bg-black border border-white/10 shadow-2xl overflow-hidden transition-all duration-300 ${
+                dropdownOpen === 'management' ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
+              }`}>
+                <div className="p-4 bg-gradient-to-br from-white/[0.03] to-transparent">
+                  <div className="space-y-1">
+                    {(isAdmin ? adminLinks : consultantLinks).map((link) => (
+                      <Link
+                        key={link.label}
+                        href={link.href}
+                        className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-all group/item"
+                      >
+                        <span className="material-symbols-outlined text-[20px] text-slate-400 group-hover/item:text-primary">{link.icon}</span>
+                        <span className="text-sm font-bold text-white group-hover/item:text-primary">{link.label}</span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {companyLinks.map((link) => (
             <Link
               key={link.label}
@@ -137,23 +275,6 @@ export default function Header() {
             </Link>
           ))}
           
-          <SignedIn>
-            <div className="h-4 w-px bg-white/10 mx-2"></div>
-            {memberLinks.map((link) => (
-              <Link
-                key={link.label}
-                className={`flex items-center gap-1.5 text-sm font-medium transition-all duration-300 ${
-                  isActive(link.href)
-                    ? 'text-primary'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-                href={link.href}
-              >
-                <span className="material-symbols-outlined text-[18px] opacity-70 group-hover:opacity-100">{link.icon}</span>
-                {link.label}
-              </Link>
-            ))}
-          </SignedIn>
         </nav>
 
         <div className="flex items-center gap-4">
@@ -168,8 +289,7 @@ export default function Header() {
             </Link>
           </SignedOut>
           <SignedIn>
-            {/* Admin Dashboard Button — only visible to admins */}
-            {isAdmin ? (
+            {isAdmin && (
               <Link
                 href="/admin"
                 className="hidden lg:flex items-center gap-2 text-sm font-bold text-primary hover:text-white transition-all bg-primary/10 hover:bg-primary px-4 py-2 rounded-lg border border-primary/20 hover:border-primary shadow-lg shadow-primary/5"
@@ -177,15 +297,14 @@ export default function Header() {
                 <span className="material-symbols-outlined text-[20px]">admin_panel_settings</span>
                 Admin Panel
               </Link>
-            ) : (
-              <Link
-                href="/portal/dashboard"
-                className="hidden lg:flex items-center gap-2 text-sm font-semibold text-slate-300 hover:text-white transition-all border border-white/10 bg-white/5 rounded-lg px-4 py-2 hover:bg-white/10 shadow-sm"
-              >
-                <span className="material-symbols-outlined text-[20px]">dashboard</span>
-                Account
-              </Link>
             )}
+            <Link
+              href="/portal/dashboard"
+              className="hidden lg:flex items-center gap-2 text-sm font-semibold text-slate-300 hover:text-white transition-all border border-white/10 bg-white/5 rounded-lg px-4 py-2 hover:bg-white/10 shadow-sm"
+            >
+              <span className="material-symbols-outlined text-[20px]">dashboard</span>
+              Dashboard
+            </Link>
             <div className="h-8 w-px bg-white/10 mx-1 hidden lg:block"></div>
             <UserButton
               appearance={{
@@ -198,9 +317,9 @@ export default function Header() {
 
             <button
               onClick={() => router.push('/portal/consultation')}
-              className="hidden 2xl:flex items-center justify-center rounded-lg h-10 px-6 bg-transparent hover:bg-white/5 text-white text-sm font-bold border border-white/20 transition-all hover:border-white/40"
+              className="hidden xl:flex items-center justify-center rounded-lg h-10 px-6 bg-transparent hover:bg-white/5 text-white text-sm font-bold border border-white/20 transition-all hover:border-white/40"
             >
-              Concierge
+              Consultation
             </button>
             <button
               onClick={handleBookNow}
@@ -271,27 +390,72 @@ export default function Header() {
             <div className="pt-8 border-t border-white/10">
               <SignedIn>
                 <div className="grid gap-6">
-                  {memberLinks.map((link) => (
-                    <Link
-                      key={link.label}
-                      className="flex items-center gap-4 text-2xl font-black text-slate-400 hover:text-white transition-colors"
-                      href={link.href}
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      <span className="material-symbols-outlined text-[32px]">{link.icon}</span>
-                      {link.label}
-                    </Link>
-                  ))}
-                  {isAdmin && (
-                    <Link
-                      href="/admin"
-                      className="flex items-center gap-4 text-2xl font-black text-primary hover:text-white transition-colors"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      <span className="material-symbols-outlined text-[32px]">admin_panel_settings</span>
-                      Admin Panel
-                    </Link>
+                  {(isAdmin || isConsultant) && (
+                    <div className="space-y-6">
+                      <p className="text-[10px] text-primary font-black uppercase tracking-[0.3em] opacity-80">Management</p>
+                      {(isAdmin ? adminLinks : consultantLinks).map((link) => (
+                        <Link
+                          key={link.label}
+                          href={link.href}
+                          className="flex items-center gap-4 text-2xl font-black text-white hover:text-primary transition-colors"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          <span className="material-symbols-outlined text-[32px]">{link.icon}</span>
+                          {link.label}
+                        </Link>
+                      ))}
+                    </div>
                   )}
+                  
+                  <div className="space-y-6 pt-6 border-t border-white/5">
+                    <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.3em] opacity-80">Account</p>
+                    <Link
+                      href="/portal/dashboard"
+                      className="flex items-center gap-4 text-2xl font-black text-slate-400 hover:text-white transition-colors"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <span className="material-symbols-outlined text-[32px]">dashboard</span>
+                      Dashboard
+                    </Link>
+
+                    <Link
+                      href="/portal/itinerary"
+                      className="flex items-center gap-4 text-2xl font-black text-slate-400 hover:text-white transition-colors"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <span className="material-symbols-outlined text-[32px]">event_available</span>
+                      Itinerary
+                    </Link>
+
+                    {!isAdmin && !isConsultant && (
+                      <>
+                        <Link
+                          href="/portal/history"
+                          className="flex items-center gap-4 text-2xl font-black text-slate-400 hover:text-white transition-colors"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          <span className="material-symbols-outlined text-[32px]">history_edu</span>
+                          Trip History
+                        </Link>
+                        <Link
+                          href="/portal/loyalty"
+                          className="flex items-center gap-4 text-2xl font-black text-slate-400 hover:text-white transition-colors"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          <span className="material-symbols-outlined text-[32px]">card_giftcard</span>
+                          Loyalty
+                        </Link>
+                        <Link
+                          href="/portal/wishlist"
+                          className="flex items-center gap-4 text-2xl font-black text-slate-400 hover:text-white transition-colors"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          <span className="material-symbols-outlined text-[32px]">favorite</span>
+                          Wishlist
+                        </Link>
+                      </>
+                    )}
+                  </div>
                 </div>
               </SignedIn>
               <SignedOut>
@@ -306,6 +470,12 @@ export default function Header() {
               </SignedOut>
             </div>
 
+            <button
+              onClick={() => { setMobileMenuOpen(false); router.push('/portal/consultation'); }}
+              className="w-full flex items-center justify-center rounded-2xl h-14 bg-transparent border border-white/20 text-white text-lg font-bold transition-all hover:bg-white/5 mt-6"
+            >
+              Book Consultation
+            </button>
             <button
               onClick={() => { setMobileMenuOpen(false); handleBookNow(); }}
               className="w-full flex items-center justify-center rounded-2xl h-16 bg-primary hover:bg-red-700 text-white text-lg font-black transition-all shadow-xl shadow-primary/30 mt-4"

@@ -16,6 +16,7 @@ model User {
   phone                  String?
   avatarUrl              String?
   role                   Role             @default(CUSTOMER)
+  loyaltyPoints          Int              @default(0)
   createdAt              DateTime         @default(now())
   updatedAt              DateTime         @updatedAt
   activityLogs           ActivityLog[]
@@ -69,11 +70,7 @@ model StaffPermission {
   id             String          @id @default(uuid())
   staffProfileId String
   module         ModuleType
-  canView        Boolean         @default(false)
-  canCreate      Boolean         @default(false)
-  canEdit        Boolean         @default(false)
-  canDelete      Boolean         @default(false)
-  canExport      Boolean         @default(false)
+  level          PermissionLevel
   staffProfile   StaffProfile    @relation(fields: [staffProfileId], references: [id], onDelete: Cascade)
 
   @@unique([staffProfileId, module])

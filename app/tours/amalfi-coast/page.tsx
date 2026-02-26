@@ -24,7 +24,11 @@ export default function AmalfiCoastPage() {
                 <span className="text-2xl font-bold text-white">$14,500 <span className="text-sm font-normal text-white/50">/ pp</span></span>
               </div>
               <div className="h-10 w-px bg-white/20 hidden sm:block"></div>
-              <Link href="/portal/dashboard" className="bg-primary hover:bg-primary/90 text-white px-10 py-5 rounded-lg text-lg font-bold tracking-wide transition-all shadow-2xl flex items-center gap-3">
+              <Link href="/tours/amalfi-coast/gallery" className="bg-white/10 hover:bg-white/20 border border-white/20 text-white px-8 py-5 rounded-lg text-lg font-bold tracking-wide transition-all backdrop-blur-sm flex items-center gap-3">
+                <span className="material-symbols-outlined">photo_library</span>
+                Visual Gallery
+              </Link>
+              <Link href="/portal/book?tour=The Amalfi Coast" className="bg-primary hover:bg-primary/90 text-white px-10 py-5 rounded-lg text-lg font-bold tracking-wide transition-all shadow-2xl flex items-center gap-3">
                 Book This Journey
                 <span className="material-symbols-outlined">arrow_forward</span>
               </Link>
@@ -81,7 +85,13 @@ export default function AmalfiCoastPage() {
       <section className="py-24 max-w-7xl mx-auto px-6 grid md:grid-cols-3 gap-16">
         <div className="md:col-span-2 space-y-20">
           <div>
-            <h2 className="text-4xl font-black mb-8 tracking-tighter uppercase border-l-4 border-primary pl-6">The Daily Narrative</h2>
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+              <h2 className="text-4xl font-black tracking-tighter uppercase border-l-4 border-primary pl-6">The Daily Narrative</h2>
+              <Link href="/tours/amalfi-coast/itinerary" target="_blank" className="flex items-center gap-2 text-primary hover:text-primary/80 font-bold uppercase tracking-widest text-xs transition-colors group">
+                <span className="material-symbols-outlined">article</span>
+                <span className="border-b border-primary/30 group-hover:border-primary transition-colors">Printable Itinerary</span>
+              </Link>
+            </div>
             <div className="space-y-12 relative before:absolute before:left-6 before:top-4 before:bottom-4 before:w-px before:bg-border-dark">
               
               {/* Day 1 */}
@@ -261,10 +271,17 @@ export default function AmalfiCoastPage() {
       </section>
 
       {/* Floating Book Button for Mobile */}
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 md:hidden w-[90%]">
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 md:hidden w-[90%] flex gap-2">
         <Link 
-          href="/portal/dashboard" 
-          className="w-full bg-primary text-white py-4 rounded-xl font-bold tracking-widest uppercase shadow-[0_0_30px_rgba(195,9,9,0.3)] flex items-center justify-center gap-3"
+          href="/tours/amalfi-coast/gallery" 
+          className="w-16 bg-white border border-slate-200 dark:bg-zinc-900 dark:border-zinc-800 text-slate-900 dark:text-white py-4 rounded-xl flex items-center justify-center shadow-lg"
+          aria-label="Visual Gallery"
+        >
+          <span className="material-symbols-outlined">photo_library</span>
+        </Link>
+        <Link 
+          href="/portal/book?tour=The Amalfi Coast" 
+          className="flex-1 bg-primary text-white py-4 rounded-xl font-bold tracking-widest uppercase shadow-[0_0_30px_rgba(195,9,9,0.3)] flex items-center justify-center gap-3"
         >
           Book Now — $14,500
           <span className="material-symbols-outlined">bolt</span>

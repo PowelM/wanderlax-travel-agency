@@ -1,346 +1,337 @@
-'use client';
-
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
-import { useUser } from '@clerk/nextjs';
+import { currentUser, auth } from '@clerk/nextjs/server';
+import { prisma } from '@/lib/prisma';
+import { redirect } from 'next/navigation';
 
-interface ProfileData {
-  id: string;
-  email: string;
-  firstName: string | null;
-  lastName: string | null;
-  phone: string | null;
-  avatarUrl: string | null;
-  role: string;
-  createdAt: string;
-}
+export const dynamic = 'force-dynamic';
 
-export default function ProfilePage() {
-  const { user: clerkUser, isLoaded } = useUser();
-  const [profile, setProfile] = useState<ProfileData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [editing, setEditing] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
-
-  // Form state
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [phone, setPhone] = useState('');
-
-  const fetchProfile = React.useCallback(async () => {
-    try {
-      const res = await fetch('/api/user/profile');
-      if (res.ok) {
-        const data = await res.json();
-        setProfile(data);
-        setFirstName(data.firstName || '');
-        setLastName(data.lastName || '');
-        setPhone(data.phone || '');
-      } else if (res.status === 404 && clerkUser) {
-        // Fallback to Clerk data if DB profile doesn't exist yet
-        setFirstName(clerkUser.firstName || '');
-        setLastName(clerkUser.lastName || '');
-      }
-    } catch (err) {
-      console.error('Failed to fetch profile:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, [clerkUser]);
-
-  useEffect(() => {
-    fetchProfile();
-  }, [fetchProfile]);
-
-  const handleSave = async () => {
-    setSaving(true);
-    setToast(null);
-    try {
-      const res = await fetch('/api/user/profile', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ firstName, lastName, phone }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setProfile(data);
-        setEditing(false);
-        setToast({ type: 'success', message: 'Profile updated successfully!' });
-      } else {
-        setToast({ type: 'error', message: 'Failed to update profile.' });
-      }
-    } catch {
-      setToast({ type: 'error', message: 'Network error. Please try again.' });
-    } finally {
-      setSaving(false);
-      setTimeout(() => setToast(null), 4000);
-    }
-  };
-
-  const handleCancel = () => {
-    setFirstName(profile?.firstName || '');
-    setLastName(profile?.lastName || '');
-    setPhone(profile?.phone || '');
-    setEditing(false);
-  };
-
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  };
-
-  const roleLabel = (role: string) => {
-    const labels: Record<string, string> = {
-      CUSTOMER: 'Customer',
-      CONSULTANT: 'Travel Consultant',
-      ADMIN: 'Administrator',
-      SUPER_ADMIN: 'Super Admin',
-    };
-    return labels[role] || role;
-  };
-
-  if (!isLoaded || loading) {
-    return (
-      <div className="relative min-h-screen w-full pt-[72px]">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-          <div className="animate-pulse space-y-6">
-            <div className="h-8 bg-surface-dark rounded w-48" />
-            <div className="h-64 bg-surface-dark rounded-xl" />
-          </div>
-        </div>
-      </div>
-    );
+export default async function TravelerProfileDashboardPage() {
+  const { userId } = await auth();
+  
+  if (!userId) {
+    redirect('/portal/login');
   }
 
-  const avatarUrl = clerkUser?.imageUrl || profile?.avatarUrl;
-  const displayName = [profile?.firstName, profile?.lastName].filter(Boolean).join(' ') || clerkUser?.fullName || 'Traveler';
+  let user = null;
+  try {
+    user = await currentUser();
+  } catch (err: unknown) {
+    console.error("Clerk currentUser() Error:", err);
+  }
+
+  let dbUser = null;
+  
+  if (user) {
+    try {
+      dbUser = await prisma.user.findUnique({
+        where: { clerkId: user.id },
+        include: {
+          bookings: {
+            include: {
+              tourBooking: { include: { tourPackage: true } },
+              hotelBooking: { include: { hotel: true } },
+              carHireBooking: { include: { car: true } },
+            },
+            orderBy: { createdAt: 'desc' },
+          },
+          activityLogs: {
+            orderBy: { createdAt: 'desc' },
+            take: 5
+          },
+          wishlistItems: true
+        }
+      });
+    } catch (prismaError) {
+      console.error("Prisma error in profile:", prismaError);
+    }
+  }
+
+  const avatarUrl = user?.imageUrl || dbUser?.avatarUrl || 'https://lh3.googleusercontent.com/aida-public/AB6AXuBoramFqJhMsa0mC4aFilbg8kHsESJfaaKZnK0GybCNxPOzlkuz1CkMQLzSO94GnuQ-woVxXkNsd22xBSx6Zlu-NilL79gw38yQtjm0DEUkf1fmepl6vq6qBpWXxC-KyzTuQGNhYo98zUiY9c1FB6yLMbjio3dA-22989vG7Db9ToYL7EzeniaqAK1keBQuehPyfLb4eXyCbHWmJka_Rz5kaJU0xWRYYURCWr3MIEq4BE-xsJ-72EG_Jb0nM6BdCwIGLVnFHBEsCg';
+  const firstName = dbUser?.firstName || user?.firstName || 'Julian';
+  const lastName = dbUser?.lastName || user?.lastName || 'Ashford';
+  const fullName = `${firstName} ${lastName}`.trim() || 'Julian Ashford';
+  
+  const totalJourneys = dbUser?.bookings?.length || 0;
+  // Calculate total miles mock logic
+  const totalMiles = totalJourneys > 0 ? (totalJourneys * 3500).toLocaleString() : '0';
+  
+  const memberSince = dbUser?.createdAt 
+    ? new Date(dbUser.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+    : 'Nov 2021';
+    
+  const loyaltyPoints = dbUser?.loyaltyPoints || 0;
+  let loyaltyTier = 'Silver Tier';
+  let loyaltyColor = 'text-slate-400';
+  let loyaltyIcon = 'star';
+  
+  if (loyaltyPoints >= 10000) {
+    loyaltyTier = 'Diamond Tier';
+    loyaltyColor = 'text-blue-400';
+    loyaltyIcon = 'diamond';
+  } else if (loyaltyPoints >= 5000) {
+    loyaltyTier = 'Emerald Tier';
+    loyaltyColor = 'text-primary';
+    loyaltyIcon = 'diamond';
+  } else if (loyaltyPoints >= 2000) {
+    loyaltyTier = 'Gold Tier';
+    loyaltyColor = 'text-yellow-500';
+    loyaltyIcon = 'vpn_key';
+  }
+
+  const activeBookings = dbUser?.bookings?.filter((b: any) => b.status === 'CONFIRMED' || b.status === 'PENDING') || [];
+  
+  // Format upcoming journeys
+  const upcomingJourneys = activeBookings.map((b: any) => {
+    let destination = 'Journey';
+    let type = 'Travel';
+    let image = 'https://images.unsplash.com/photo-1488646953014-85cb44e25828';
+    let duration = '';
+    
+    if (b.tourBooking) {
+      destination = b.tourBooking.tourPackage?.title || 'Tour';
+      type = 'Tour';
+      duration = `${b.tourBooking.tourPackage?.durationDays || 7} Days`;
+      const images = b.tourBooking.tourPackage?.images;
+      if (images && images.length > 0) image = images[0];
+    } else if (b.hotelBooking) {
+      destination = b.hotelBooking.hotel?.name || 'Hotel';
+      type = 'Hotel';
+      duration = 'Stay';
+      const images = b.hotelBooking.hotel?.images;
+      if (images && images.length > 0) image = images[0];
+    } else if (b.carHireBooking) {
+      destination = b.carHireBooking.car ? `${b.carHireBooking.car.make} ${b.carHireBooking.car.model}` : 'Car Hire';
+      type = 'Car Hire';
+      duration = 'Rental';
+      const images = b.carHireBooking.car?.images;
+      if (images && images.length > 0) image = images[0];
+    }
+    
+    return {
+      id: b.id,
+      destination,
+      duration,
+      status: b.status,
+      image,
+      type
+    };
+  });
 
   return (
-    <div className="relative min-h-screen w-full pt-[72px]">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm text-slate-400 mb-8">
-          <Link href="/portal/dashboard" className="hover:text-white transition-colors">Dashboard</Link>
-          <span className="material-symbols-outlined text-[16px]">chevron_right</span>
-          <span className="text-white">My Profile</span>
-        </div>
-
-        {/* Toast Notification */}
-        {toast && (
-          <div
-            className={`mb-6 flex items-center gap-3 p-4 rounded-xl border transition-all animate-fade-in-up ${
-              toast.type === 'success'
-                ? 'bg-green-500/10 border-green-500/20 text-green-400'
-                : 'bg-red-500/10 border-red-500/20 text-red-400'
-            }`}
-          >
-            <span className="material-symbols-outlined text-[20px]">
-              {toast.type === 'success' ? 'check_circle' : 'error'}
-            </span>
-            <p className="text-sm font-medium">{toast.message}</p>
-          </div>
-        )}
-
-        {/* Profile Card */}
-        <div className="bg-surface-dark border border-border-dark rounded-2xl overflow-hidden">
-          {/* Header Banner */}
-          <div className="relative h-32 bg-gradient-to-r from-primary/30 via-primary/10 to-transparent">
-            <div className="absolute -bottom-12 left-6">
-              {avatarUrl ? (
-                <Image
-                  src={avatarUrl}
-                  alt={displayName}
-                  width={96}
-                  height={96}
-                  className="w-24 h-24 rounded-2xl border-4 border-surface-dark object-cover shadow-lg"
-                />
-              ) : (
-                <div className="w-24 h-24 rounded-2xl border-4 border-surface-dark bg-primary/20 flex items-center justify-center shadow-lg">
-                  <span className="material-symbols-outlined text-primary text-4xl">person</span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Profile Content */}
-          <div className="pt-16 px-6 pb-6">
-            <div className="flex items-start justify-between mb-6">
-              <div>
-                <h1 className="text-2xl font-bold text-white">{displayName}</h1>
-                <div className="flex items-center gap-3 mt-1">
-                  <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border ${
-                    profile?.role === 'ADMIN' || profile?.role === 'SUPER_ADMIN'
-                      ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                      : 'bg-primary/10 text-primary border-primary/20'
-                  }`}>
-                    <span className="material-symbols-outlined text-[14px]">
-                      {profile?.role === 'ADMIN' || profile?.role === 'SUPER_ADMIN' ? 'shield' : 'person'}
-                    </span>
-                    {roleLabel(profile?.role || 'CUSTOMER')}
-                  </span>
-                  {profile?.createdAt && (
-                    <span className="text-xs text-slate-500">Member since {formatDate(profile.createdAt)}</span>
-                  )}
-                </div>
-              </div>
-              {!editing && (
-                <button
-                  onClick={() => setEditing(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 rounded-lg text-sm font-medium transition-all"
-                >
-                  <span className="material-symbols-outlined text-[18px]">edit</span>
-                  Edit Profile
-                </button>
-              )}
-            </div>
-
-            {/* Info Fields */}
-            <div className="space-y-5">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                {/* First Name */}
-                <div>
-                  <label className="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wider">First Name</label>
-                  {editing ? (
-                    <input
-                      type="text"
-                      value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
-                      className="w-full bg-background-dark border border-border-dark rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all placeholder:text-slate-600"
-                      placeholder="Enter first name"
-                    />
-                  ) : (
-                    <p className="text-white text-sm py-2.5">{profile?.firstName || '—'}</p>
-                  )}
-                </div>
-
-                {/* Last Name */}
-                <div>
-                  <label className="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wider">Last Name</label>
-                  {editing ? (
-                    <input
-                      type="text"
-                      value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
-                      className="w-full bg-background-dark border border-border-dark rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all placeholder:text-slate-600"
-                      placeholder="Enter last name"
-                    />
-                  ) : (
-                    <p className="text-white text-sm py-2.5">{profile?.lastName || '—'}</p>
-                  )}
-                </div>
-              </div>
-
-              {/* Email (read-only always) */}
-              <div>
-                <label className="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wider">Email Address</label>
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-slate-500 text-[18px]">mail</span>
-                  <p className="text-white text-sm py-2.5">{profile?.email || clerkUser?.primaryEmailAddress?.emailAddress || '—'}</p>
-                  <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-green-500/10 text-green-400 border border-green-500/20">
-                    Verified
-                  </span>
-                </div>
-              </div>
-
-              {/* Phone */}
-              <div>
-                <label className="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wider">Phone Number</label>
-                {editing ? (
-                  <input
-                    type="tel"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    className="w-full bg-background-dark border border-border-dark rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all placeholder:text-slate-600"
-                    placeholder="Enter phone number"
-                  />
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-slate-500 text-[18px]">phone</span>
-                    <p className="text-white text-sm py-2.5">{profile?.phone || '—'}</p>
+    <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden pt-[72px]" style={{
+      backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuARCIXkZm5F6XkZAOOmBICJhd34HHPVy94jLTbir49wOoCF2Aw76vqdqXrloFxKbPXRedT5SqriIfax-raO-1SbNlyipBV7aEMFS5xvohTyZF5zsYdh94tXEZR2bl-_SaeiJ-0Pmrcr9rnE2glRT2gqVv0tVqvVOmLb3xdN2Cf3Wo_oRAjQOhXuXGDg4uNXxDeOyJhlsAgGVoNEvIDK5hE10kUaQc9PSJDi51zKrD6yvlxnSvUfItSLaBgRyT1ukAywi1VbamC-OA')",
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundAttachment: 'fixed'
+    }}>
+      <main className="flex-1 max-w-7xl mx-auto w-full px-6 py-10 md:py-16 relative z-10">
+        <section className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
+          <div className="lg:col-span-2 flex flex-col justify-center">
+            <div className="flex flex-col @container">
+              <div className="flex flex-col @[520px]:flex-row gap-8 items-center @[520px]:items-end">
+                <div className="relative">
+                  <div className="size-32 rounded-2xl border-4 border-primary/30 p-1 bg-background-dark/80 backdrop-blur-sm">
+                    <div 
+                      className="w-full h-full rounded-xl bg-cover bg-center" 
+                      style={{ backgroundImage: `url('${avatarUrl}')` }}
+                    ></div>
                   </div>
-                )}
+                  {loyaltyPoints >= 5000 && (
+                  <div className="absolute -bottom-3 -right-3 bg-primary text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-xl">
+                      VIP
+                  </div>
+                  )}
+                </div>
+                <div className="flex-1 text-center @[520px]:text-left">
+                  <h1 className="text-4xl md:text-5xl font-black text-slate-100 tracking-tighter mb-2 uppercase">{fullName}</h1>
+                  <div className="flex flex-wrap justify-center @[520px]:justify-start gap-4 items-center">
+                    <span className={`flex items-center gap-2 ${loyaltyColor} font-bold tracking-widest text-sm uppercase`}>
+                      <span className="material-symbols-outlined text-sm">{loyaltyIcon}</span>
+                      {loyaltyTier}
+                    </span>
+                    <span className="h-1 w-1 rounded-full bg-slate-600 hidden sm:block"></span>
+                    <span className="text-slate-400 text-sm italic">Member since {memberSince}</span>
+                  </div>
+                </div>
               </div>
             </div>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div className="glass-panel p-6 rounded-2xl flex flex-col justify-between hover:border-primary/40 transition-all group">
+              <span className="material-symbols-outlined text-primary group-hover:scale-110 transition-transform">travel_explore</span>
+              <div>
+                <p className="text-3xl font-black text-slate-100">{totalJourneys}</p>
+                <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Total Journeys</p>
+              </div>
+            </div>
+            <div className="glass-panel p-6 rounded-2xl flex flex-col justify-between hover:border-primary/40 transition-all group">
+              <span className="material-symbols-outlined text-primary group-hover:scale-110 transition-transform">flight_takeoff</span>
+              <div>
+                <p className="text-3xl font-black text-slate-100">{totalMiles}</p>
+                <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Total Miles</p>
+              </div>
+            </div>
+          </div>
+        </section>
 
-            {/* Edit Actions */}
-            {editing && (
-              <div className="flex items-center gap-3 mt-8 pt-6 border-t border-border-dark">
-                <button
-                  onClick={handleSave}
-                  disabled={saving}
-                  className="flex items-center gap-2 px-6 py-2.5 bg-primary hover:bg-red-700 disabled:opacity-50 text-white rounded-lg text-sm font-bold transition-all shadow-[0_0_15px_rgba(198,16,16,0.3)] hover:shadow-[0_0_20px_rgba(198,16,16,0.5)]"
-                >
-                  {saving ? (
-                    <>
-                      <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                      </svg>
-                      Saving...
-                    </>
-                  ) : (
-                    <>
-                      <span className="material-symbols-outlined text-[18px]">save</span>
-                      Save Changes
-                    </>
-                  )}
-                </button>
-                <button
-                  onClick={handleCancel}
-                  className="px-6 py-2.5 text-slate-400 hover:text-white border border-border-dark hover:border-slate-500 rounded-lg text-sm font-medium transition-all"
-                >
-                  Cancel
-                </button>
+        <section className="mb-16">
+          <div className="flex items-end justify-between mb-8">
+            <div>
+              <h2 className="text-xs font-black text-primary uppercase tracking-[0.3em] mb-2">Portfolio</h2>
+              <h3 className="text-3xl font-extrabold text-slate-100 tracking-tight">Upcoming Journeys</h3>
+            </div>
+            <div className="flex gap-2">
+              <button title="Previous" className="size-10 rounded-full border border-primary/20 flex items-center justify-center hover:bg-primary/10 transition-colors">
+                <span className="material-symbols-outlined">chevron_left</span>
+              </button>
+              <button title="Next" className="size-10 rounded-full border border-primary/20 flex items-center justify-center hover:bg-primary/10 transition-colors text-primary">
+                <span className="material-symbols-outlined">chevron_right</span>
+              </button>
+            </div>
+          </div>
+          
+          <div className="flex gap-6 overflow-x-auto pb-6 no-scrollbar snap-x">
+            {upcomingJourneys.length > 0 ? (
+              upcomingJourneys.map((journey: any) => (
+                <div key={journey.id} className="min-w-[320px] md:min-w-[400px] snap-start glass-panel rounded-3xl overflow-hidden group border border-border-dark hover:border-primary/30 transition-all">
+                  <div className="h-56 w-full relative overflow-hidden">
+                    <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110" style={{ backgroundImage: `url('${journey.image}')` }}></div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-background-dark to-transparent"></div>
+                    <div className="absolute top-4 right-4 bg-background-dark/80 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 z-10">
+                      <p className={`text-[10px] font-bold ${journey.status === 'CONFIRMED' ? 'text-green-400' : 'text-primary'} uppercase tracking-widest flex items-center gap-1`}>
+                        {journey.status === 'CONFIRMED' ? (
+                          <>
+                            <span className="material-symbols-outlined text-xs">check_circle</span> {journey.status}
+                          </>
+                        ) : (
+                          <>
+                            <span className="material-symbols-outlined text-xs">timer</span> {journey.status}
+                          </>
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="p-8">
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h4 className="text-2xl font-bold text-slate-100 tracking-tight">{journey.destination}</h4>
+                        <p className="text-primary font-medium text-sm">{journey.type} • {journey.duration}</p>
+                      </div>
+                      <span className="material-symbols-outlined text-slate-500">more_vert</span>
+                    </div>
+                    <p className="text-slate-400 text-sm mb-8 line-clamp-2 leading-relaxed italic">"A bespoke curated experience designed for Wanderlux elite travelers."</p>
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex -space-x-3">
+                        <div className="size-8 rounded-full border-2 border-background-dark bg-cover bg-center" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuAMX0WKh8H9dwnm3yLSc7tkFlOSeFaWmXs51Y84C6IvaxJBzmczx5HY-oBdHS8ZEP0Xge4rMiyu4EfjXmZ_jEVxRbWPdrbqMyDEz8fnxyG2IkGJ99fSoFrJfx6CU1SjZpGomt5iT-yk4k0xdpdILQWLKTln4UDPjRFEObnMzIyoJzkH3ZD2hgeNGImWA7UkF-VoRe7LWgDwYkfJ_GKOxe_NqGlhi5GqpTApMDzd4sDpAd_sjP5_mlbbxJ8IBIcsYihTIQfycPdwug')" }}></div>
+                        <div className="size-8 rounded-full border-2 border-background-dark bg-primary flex items-center justify-center text-[10px] font-black text-white">+1</div>
+                      </div>
+                      <Link href="/portal/itinerary" className="bg-primary hover:bg-red-700 text-white px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-colors flex items-center justify-center">
+                        View Itinerary
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="w-full glass-panel border border-dashed border-border-dark rounded-xl p-12 text-center">
+                <span className="material-symbols-outlined text-4xl text-slate-600 mb-4">explore</span>
+                <p className="text-white font-medium mb-1">No upcoming journeys</p>
+                <p className="text-slate-400 text-sm mb-6">Ready to explore the world? Start planning your next adventure today.</p>
+                <Link href="/tours" className="inline-flex items-center justify-center px-6 py-2.5 bg-primary hover:bg-red-700 text-white font-bold rounded-lg transition-colors">
+                  Browse Destinations
+                </Link>
               </div>
             )}
           </div>
-        </div>
+        </section>
 
-        {/* Quick Actions */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8">
-          <Link
-            href="/portal/dashboard"
-            className="flex items-center gap-3 p-4 bg-surface-dark border border-border-dark rounded-xl hover:border-primary/30 hover:bg-primary/5 transition-all group"
-          >
-            <div className="p-2 bg-primary/10 rounded-lg text-primary group-hover:bg-primary group-hover:text-white transition-colors">
-              <span className="material-symbols-outlined">dashboard</span>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+          <section className="lg:col-span-2">
+            <div className="mb-8 border-b border-primary/10 pb-4 flex justify-between items-center">
+              <h3 className="text-xl font-bold text-slate-100 uppercase tracking-wider">Recent Activity</h3>
+              <button className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline">View All Log</button>
             </div>
-            <div>
-              <p className="text-sm font-medium text-white group-hover:text-primary transition-colors">Dashboard</p>
-              <p className="text-xs text-slate-400">Back to overview</p>
+            
+            <div className="space-y-4">
+              {dbUser?.activityLogs && dbUser.activityLogs.length > 0 ? (
+                dbUser.activityLogs.map((log: any) => (
+                  <div key={log.id} className="glass-panel flex items-center gap-6 p-5 rounded-2xl hover:border-primary/40 hover:bg-white/5 transition-colors group cursor-pointer">
+                    <div className="size-12 min-w-[48px] rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all">
+                      <span className="material-symbols-outlined">{log.module === 'BOOKING' ? 'receipt_long' : log.module === 'LOYALTY' ? 'loyalty' : 'event'}</span>
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-slate-100 font-bold">{log.action}</p>
+                      <p className="text-xs text-slate-500">{new Date(log.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[10px] uppercase tracking-widest text-emerald-500 font-bold">Logged</p>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="glass-panel flex items-center gap-6 p-5 rounded-2xl hover:border-primary/40 hover:bg-white/5 transition-colors group cursor-pointer">
+                  <div className="size-12 min-w-[48px] rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all">
+                    <span className="material-symbols-outlined">person_add</span>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-slate-100 font-bold">Account Created</p>
+                    <p className="text-xs text-slate-500">{memberSince}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[10px] uppercase tracking-widest text-emerald-500 font-bold">Completed</p>
+                  </div>
+                </div>
+              )}
             </div>
-          </Link>
-          <Link
-            href="/portal/wishlist"
-            className="flex items-center gap-3 p-4 bg-surface-dark border border-border-dark rounded-xl hover:border-primary/30 hover:bg-primary/5 transition-all group"
-          >
-            <div className="p-2 bg-primary/10 rounded-lg text-primary group-hover:bg-primary group-hover:text-white transition-colors">
-              <span className="material-symbols-outlined">favorite</span>
+          </section>
+
+          <section>
+            <div className="mb-8 border-b border-primary/10 pb-4">
+              <h3 className="text-xl font-bold text-slate-100 uppercase tracking-wider">Settings</h3>
             </div>
-            <div>
-              <p className="text-sm font-medium text-white group-hover:text-primary transition-colors">Wishlist</p>
-              <p className="text-xs text-slate-400">Saved destinations</p>
+            
+            <div className="glass-panel p-2 rounded-2xl">
+              <div className="flex flex-col">
+                <Link href="/portal/profile/edit" className="flex items-center gap-4 px-6 py-4 rounded-xl bg-primary text-white font-bold transition-all shadow-lg shadow-primary/20 hover:bg-red-700">
+                  <span className="material-symbols-outlined text-xl">person</span>
+                  <span className="text-sm">Personal Info</span>
+                  <span className="material-symbols-outlined ml-auto text-sm">chevron_right</span>
+                </Link>
+                <Link href="/portal/wishlist" className="flex items-center gap-4 px-6 py-4 rounded-xl text-slate-400 hover:text-slate-100 hover:bg-white/5 transition-all">
+                  <span className="material-symbols-outlined text-xl">favorite</span>
+                  <span className="text-sm">Wishlist & Preferences</span>
+                  <span className="material-symbols-outlined ml-auto text-sm">chevron_right</span>
+                </Link>
+                <Link href="/portal/loyalty" className="flex items-center gap-4 px-6 py-4 rounded-xl text-slate-400 hover:text-slate-100 hover:bg-white/5 transition-all border-b border-white/5 pb-4">
+                  <span className="material-symbols-outlined text-xl">star</span>
+                  <span className="text-sm">Loyalty Status</span>
+                  <span className="material-symbols-outlined ml-auto text-sm">chevron_right</span>
+                </Link>
+                <Link href="/portal/dashboard" className="flex items-center gap-4 px-6 py-4 rounded-xl text-slate-400 hover:text-slate-100 hover:bg-white/5 transition-all">
+                  <span className="material-symbols-outlined text-xl">dashboard</span>
+                  <span className="text-sm">Dashboard</span>
+                  <span className="material-symbols-outlined ml-auto text-sm">chevron_right</span>
+                </Link>
+              </div>
             </div>
-          </Link>
-          <Link
-            href="/portal/loyalty"
-            className="flex items-center gap-3 p-4 bg-surface-dark border border-border-dark rounded-xl hover:border-primary/30 hover:bg-primary/5 transition-all group"
-          >
-            <div className="p-2 bg-primary/10 rounded-lg text-primary group-hover:bg-primary group-hover:text-white transition-colors">
-              <span className="material-symbols-outlined">loyalty</span>
+
+            <div className="mt-8 p-6 rounded-2xl bg-gradient-to-br from-primary/30 to-background-dark border border-primary/20 relative overflow-hidden group">
+              <div className="relative z-10">
+                <h4 className="text-white font-bold mb-2">Concierge Access</h4>
+                <p className="text-xs text-slate-300 mb-6 leading-relaxed">Dedicated diamond-level assistance available 24/7 for bespoke requests.</p>
+                <Link href="/contact" className="block w-full text-center bg-white text-background-dark py-3 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-200 transition-colors">
+                  Contact Advisor
+                </Link>
+              </div>
+              <div className="absolute -bottom-4 -right-4 text-primary/10 scale-150 rotate-12 transition-transform group-hover:rotate-0 duration-700">
+                <span className="material-symbols-outlined text-[120px]">support_agent</span>
+              </div>
             </div>
-            <div>
-              <p className="text-sm font-medium text-white group-hover:text-primary transition-colors">Loyalty</p>
-              <p className="text-xs text-slate-400">Points & rewards</p>
-            </div>
-          </Link>
+          </section>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

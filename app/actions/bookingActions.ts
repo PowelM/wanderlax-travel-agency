@@ -149,3 +149,110 @@ export async function getUserItineraries(clerkId: string) {
     return [];
   }
 }
+export async function createTourBooking(data: {
+  tourSlug: string;
+  tourName: string;
+  startDate: string;
+  endDate: string;
+  guestCount: number;
+  totalAmount: number;
+  specialRequirements?: string;
+  clerkId: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  avatarUrl?: string;
+}) {
+  try {
+    // 1. Identify or Create User
+    let user = await prisma.user.findUnique({ where: { clerkId: data.clerkId } });
+    
+    if (!user) {
+      user = await prisma.user.findUnique({ where: { email: data.email } });
+      if (user) {
+        // Link clerkId if user found by email
+        user = await prisma.user.update({
+          where: { id: user.id },
+          data: { clerkId: data.clerkId }
+        });
+      } else {
+        // Create new user
+        user = await prisma.user.create({
+          data: {
+            clerkId: data.clerkId,
+            email: data.email,
+            firstName: data.firstName,
+            lastName: data.lastName,
+            avatarUrl: data.avatarUrl,
+            role: "CUSTOMER",
+          }
+        });
+      }
+    }
+
+    // 2. Find Tour Package
+    const tourPackage = await prisma.tourPackage.findUnique({
+      where: { slug: data.tourSlug }
+    });
+
+    if (!tourPackage) {
+      // If slug doesn't match, try finding by name (fallback for static data)
+      const fallbackTour = await prisma.tourPackage.findFirst({
+        where: { title: { contains: data.tourName, mode: 'insensitive' } }
+      });
+      if (!fallbackTour) throw new Error(`Tour package not found: ${data.tourName}`);
+      data.tourSlug = fallbackTour.slug;
+    }
+
+    const tourId = tourPackage?.id || (await prisma.tourPackage.findFirst({ where: { title: data.tourName } }))?.id;
+    if (!tourId) throw new Error("Tour package not found");
+
+    // 3. Create TourBooking
+    const tourBooking = await prisma.tourBooking.create({
+      data: {
+        userId: user.id,
+        tourPackageId: tourId,
+        startDate: new Date(data.startDate),
+        endDate: new Date(data.endDate),
+        guestCount: data.guestCount,
+        totalAmount: data.totalAmount,
+        status: "PENDING",
+        specialRequirements: data.specialRequirements,
+      }
+    });
+
+    // 4. Create Main Booking record
+    const bookingRef = `WL-${Math.floor(1000 + Math.random() * 9000)}`;
+    const mainBooking = await prisma.booking.create({
+      data: {
+        bookingRef,
+        userId: user.id,
+        serviceType: "TOUR_PACKAGE",
+        tourBookingId: tourBooking.id,
+        status: "PENDING",
+        paymentStatus: "PENDING",
+        totalAmount: data.totalAmount,
+        finalAmount: data.totalAmount,
+        currency: "USD",
+      }
+    });
+
+    // 5. Log Activity
+    await prisma.activityLog.create({
+      data: {
+        userId: user.id,
+        module: "BOOKINGS",
+        action: "CREATE",
+        details: { bookingRef, tourName: data.tourName }
+      }
+    });
+
+    revalidatePath("/portal/dashboard");
+    revalidatePath("/admin/bookings");
+
+    return { success: true, booking: JSON.parse(JSON.stringify(mainBooking)) };
+  } catch (error) {
+    console.error("Error creating tour booking:", error);
+    return { success: false, error: error instanceof Error ? error.message : "Failed to create booking" };
+  }
+}

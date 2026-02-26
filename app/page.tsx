@@ -267,6 +267,13 @@ export default function HomePage() {
                 <h4 className="text-xl font-bold text-white mb-3">Fine Dining</h4>
                 <p className="text-text-muted text-sm leading-relaxed">Reservations at Michelin-starred restaurants and private chef experiences in your villa.</p>
               </div>
+              <div className="group bg-background-dark border border-border-dark p-8 rounded-2xl hover:border-primary/50 transition-colors duration-300">
+                <div className="size-14 rounded-xl bg-surface-dark border border-border-dark flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
+                  <span className="material-symbols-outlined text-3xl">card_giftcard</span>
+                </div>
+                <h4 className="text-xl font-bold text-white mb-3">Loyalty Rewards</h4>
+                <p className="text-text-muted text-sm leading-relaxed">Earn points on every booking and redeem them for exclusive upgrades and free experiences.</p>
+              </div>
             </div>
           </div>
         </div>

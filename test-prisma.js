@@ -3,11 +3,10 @@ const prisma = new PrismaClient();
 
 async function main() {
   try {
-    const user = await prisma.user.findUnique({
-      where: { clerkId: 'some-id' },
-      select: { role: true }
-    });
-    console.log(user);
+    const userCount = await prisma.user.count();
+    console.log('User count:', userCount);
+    const firstUser = await prisma.user.findFirst();
+    console.log('First user:', firstUser);
   } catch (e) {
     console.error(e);
   } finally {

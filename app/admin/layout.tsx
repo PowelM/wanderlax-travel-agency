@@ -22,14 +22,15 @@ export default async function AdminLayout({
   // Check if user has admin role in the database
   let dbUser: { role: string } | null = null;
   try {
-    // userId is guaranteed to be a non-null string here due to the guard above
-    dbUser = await prisma.user.findUnique({
-      where: { clerkId: userId as string },
-      select: { role: true },
-    });
+    if (userId) {
+      dbUser = await prisma.user.findUnique({
+        where: { clerkId: userId },
+        select: { role: true },
+      });
+    }
   } catch (error) {
     console.error("Error fetching user role in admin layout:", error);
-    // Fall back to email-based check if DB query fails
+    // Fall back to email-based check if DB query fails or other Prisma error occurs
   }
 
   const role = dbUser?.role || (isAdminEmail ? 'ADMIN' : 'CUSTOMER');

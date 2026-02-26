@@ -11,6 +11,12 @@ const navLinks = [
   { label: 'Contact', href: '/contact' },
 ];
 
+const memberLinks = [
+  { label: 'My Bookings', href: '/portal/dashboard', icon: 'confirmation_number' },
+  { label: 'Redemption', href: '/portal/loyalty', icon: 'card_giftcard' },
+  { label: 'Itinerary', href: '/portal/itinerary', icon: 'event_available' },
+];
+
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
@@ -62,7 +68,7 @@ export default function Header() {
         </Link>
 
         {/* Desktop Nav */}
-        <nav className="hidden md:flex items-center gap-8">
+        <nav className="hidden md:flex items-center gap-6">
           {navLinks.map((link) => (
             <Link
               key={link.label}
@@ -76,6 +82,24 @@ export default function Header() {
               {link.label}
             </Link>
           ))}
+          
+          <SignedIn>
+            <div className="h-4 w-px bg-border-dark/50 mx-2"></div>
+            {memberLinks.map((link) => (
+              <Link
+                key={link.label}
+                className={`flex items-center gap-1.5 text-sm font-medium transition-colors ${
+                  isActive(link.href)
+                    ? 'text-primary'
+                    : 'text-slate-300 hover:text-white'
+                }`}
+                href={link.href}
+              >
+                <span className="material-symbols-outlined text-[18px]">{link.icon}</span>
+                {link.label}
+              </Link>
+            ))}
+          </SignedIn>
         </nav>
 
         <div className="flex items-center gap-4">
@@ -176,19 +200,24 @@ export default function Header() {
                 Dashboard
               </Link>
             )}
+            {memberLinks.map((link) => (
+              <Link
+                key={link.label}
+                className="flex items-center gap-3 text-white text-2xl font-semibold hover:text-primary transition-colors"
+                href={link.href}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <span className="material-symbols-outlined text-[28px]">{link.icon}</span>
+                {link.label}
+              </Link>
+            ))}
             <Link
               href="/portal/profile"
-              className="text-white text-2xl font-semibold hover:text-primary transition-colors"
+              className="flex items-center gap-3 text-white text-2xl font-semibold hover:text-primary transition-colors"
               onClick={() => setMobileMenuOpen(false)}
             >
+              <span className="material-symbols-outlined text-[28px]">person</span>
               Profile
-            </Link>
-            <Link
-              href="/portal/dashboard"
-              className="text-white text-2xl font-semibold hover:text-primary transition-colors"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              My Portal
             </Link>
           </SignedIn>
           <button

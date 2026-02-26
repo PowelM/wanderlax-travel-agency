@@ -115,3 +115,37 @@ export async function createManualBooking(data: {
     return { success: false, error: "Failed to create booking." };
   }
 }
+
+export async function getUserItineraries(clerkId: string) {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { clerkId },
+      include: {
+        tourBookings: {
+          include: {
+            tourPackage: {
+              include: {
+                destination: true,
+                itinerary: {
+                  orderBy: {
+                    dayNumber: 'asc'
+                  }
+                }
+              }
+            }
+          },
+          orderBy: {
+            startDate: 'desc'
+          }
+        }
+      }
+    });
+
+    if (!user) return [];
+
+    return JSON.parse(JSON.stringify(user.tourBookings));
+  } catch (error) {
+    console.error("Error fetching user itineraries:", error);
+    return [];
+  }
+}

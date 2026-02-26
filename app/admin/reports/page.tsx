@@ -384,10 +384,10 @@ export default function WanderluxAdminReportsAnalyticsPage() {
     showToast(`Range: ${startDate} to ${endDate}`, 'info');
   }
 
-  function handleExportCSV() {
+  function handleExportCSV(format?: string) {
     const csv = ['Destination,Region,Bookings,Revenue,Rating,Status', ...filteredRows.map(r => `"${r.name}","${r.region}",${r.bookings},${r.revenue},${r.rating},${r.status}`)].join('\n');
     downloadCSV(`wanderlux-${activeRange}.csv`, csv);
-    showToast('Exported CSV ✓', 'success');
+    showToast(`Exported ${format || 'CSV'} ✓`, 'success');
   }
 
   const rangeLabel = activeRange === 'custom' && customApplied ? `${startDate} to ${endDate}` 
@@ -412,8 +412,8 @@ export default function WanderluxAdminReportsAnalyticsPage() {
           <AdminHeader title="Reports & Analytics" description="Advanced performance metrics and custom reporting">
             {/* Range Selector Bar */}
             <div className="flex bg-surface-darker p-1 rounded-lg relative overflow-visible" ref={popoverRef}>
-              {['7d', '30d', 'month', 'quarter'].map(r => (
-                <button key={r} onClick={() => selectRange(r as any)} className={`px-4 py-1.5 rounded text-sm font-medium transition-all ${activeRange === r && !customOpen ? 'text-white bg-background-dark shadow-sm' : 'text-text-secondary hover:text-white'}`}>
+              {(['7d', '30d', 'month', 'quarter'] as DateRange[]).map(r => (
+                <button key={r} onClick={() => selectRange(r)} className={`px-4 py-1.5 rounded text-sm font-medium transition-all ${activeRange === r && !customOpen ? 'text-white bg-background-dark shadow-sm' : 'text-text-secondary hover:text-white'}`}>
                   {r === '7d' ? '7 Days' : r === '30d' ? '30 Days' : r === 'month' ? 'Month' : 'Quarter'}
                 </button>
               ))}
@@ -434,12 +434,12 @@ export default function WanderluxAdminReportsAnalyticsPage() {
 
                   {customMode === 'period' ? (
                     <div className="flex flex-col gap-1">
-                      {[
+                      {([
                         { k: '6m', l: 'Last 6 Months' },
                         { k: 'ytd', l: 'Year to Date' },
                         { k: 'year', l: 'Last 12 Months' },
-                      ].map(p => (
-                        <button key={p.k} onClick={() => selectRange(p.k as any)} className="w-full text-left px-3 py-2 text-sm text-text-secondary hover:text-white hover:bg-white/5 rounded-lg flex items-center justify-between">
+                      ] as { k: DateRange, l: string }[]).map(p => (
+                        <button key={p.k} onClick={() => selectRange(p.k)} className="w-full text-left px-3 py-2 text-sm text-text-secondary hover:text-white hover:bg-white/5 rounded-lg flex items-center justify-between">
                           {p.l} {activeRange === p.k && <span className="material-symbols-outlined text-primary text-sm">check</span>}
                         </button>
                       ))}
@@ -490,7 +490,7 @@ export default function WanderluxAdminReportsAnalyticsPage() {
               <div className="lg:col-span-2 rounded-xl bg-surface-darker p-6 border border-surface-darker">
                 <div className="flex items-center justify-between mb-8">
                   <div><h3 className="text-white text-lg font-bold">Destination Performance</h3><p className="text-text-secondary text-xs">{rangeLabel}</p></div>
-                  <ChartMenu onExport={handleExportCSV as any} />
+                  <ChartMenu onExport={handleExportCSV} />
                 </div>
                 <div className="h-64 flex items-end justify-around relative px-4" key={animKey}>
                   <div className="absolute inset-x-0 bottom-4 top-0 flex flex-col justify-between pointer-events-none opacity-10">
@@ -547,7 +547,7 @@ export default function WanderluxAdminReportsAnalyticsPage() {
                   <button onClick={() => setFilterOpen(true)} className={`px-4 py-1.5 rounded-lg border text-sm flex items-center gap-2 transition-all ${hasActiveFilter ? 'border-primary bg-primary/10 text-primary' : 'border-surface-dark text-text-secondary hover:text-white'}`}>
                     <span className="material-symbols-outlined text-sm">filter_alt</span>Filter {hasActiveFilter && '(!)'}
                   </button>
-                  <button onClick={handleExportCSV} className="px-4 py-1.5 rounded-lg border border-surface-dark text-text-secondary text-sm hover:text-white flex items-center gap-2 transition-all">
+                  <button onClick={() => handleExportCSV()} className="px-4 py-1.5 rounded-lg border border-surface-dark text-text-secondary text-sm hover:text-white flex items-center gap-2 transition-all">
                     <span className="material-symbols-outlined text-sm">download</span>CSV
                   </button>
                 </div>

@@ -46,6 +46,14 @@ export function AdminSidebar() {
           <span className="material-symbols-outlined text-[24px]">directions_car</span>
           <span className="text-sm font-medium">Rentals</span>
         </Link>
+        <Link className={getLinkClasses("/admin/staff")} href="/admin/staff">
+          <span className="material-symbols-outlined text-[24px]">group</span>
+          <span className="text-sm font-medium">Staff & Roles</span>
+        </Link>
+        <Link className={getLinkClasses("/admin/payments")} href="/admin/payments">
+          <span className="material-symbols-outlined text-[24px]">credit_card</span>
+          <span className="text-sm font-medium">Payments</span>
+        </Link>
         <Link className={getLinkClasses("/admin/crm")} href="/admin/crm">
           <span className="material-symbols-outlined text-[24px]">group</span>
           <span className="text-sm font-medium">Customers</span>
@@ -65,7 +73,7 @@ export function AdminSidebar() {
 
         <div className="pt-4 mt-4 border-t border-border-dark/50">
           <p className="px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">System</p>
-          <Link className={getLinkClasses("/admin/staff")} href="/admin/staff">
+          <Link className={getLinkClasses("/admin/settings")} href="/admin/settings">
             <span className="material-symbols-outlined text-[24px]">settings</span>
             <span className="text-sm font-medium">Settings</span>
           </Link>

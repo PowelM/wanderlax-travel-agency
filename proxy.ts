@@ -14,7 +14,7 @@ const isPublicRoute = createRouteMatcher([
   '/api(.*)',
   '/auth-redirect(.*)',
   '/wanderlux(.*)',
-  '/generated-screen(.*)',
+  '/hotels(.*)',
   // Add any other public routes here
 ])
 

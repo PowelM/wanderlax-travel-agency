@@ -99,6 +99,22 @@ export default function WanderluxToursCuratedTravelPackagesPage() {
   const { isSignedIn } = useAuth();
   const router = useRouter();
 
+  // Load favorites from DB on mount
+  React.useEffect(() => {
+    async function loadWishlist() {
+      if (isSignedIn) {
+        try {
+          const { getWishlistItems } = await import('@/app/actions/wishlistActions');
+          const items = await getWishlistItems();
+          setFavorites(new Set(items.map(item => item.itemId)));
+        } catch (err) {
+          console.error("Failed to load wishlist:", err);
+        }
+      }
+    }
+    loadWishlist();
+  }, [isSignedIn]);
+
   const handleBookNow = (tourTitle: string) => {
     if (!isSignedIn) {
       router.push('/portal/login');
@@ -107,13 +123,33 @@ export default function WanderluxToursCuratedTravelPackagesPage() {
     router.push(`/portal/book?tour=${encodeURIComponent(tourTitle)}`);
   };
 
-  const toggleFavorite = (title: string) => {
+  const toggleFavorite = async (title: string) => {
+    if (!isSignedIn) {
+      router.push('/portal/login');
+      return;
+    }
+
+    // Optimistic update
     setFavorites(prev => {
       const next = new Set(prev);
       if (next.has(title)) next.delete(title);
       else next.add(title);
       return next;
     });
+
+    try {
+      const { toggleWishlistItem } = await import('@/app/actions/wishlistActions');
+      await toggleWishlistItem('TOUR_PACKAGE', title);
+    } catch (err) {
+      console.error("Failed to toggle favorite:", err);
+      // Revert optimistic update on error
+      setFavorites(prev => {
+        const next = new Set(prev);
+        if (next.has(title)) next.delete(title);
+        else next.add(title);
+        return next;
+      });
+    }
   };
 
   const filteredTours = allTours.filter(tour => {

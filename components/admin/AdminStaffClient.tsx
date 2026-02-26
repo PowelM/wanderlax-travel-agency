@@ -1,5 +1,7 @@
+"use client";
+
 import React, { useState, useEffect, useMemo } from 'react';
-import { AdminHeader } from '@/components/admin/AdminHeader';
+import Link from 'next/link';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { updateStaffRole, toggleStaffStatus, deleteStaff, createStaff } from '@/app/actions/staffActions';
 
@@ -27,7 +29,7 @@ export default function AdminStaffClient() {
   
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 8;
+  const itemsPerPage = 6; // Adjusted to match design
 
   // New Staff Modal
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -65,6 +67,8 @@ export default function AdminStaffClient() {
       total: staff.length,
       active: staff.filter(s => s.staffProfile?.isActive).length,
       admins: staff.filter(s => ['ADMIN', 'SUPER_ADMIN'].includes(s.role)).length,
+      managers: staff.filter(s => s.role === 'MANAGER' || s.staffProfile?.jobTitle?.toLowerCase().includes('manager')).length,
+      consultants: staff.filter(s => s.role === 'CONSULTANT').length,
     };
   }, [staff]);
 
@@ -86,20 +90,18 @@ export default function AdminStaffClient() {
     }
   };
 
-  const handleToggleActive = async (id: string, isActive: boolean) => {
+  const handleToggleStatus = async (id: string, isActive: boolean) => {
     const prev = staff.find(s => s.id === id);
     if (!prev) return;
     
     // Optimistic update
-    setStaff(st => st.map(s => s.id === id ? { ...s, staffProfile: s.staffProfile ? { ...s.staffProfile, isActive } : { id: 'temp', userId: id, isActive, department: null, jobTitle: null } } : s));
+    setStaff(st => st.map(s => s.id === id ? { ...s, staffProfile: s.staffProfile ? { ...s.staffProfile, isActive } : { id: 'temp', userId: id, isActive, department: null, jobTitle: 'Staff Member' } } : s));
     
     const res = await toggleStaffStatus(id, isActive);
     if (!res.success) {
-      console.error('Failed to toggle status:', res.error);
       setStaff(st => st.map(s => s.id === id ? prev : s));
       alert('Failed to toggle status: ' + (res.error || 'Unknown error'));
     } else if (res.profile) {
-      // Update with server data
       setStaff(st => st.map(s => s.id === id ? { ...s, staffProfile: res.profile } : s));
     }
   };
@@ -136,228 +138,245 @@ export default function AdminStaffClient() {
     setIsSubmitting(false);
   };
 
+  const getTimeAgo = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffInMins = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
+    
+    if (diffInMins < 1) return 'Just now';
+    if (diffInMins < 60) return `${diffInMins} mins ago`;
+    const diffInHours = Math.floor(diffInMins / 60);
+    if (diffInHours < 24) return `${diffInHours} hours ago`;
+    return `${Math.floor(diffInHours / 24)} days ago`;
+  };
+
   return (
-    <div className="flex h-screen w-full">
+    <div className="flex h-screen w-full overflow-hidden bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display">
       <AdminSidebar />
-      <main className="flex-1 flex flex-col overflow-hidden bg-background-dark text-white">
-        <AdminHeader title="Team Management" description="Manage staff members, roles, and status.">
-          <div className="flex gap-3">
-            <button 
-              onClick={() => setIsModalOpen(true)}
-              className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg shadow-lg hover:bg-primary/90 transition-all font-semibold text-sm"
-            >
-              <span className="material-symbols-outlined text-[20px]">add</span> Add Staff
+      
+      <main className="flex-1 min-h-screen flex flex-col relative overflow-y-auto">
+        <header className="h-16 border-b border-border-light dark:border-border-dark bg-surface-light/80 dark:bg-[#0d0d0d]/80 backdrop-blur-md sticky top-0 z-40 px-8 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <h2 className="text-xl font-bold tracking-tight">Staff Management</h2>
+          </div>
+          <div className="flex items-center gap-4">
+            <button className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500 dark:text-slate-400 transition-colors relative">
+              <span className="material-symbols-outlined">notifications</span>
+              <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-primary ring-2 ring-background-light dark:ring-background-dark"></span>
             </button>
+            <div className="h-8 w-8 rounded-full bg-slate-200 dark:bg-slate-700 bg-cover bg-center ring-2 ring-border-light dark:ring-border-dark" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuDfuKqcOkunrnvb9BkHNojuFUo4dWnDHGES5vcNX30EC2LWpQcTQG9mnVTKsJUQpVbi9RXkP8cs65vbiv4aYNE-OAI644VpovzXS0t5BONnmx8CTtZ9-fy87PpL8LDqbEVjVN7wIJN9KtENt6FWwvGMFKheOAfsikxOQOcdhZsER3G3pCTlzXFqaJmI8NlDF0eysXM3OvpU1TIZ-A0J4-9HpGgm9tl2luDVj1MB5xN9xNeotKGxD-HKE7gMEpI6PvcDOl-7CXYl6A')" }}></div>
           </div>
-        </AdminHeader>
-        
-        <div className="p-6 flex-1 overflow-auto flex flex-col gap-6">
-          {/* Stats */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="bg-surface-dark p-5 rounded-xl border border-border-dark flex items-center gap-4 hover:border-primary/30 transition-colors group">
-              <div className="p-3 rounded-lg bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-all">
-                <span className="material-symbols-outlined">group</span>
-              </div>
-              <div>
-                <p className="text-xs text-text-secondary font-semibold uppercase">Total Staff</p>
-                <p className="text-2xl font-bold">{stats.total}</p>
-              </div>
+        </header>
+
+        <div className="p-8 max-w-7xl mx-auto w-full flex flex-col gap-8">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div className="flex flex-col gap-1">
+              <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white">Team Overview</h1>
+              <p className="text-slate-500 dark:text-slate-400">Manage team members, roles, and access permissions.</p>
             </div>
-            <div className="bg-surface-dark p-5 rounded-xl border border-border-dark flex items-center gap-4 hover:border-green-500/30 transition-colors group">
-              <div className="p-3 rounded-lg bg-green-500/10 text-green-500 group-hover:bg-green-500 group-hover:text-white transition-all">
-                <span className="material-symbols-outlined">check_circle</span>
+            <div className="flex items-center gap-3">
+              <div className="relative group">
+                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                  <span className="material-symbols-outlined text-[20px]">search</span>
+                </span>
+                <input 
+                  className="pl-10 pr-4 py-2.5 rounded-lg border border-border-light dark:border-border-dark bg-surface-light dark:bg-[#141414] text-sm focus:ring-1 focus:ring-primary focus:border-primary outline-none w-64 transition-all" 
+                  placeholder="Search staff..." 
+                  type="text"
+                  value={search}
+                  onChange={e => { setSearch(e.target.value); setCurrentPage(1); }}
+                />
               </div>
-              <div>
-                <p className="text-xs text-text-secondary font-semibold uppercase">Active</p>
-                <p className="text-2xl font-bold">{stats.active}</p>
-              </div>
-            </div>
-            <div className="bg-surface-dark p-5 rounded-xl border border-border-dark flex items-center gap-4 hover:border-purple-500/30 transition-colors group">
-              <div className="p-3 rounded-lg bg-purple-500/10 text-purple-500 group-hover:bg-purple-500 group-hover:text-white transition-all">
-                <span className="material-symbols-outlined">admin_panel_settings</span>
-              </div>
-              <div>
-                <p className="text-xs text-text-secondary font-semibold uppercase">Admins</p>
-                <p className="text-2xl font-bold">{stats.admins}</p>
-              </div>
+              <button 
+                onClick={() => setIsModalOpen(true)}
+                className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-lg text-sm font-semibold shadow-lg shadow-primary/25 transition-all"
+              >
+                <span className="material-symbols-outlined text-[20px]">add</span>
+                Add New Staff
+              </button>
             </div>
           </div>
 
-          {/* Search bar */}
-          <div className="relative group">
-            <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-text-secondary group-focus-within:text-primary transition-colors">
-              <span className="material-symbols-outlined text-[20px]">search</span>
-            </span>
-            <input 
-              className="w-full pl-10 pr-4 py-3 rounded-xl border border-border-dark bg-surface-dark text-white placeholder-slate-400 focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all" 
-              placeholder="Search by name or email..." 
-              type="text"
-              value={search}
-              onChange={e => { setSearch(e.target.value); setCurrentPage(1); }}
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="bg-surface-light dark:bg-[#141414] border border-border-light dark:border-border-dark p-5 rounded-xl flex flex-col gap-4 shadow-sm relative overflow-hidden group">
+              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                <span className="material-symbols-outlined text-6xl text-primary">groups</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Total Staff</p>
+                <span className="bg-green-500/10 text-green-500 text-xs font-semibold px-2 py-1 rounded-full">+2 this month</span>
+              </div>
+              <p className="text-3xl font-bold text-slate-900 dark:text-white mt-auto">{stats.total}</p>
+            </div>
+            {/* Additional stat cards */}
+            <div className="bg-surface-light dark:bg-[#141414] border border-border-light dark:border-border-dark p-5 rounded-xl flex flex-col gap-4 shadow-sm relative overflow-hidden group">
+              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                <span className="material-symbols-outlined text-6xl text-purple-500">admin_panel_settings</span>
+              </div>
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Admins</p>
+              <p className="text-3xl font-bold text-slate-900 dark:text-white mt-auto">{stats.admins}</p>
+            </div>
+            <div className="bg-surface-light dark:bg-[#141414] border border-border-light dark:border-border-dark p-5 rounded-xl flex flex-col gap-4 shadow-sm relative overflow-hidden group">
+              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                <span className="material-symbols-outlined text-6xl text-blue-500">supervisor_account</span>
+              </div>
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Managers</p>
+              <p className="text-3xl font-bold text-slate-900 dark:text-white mt-auto">{stats.managers}</p>
+            </div>
+            <div className="bg-surface-light dark:bg-[#141414] border border-border-light dark:border-border-dark p-5 rounded-xl flex flex-col gap-4 shadow-sm relative overflow-hidden group">
+              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                <span className="material-symbols-outlined text-6xl text-orange-500">support_agent</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Consultants</p>
+                <span className="bg-green-500/10 text-green-500 text-xs font-semibold px-2 py-1 rounded-full">+1 this month</span>
+              </div>
+              <p className="text-3xl font-bold text-slate-900 dark:text-white mt-auto">{stats.consultants}</p>
+            </div>
           </div>
 
-          {/* Table */}
-          <div className="bg-surface-dark rounded-xl border border-border-dark overflow-hidden flex-1 flex flex-col min-h-0">
-            <div className="overflow-auto flex-1">
-              <table className="min-w-full divide-y divide-border-dark">
-                <thead className="bg-background-dark sticky top-0 z-10">
-                  <tr>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">Staff Member</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">Email</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">Role</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">Status</th>
-                    <th className="px-6 py-4 text-right text-xs font-semibold text-text-secondary uppercase tracking-wider">Actions</th>
+          <div className="bg-surface-light dark:bg-[#141414] border border-border-light dark:border-border-dark rounded-xl overflow-hidden shadow-sm flex flex-col">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-border-light dark:border-border-dark bg-slate-50 dark:bg-[#1a1a1a]">
+                    <th className="py-4 px-6 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Staff Member</th>
+                    <th className="py-4 px-6 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Role</th>
+                    <th className="py-4 px-6 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Status</th>
+                    <th className="py-4 px-6 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Last Active</th>
+                    <th className="py-4 px-6 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-border-dark bg-surface-dark">
+                <tbody className="divide-y divide-border-light dark:divide-border-dark">
                   {loading ? (
                     Array.from({ length: 5 }).map((_, i) => (
                       <tr key={i} className="animate-pulse">
-                        <td className="px-6 py-4"><div className="flex gap-3"><div className="h-10 w-10 rounded-full bg-slate-800"></div><div className="h-10 w-32 bg-slate-800 rounded"></div></div></td>
-                        <td className="px-6 py-4"><div className="h-4 w-48 bg-slate-800 rounded"></div></td>
-                        <td className="px-6 py-4"><div className="h-8 w-24 bg-slate-800 rounded"></div></td>
-                        <td className="px-6 py-4"><div className="h-6 w-16 bg-slate-800 rounded"></div></td>
-                        <td className="px-6 py-4"><div className="h-6 w-10 bg-slate-800 rounded ml-auto"></div></td>
+                        <td className="py-4 px-6"><div className="flex gap-4"><div className="h-10 w-10 rounded-full bg-slate-200 dark:bg-slate-800"></div><div className="space-y-2"><div className="h-4 w-32 bg-slate-200 dark:bg-slate-800 rounded"></div><div className="h-3 w-24 bg-slate-200 dark:bg-slate-800 rounded"></div></div></div></td>
+                        <td className="py-4 px-6"><div className="h-6 w-20 bg-slate-200 dark:bg-slate-800 rounded-md"></div></td>
+                        <td className="py-4 px-6"><div className="h-4 w-16 bg-slate-200 dark:bg-slate-800 rounded"></div></td>
+                        <td className="py-4 px-6"><div className="h-4 w-24 bg-slate-200 dark:bg-slate-800 rounded"></div></td>
+                        <td className="py-4 px-6 text-right"><div className="h-4 w-20 bg-slate-200 dark:bg-slate-800 rounded ml-auto"></div></td>
                       </tr>
                     ))
-                  ) : paginatedStaff.length === 0 ? (
-                    <tr>
-                      <td colSpan={5} className="px-6 py-20 text-center">
-                        <span className="material-symbols-outlined text-5xl text-text-secondary/20 mb-3 block">person_off</span>
-                        <p className="text-text-secondary">No staff members found matching your search.</p>
+                  ) : paginatedStaff.map(s => (
+                    <tr key={s.id} className="group hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+                      <td className="py-4 px-6">
+                        <div className="flex items-center gap-4">
+                          {s.avatarUrl ? (
+                            <div className="h-10 w-10 rounded-full bg-cover bg-center ring-1 ring-border-light dark:border-border-dark" style={{ backgroundImage: `url('${s.avatarUrl}')` }} />
+                          ) : (
+                            <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center text-sm font-bold text-primary border border-primary/20 uppercase">
+                              {s.firstName?.charAt(0) ?? 'U'}
+                            </div>
+                          )}
+                          <div>
+                            <p className="text-sm font-semibold text-slate-900 dark:text-white">{s.firstName} {s.lastName}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">{s.email}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6">
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border ${
+                          s.role === 'ADMIN' || s.role === 'SUPER_ADMIN' 
+                            ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' 
+                            : s.role === 'CONSULTANT' 
+                              ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' 
+                              : 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                        }`}>
+                          {s.role}
+                        </span>
+                      </td>
+                      <td className="py-4 px-6">
+                        <button 
+                          onClick={() => handleToggleStatus(s.id, !(s.staffProfile?.isActive ?? false))}
+                          className="flex items-center gap-2 group/status"
+                        >
+                          <div className={`h-2 w-2 rounded-full ${s.staffProfile?.isActive ? 'bg-green-500 animate-pulse' : 'bg-slate-500'}`}></div>
+                          <span className="text-sm text-slate-600 dark:text-slate-300 group-hover/status:text-primary transition-colors">
+                            {s.staffProfile?.isActive ? 'Active' : 'Offline'}
+                          </span>
+                        </button>
+                      </td>
+                      <td className="py-4 px-6 text-sm text-slate-500 dark:text-slate-400">
+                        {getTimeAgo(s.updatedAt)}
+                      </td>
+                      <td className="py-4 px-6 text-right">
+                        <div className="flex items-center justify-end gap-3">
+                          <Link 
+                            href={`/admin/staff/${s.id}/permissions`}
+                            className="text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-colors"
+                          >
+                            Permissions
+                          </Link>
+                          <button 
+                            onClick={() => handleDelete(s.id)}
+                            className="text-slate-400 hover:text-red-500 transition-colors"
+                          >
+                            <span className="material-symbols-outlined text-[18px]">delete</span>
+                          </button>
+                        </div>
                       </td>
                     </tr>
-                  ) : (
-                    paginatedStaff.map(s => (
-                      <tr key={s.id} className="hover:bg-background-dark/50 transition-colors group">
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            {s.avatarUrl ? (
-                              <div className="h-10 w-10 rounded-full bg-cover bg-center border border-border-dark" style={{ backgroundImage: `url('${s.avatarUrl}')` }} />
-                            ) : (
-                              <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center text-sm font-bold text-primary border border-primary/20 uppercase">
-                                {s.firstName?.charAt(0) ?? 'U'}
-                              </div>
-                            )}
-                            <div>
-                              <p className="text-sm font-bold group-hover:text-primary transition-colors">{s.firstName} {s.lastName}</p>
-                              <p className="text-[10px] text-text-secondary uppercase font-semibold">Joined {new Date(s.createdAt).toLocaleDateString()}</p>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-sm text-text-secondary">{s.email}</td>
-                        <td className="px-6 py-4">
-                          <select 
-                            value={s.role} 
-                            onChange={e => handleRoleChange(s.id, e.target.value)} 
-                            className="bg-background-dark text-[11px] font-bold text-white p-1.5 px-3 rounded-lg border border-border-dark focus:border-primary outline-none hover:bg-surface-dark transition-colors"
-                          >
-                            <option value="ADMIN">ADMIN</option>
-                            <option value="SUPER_ADMIN">SUPER_ADMIN</option>
-                            <option value="CONSULTANT">CONSULTANT</option>
-                            <option value="STAFF">STAFF</option>
-                          </select>
-                        </td>
-                        <td className="px-6 py-4">
-                          <button 
-                            onClick={() => handleToggleActive(s.id, !(s.staffProfile?.isActive ?? false))} 
-                            className={`px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all ${
-                              s.staffProfile?.isActive 
-                                ? 'bg-green-500/10 text-green-400 border-green-500/20 hover:bg-green-500/20' 
-                                : 'bg-slate-500/10 text-slate-400 border-slate-500/20 hover:bg-slate-500/20'
-                            }`}
-                          >
-                            {s.staffProfile?.isActive ? 'Active' : 'Inactive'}
-                          </button>
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <button 
-                            onClick={() => handleDelete(s.id)} 
-                            className="text-text-secondary hover:text-red-400 transition-all p-2 rounded-lg hover:bg-red-400/10"
-                            title="Remove Member"
-                          >
-                            <span className="material-symbols-outlined text-[20px]">delete</span>
-                          </button>
-                        </td>
-                      </tr>
-                    ))
-                  )}
+                  ))}
                 </tbody>
               </table>
             </div>
 
-            {/* Pagination Controls */}
-            {totalPages > 1 && (
-              <div className="p-4 border-t border-border-dark bg-background-dark/30 flex items-center justify-between">
-                <p className="text-xs text-text-secondary">
-                  Showing <span className="text-white font-bold">{(currentPage - 1) * itemsPerPage + 1}</span> to <span className="text-white font-bold">{Math.min(currentPage * itemsPerPage, filtered.length)}</span> of <span className="text-white font-bold">{filtered.length}</span> members
-                </p>
-                <div className="flex gap-2">
-                  <button 
-                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                    disabled={currentPage === 1}
-                    className="p-1.5 rounded-lg border border-border-dark bg-surface-dark disabled:opacity-30 hover:text-primary transition-colors"
-                  >
-                    <span className="material-symbols-outlined text-[20px]">chevron_left</span>
-                  </button>
-                  <div className="flex items-center gap-1">
-                    {Array.from({ length: totalPages }).map((_, i) => (
-                      <button
-                        key={i}
-                        onClick={() => setCurrentPage(i + 1)}
-                        className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${
-                          currentPage === i + 1 ? 'bg-primary text-white' : 'hover:bg-surface-dark text-text-secondary'
-                        }`}
-                      >
-                        {i + 1}
-                      </button>
-                    ))}
-                  </div>
-                  <button 
-                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                    disabled={currentPage === totalPages}
-                    className="p-1.5 rounded-lg border border-border-dark bg-surface-dark disabled:opacity-30 hover:text-primary transition-colors"
-                  >
-                    <span className="material-symbols-outlined text-[20px]">chevron_right</span>
-                  </button>
-                </div>
+            <div className="flex items-center justify-between px-6 py-4 border-t border-border-light dark:border-border-dark bg-slate-50 dark:bg-[#1a1a1a]">
+              <div className="text-sm text-slate-500 dark:text-slate-400">
+                Showing <span className="font-medium text-slate-900 dark:text-white">{(currentPage - 1) * itemsPerPage + 1}</span> to <span className="font-medium text-slate-900 dark:text-white">{Math.min(currentPage * itemsPerPage, filtered.length)}</span> of <span className="font-medium text-slate-900 dark:text-white">{filtered.length}</span> staff members
               </div>
-            )}
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="p-2 rounded-lg border border-border-light dark:border-border-dark hover:bg-slate-200 dark:hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <span className="material-symbols-outlined text-[18px]">chevron_left</span>
+                </button>
+                <button 
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="p-2 rounded-lg border border-border-light dark:border-border-dark hover:bg-slate-200 dark:hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <span className="material-symbols-outlined text-[18px]">chevron_right</span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Add Staff Modal */}
+        {/* Modal matching createStaff from original but with new styling */}
         {isModalOpen && (
           <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-            <div className="bg-surface-dark border border-border-dark rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
-              <div className="p-6 border-b border-border-dark flex justify-between items-center bg-background-dark/50">
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+            <div className="bg-surface-light dark:bg-[#141414] border border-border-light dark:border-border-dark rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+              <div className="p-6 border-b border-border-light dark:border-border-dark flex justify-between items-center bg-slate-50 dark:bg-background-dark/50">
+                <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
                   <span className="material-symbols-outlined text-primary">person_add</span>
                   Add Team Member
                 </h2>
-                <button onClick={() => setIsModalOpen(false)} className="text-text-secondary hover:text-white transition-colors">
+                <button onClick={() => setIsModalOpen(false)} className="text-slate-500 hover:text-primary transition-colors">
                   <span className="material-symbols-outlined text-[24px]">close</span>
                 </button>
               </div>
               <form onSubmit={handleCreateStaff} className="p-6 space-y-5">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label className="block text-xs font-bold text-text-secondary uppercase tracking-wider">First Name</label>
-                    <input required name="firstName" type="text" placeholder="John" className="w-full bg-background-dark border border-border-dark rounded-xl p-3 text-white text-sm focus:border-primary outline-none transition-all placeholder:text-slate-600" />
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">First Name</label>
+                    <input required name="firstName" type="text" placeholder="John" className="w-full bg-slate-50 dark:bg-background-dark border border-border-light dark:border-border-dark rounded-xl p-3 text-slate-900 dark:text-white text-sm focus:border-primary outline-none transition-all" />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="block text-xs font-bold text-text-secondary uppercase tracking-wider">Last Name</label>
-                    <input required name="lastName" type="text" placeholder="Doe" className="w-full bg-background-dark border border-border-dark rounded-xl p-3 text-white text-sm focus:border-primary outline-none transition-all placeholder:text-slate-600" />
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Last Name</label>
+                    <input required name="lastName" type="text" placeholder="Doe" className="w-full bg-slate-50 dark:bg-background-dark border border-border-light dark:border-border-dark rounded-xl p-3 text-slate-900 dark:text-white text-sm focus:border-primary outline-none transition-all" />
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-text-secondary uppercase tracking-wider">Email Address</label>
-                  <input required name="email" type="email" placeholder="john@wanderlux.com" className="w-full bg-background-dark border border-border-dark rounded-xl p-3 text-white text-sm focus:border-primary outline-none transition-all placeholder:text-slate-600" />
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Email Address</label>
+                  <input required name="email" type="email" placeholder="john@wanderlux.com" className="w-full bg-slate-50 dark:bg-background-dark border border-border-light dark:border-border-dark rounded-xl p-3 text-slate-900 dark:text-white text-sm focus:border-primary outline-none transition-all" />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-text-secondary uppercase tracking-wider">Assigned Role</label>
-                  <select required name="role" className="w-full bg-background-dark border border-border-dark rounded-xl p-3 text-white text-sm focus:border-primary outline-none transition-all cursor-pointer">
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Assigned Role</label>
+                  <select required name="role" className="w-full bg-slate-50 dark:bg-background-dark border border-border-light dark:border-border-dark rounded-xl p-3 text-slate-900 dark:text-white text-sm focus:border-primary outline-none transition-all cursor-pointer">
                     <option value="STAFF">Staff Member</option>
                     <option value="CONSULTANT">Travel Consultant</option>
                     <option value="ADMIN">Administrator</option>
@@ -366,20 +385,13 @@ export default function AdminStaffClient() {
                 </div>
                 
                 <div className="pt-4 flex gap-3">
-                  <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-3 text-sm font-bold text-text-secondary hover:text-white bg-surface-light/5 border border-border-dark rounded-xl transition-all">Cancel</button>
+                  <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-3 text-sm font-bold text-slate-500 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-white/5 border border-border-light dark:border-border-dark rounded-xl transition-all">Cancel</button>
                   <button 
                     disabled={isSubmitting} 
                     type="submit" 
                     className="flex-1 py-3 text-sm font-bold text-white bg-primary hover:bg-primary/90 rounded-xl disabled:opacity-50 shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2"
                   >
-                    {isSubmitting ? (
-                      <>
-                        <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
-                        Creating...
-                      </>
-                    ) : (
-                      'Confirm Member'
-                    )}
+                    {isSubmitting ? 'Creating...' : 'Confirm Member'}
                   </button>
                 </div>
               </form>

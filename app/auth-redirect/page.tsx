@@ -7,30 +7,49 @@ export default async function AuthRedirectPage() {
 
   // If not authenticated, send to login
   if (!user) {
-    redirect('/sign-in');
+    redirect('/portal/login');
   }
 
-  const primaryEmail = user.emailAddresses?.[0]?.emailAddress;
-  const isAdminEmail = primaryEmail?.toLowerCase() === 'poweldayck@gmail.com';
+  const primaryEmail = user.emailAddresses?.[0]?.emailAddress || '';
+  const isAdminEmail = primaryEmail.toLowerCase() === 'poweldayck@gmail.com';
 
-  // Look up user role in the database
-  let dbUser = null;
+  // Ensure user exists in database (Manual Sync / Upsert)
+  // This handles the race condition where the Clerk Webhook might be slow
+  let role = isAdminEmail ? 'ADMIN' : 'CUSTOMER';
+  
   try {
-    dbUser = await prisma.user.findUnique({
+    const dbUser = await prisma.user.upsert({
       where: { clerkId: user.id },
+      update: {
+        email: primaryEmail,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        avatarUrl: user.imageUrl,
+      },
+      create: {
+        clerkId: user.id,
+        email: primaryEmail,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        avatarUrl: user.imageUrl,
+        role: isAdminEmail ? 'ADMIN' : 'CUSTOMER',
+      },
       select: { role: true },
     });
+    
+    if (dbUser) {
+      role = dbUser.role;
+    }
   } catch (error) {
-    console.error("Error fetching user role in auth-redirect:", error);
+    console.error("Error syncing user in auth-redirect:", error);
+    // Fallback to role determined by email if DB fails
   }
-
-  const role = dbUser?.role || (isAdminEmail ? 'ADMIN' : 'CUSTOMER');
 
   // Route based on role
   if (role === 'ADMIN' || role === 'SUPER_ADMIN') {
     redirect('/admin');
   }
 
-  // Default: CUSTOMER, CONSULTANT, or user not yet synced
+  // Default: CUSTOMER, CONSULTANT
   redirect('/portal/dashboard');
 }

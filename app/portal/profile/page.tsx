@@ -29,11 +29,7 @@ export default function ProfilePage() {
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
 
-  useEffect(() => {
-    fetchProfile();
-  }, []);
-
-  const fetchProfile = async () => {
+  const fetchProfile = React.useCallback(async () => {
     try {
       const res = await fetch('/api/user/profile');
       if (res.ok) {
@@ -42,13 +38,21 @@ export default function ProfilePage() {
         setFirstName(data.firstName || '');
         setLastName(data.lastName || '');
         setPhone(data.phone || '');
+      } else if (res.status === 404 && clerkUser) {
+        // Fallback to Clerk data if DB profile doesn't exist yet
+        setFirstName(clerkUser.firstName || '');
+        setLastName(clerkUser.lastName || '');
       }
     } catch (err) {
       console.error('Failed to fetch profile:', err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [clerkUser]);
+
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
 
   const handleSave = async () => {
     setSaving(true);

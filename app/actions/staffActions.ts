@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { Role } from "@prisma/client";
+import { revalidatePath } from "next/cache";
 
 export async function getStaff() {
   try {
@@ -145,6 +146,64 @@ export async function createStaff(data: { firstName: string, lastName: string, e
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Unknown error";
     console.error("Error creating staff:", error);
+    return { success: false, error: message };
+  }
+}
+
+export async function getStaffWithPermissions(userId: string) {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        staffProfile: {
+          include: {
+            permissions: true
+          }
+        }
+      }
+    });
+    return JSON.parse(JSON.stringify(user));
+  } catch (error) {
+    console.error("Error fetching staff permissions:", error);
+    return null;
+  }
+}
+
+export async function updateStaffPermissions(staffProfileId: string, permissions: any) {
+  try {
+    const moduleNames = Object.keys(permissions);
+    
+    for (const modName of moduleNames) {
+      const perms = permissions[modName];
+      const upsertData = {
+        canView: !!perms.view,
+        canCreate: !!perms.create,
+        canEdit: !!perms.edit,
+        canDelete: !!perms.delete,
+        canExport: !!perms.export
+      };
+
+      await (prisma.staffPermission as any).upsert({
+        where: {
+          staffProfileId_module: {
+            staffProfileId,
+            module: modName.toUpperCase() as any
+          }
+        },
+        update: upsertData,
+        create: {
+          staffProfileId,
+          module: modName.toUpperCase() as any,
+          ...upsertData
+        }
+      });
+    }
+    
+    revalidatePath('/admin/staff');
+    return { success: true };
+  } catch (error: unknown) {
+    const message = (error as any).message || "Unknown error";
+    console.error("Error updating permissions:", error);
     return { success: false, error: message };
   }
 }

@@ -1,38 +1,203 @@
 /* eslint-disable @next/next/no-img-element */
 import React from 'react';
 import Link from 'next/link';
-import { currentUser } from '@clerk/nextjs/server';
-
-const upcomingTrips = [
-  {
-    destination: 'Santorini, Greece',
-    dates: 'Mar 15 - Mar 21, 2025',
-    status: 'Confirmed',
-    statusColor: 'bg-green-500/10 text-green-500 border-green-500/20',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAvoQ7Zvip5jn5ZaFMHXoEM4xSKpCN2Ih2qoH0roUXhbzZs-7ZSqG8ZzL4Cz9kS-1-Y94c1ZUregXQuU632IIgKboaohmGPX5sLqEMrmlsRbPTWfhkyEXX03RQX4ubesRC1WGOHYMWXtk02bodDUkEgW3RZBf1fS2YIeKYmJNbDrmFbaFpCmOAXTzN0x70thPnuXAKVWvKaUbJOCQcLZ5P4BlzU-UJuyNV_kxRfFIVfdzBuseetH5kf6snTVp9pJjzvqwRukC7lmg',
-    type: 'Hotel & Tour',
-  },
-  {
-    destination: 'Kyoto, Japan',
-    dates: 'Apr 10 - Apr 16, 2025',
-    status: 'Pending',
-    statusColor: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB_hhE52OZGgrrDPr3sPjMHs5sxUWPsEuBUaMhEHMiiZrHL3nq36rEfumHZzVvZzBqAciFltS802kVcL7QdQDNS8t7vNhnEnSTdzabGKtWFWUToeZg24ztzWiOQKUK6hfEWB6d2sbdQZ0PXHxt7zMSRZQlnsy2dQctFb66cKArvDoD2RLLDJRCjkrzL1UVmpk8XjR6uqkcyJKi1UV3Fd7hhTy_TUaBc9G-bs18Zm1v2UMDkJF4GfvugGQ_CC3Rlf62I6LhYaIIiBw',
-    type: 'Cultural Tour',
-  },
-];
+import { currentUser, auth } from '@clerk/nextjs/server';
+import { prisma } from '@/lib/prisma';
 
 const quickLinks = [
   { icon: 'person', label: 'My Profile', href: '/portal/profile', description: 'View & edit your info' },
   { icon: 'explore', label: 'Browse Tours', href: '/tours', description: 'Find your next adventure' },
   { icon: 'favorite', label: 'My Wishlist', href: '/portal/wishlist', description: 'Saved destinations' },
   { icon: 'loyalty', label: 'Loyalty Points', href: '/portal/loyalty', description: '2,450 points available' },
-  { icon: 'support_agent', label: 'Concierge', href: '/contact', description: '24/7 support' },
+  { icon: 'support_agent', label: 'Private Consultation', href: '/portal/consultation', description: 'Bespoke planning' },
 ];
 
 export default async function TravelerProfileDashboardPage() {
-  const user = await currentUser();
+  const { userId } = await auth();
+  
+  if (!userId) {
+    // This shouldn't normally happen due to middleware, but as a safety:
+    return null;
+  }
+
+  let user = null;
+  try {
+    user = await currentUser();
+  } catch (err: unknown) {
+    console.error("Clerk currentUser() Error:", err);
+    // Continue with just userId if needed, or handle as error
+  }
+
+  let dbUser = null;
+  
+  if (user) {
+    try {
+      dbUser = await prisma.user.findUnique({
+        where: { clerkId: user.id },
+        include: {
+          bookings: {
+            include: {
+              tourBooking: { include: { tourPackage: true } },
+              hotelBooking: { include: { hotel: true } },
+              carHireBooking: { include: { car: true } },
+            },
+            orderBy: { createdAt: 'desc' },
+            take: 5
+          },
+          notifications: {
+            orderBy: { createdAt: 'desc' },
+            take: 3
+          },
+          activityLogs: {
+            orderBy: { createdAt: 'desc' },
+            take: 5
+          },
+          wishlistItems: true
+        }
+      });
+    } catch (prismaError) {
+      console.error("Prisma error in dashboard:", prismaError);
+    }
+  }
+
+  // Handle case where user exists in Clerk but not in DB
+  if (user && !dbUser) {
+    const primaryEmail = user.emailAddresses?.[0]?.emailAddress || '';
+    const isAdminEmail = primaryEmail.toLowerCase() === 'poweldayck@gmail.com';
+    
+    try {
+      // 1. Try to find by clerkId (standard case)
+      dbUser = await prisma.user.findUnique({
+        where: { clerkId: user.id },
+        include: {
+          bookings: {
+            include: {
+              tourBooking: { include: { tourPackage: true } },
+              hotelBooking: { include: { hotel: true } },
+              carHireBooking: { include: { car: true } },
+            },
+            take: 5
+          },
+          notifications: { take: 3 },
+          activityLogs: { take: 5 },
+          wishlistItems: true
+        }
+      });
+
+      // 2. If not found by clerkId, try to find by email
+      if (!dbUser && primaryEmail) {
+        dbUser = await prisma.user.findUnique({
+          where: { email: primaryEmail },
+          include: {
+            bookings: {
+              include: {
+                tourBooking: { include: { tourPackage: true } },
+                hotelBooking: { include: { hotel: true } },
+                carHireBooking: { include: { car: true } },
+              },
+              take: 5
+            },
+            notifications: { take: 3 },
+            activityLogs: { take: 5 },
+            wishlistItems: true
+          }
+        });
+
+        // If found by email, link the Clerk ID to this record
+        if (dbUser) {
+          dbUser = await prisma.user.update({
+            where: { id: dbUser.id },
+            data: { clerkId: user.id },
+            include: {
+              bookings: {
+                include: {
+                  tourBooking: { include: { tourPackage: true } },
+                  hotelBooking: { include: { hotel: true } },
+                  carHireBooking: { include: { car: true } },
+                },
+                take: 5
+              },
+              notifications: { take: 3 },
+              activityLogs: { take: 5 },
+              wishlistItems: true
+            }
+          });
+        }
+      }
+
+      // 3. If still not found, create a new user record
+      if (!dbUser) {
+        dbUser = await prisma.user.create({
+          data: {
+            clerkId: user.id,
+            email: primaryEmail,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            avatarUrl: user.imageUrl,
+            role: isAdminEmail ? 'ADMIN' : 'CUSTOMER',
+          },
+          include: {
+            bookings: {
+              include: {
+                tourBooking: { include: { tourPackage: true } },
+                hotelBooking: { include: { hotel: true } },
+                carHireBooking: { include: { car: true } },
+              },
+              take: 5
+            },
+            notifications: { take: 3 },
+            activityLogs: { take: 5 },
+            wishlistItems: true
+          }
+        });
+      }
+    } catch (error) {
+      console.error("Error identifying/creating user in dashboard:", error);
+    }
+  }
+
   const userName = user?.firstName || 'Traveler';
+  const bookingsCount = dbUser?.bookings?.length || 0;
+  
+  // Maps the database bookings to the UI format
+  const userTrips = dbUser?.bookings?.map((b: { 
+    createdAt: Date; 
+    status: string; 
+    tourBooking?: { tourPackage?: { title: string; images: string[] } } | null;
+    hotelBooking?: { hotel?: { name: string; images: string[] } } | null;
+    carHireBooking?: { car?: { make: string; model: string; images: string[] } } | null;
+  }) => {
+    let destination = 'Trip';
+    let type = 'Travel';
+    let image = 'https://images.unsplash.com/photo-1488646953014-85cb44e25828';
+    
+    if (b.tourBooking) {
+      destination = b.tourBooking.tourPackage?.title || 'Tour';
+      type = 'Tour';
+      const images = b.tourBooking.tourPackage?.images;
+      if (images && images.length > 0) image = images[0];
+    } else if (b.hotelBooking) {
+      destination = b.hotelBooking.hotel?.name || 'Hotel';
+      type = 'Hotel';
+      const images = b.hotelBooking.hotel?.images;
+      if (images && images.length > 0) image = images[0];
+    } else if (b.carHireBooking) {
+      destination = b.carHireBooking.car ? `${b.carHireBooking.car.make} ${b.carHireBooking.car.model}` : 'Car Hire';
+      type = 'Car Hire';
+      const images = b.carHireBooking.car?.images;
+      if (images && images.length > 0) image = images[0];
+    }
+    
+    return {
+      destination,
+      dates: b.createdAt.toLocaleDateString(),
+      status: b.status,
+      statusColor: b.status === 'CONFIRMED' ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20',
+      image,
+      type
+    };
+  }) || [];
+
 
   return (
     <div className="relative min-h-screen w-full pt-[72px]">
@@ -51,7 +216,7 @@ export default async function TravelerProfileDashboardPage() {
                 <span className="material-symbols-outlined">confirmation_number</span>
               </div>
             </div>
-            <p className="text-2xl font-bold text-white">3</p>
+            <p className="text-2xl font-bold text-white">{bookingsCount}</p>
             <p className="text-sm text-slate-400">Active Bookings</p>
           </div>
           <div className="bg-surface-dark border border-border-dark rounded-xl p-5">
@@ -60,7 +225,7 @@ export default async function TravelerProfileDashboardPage() {
                 <span className="material-symbols-outlined">public</span>
               </div>
             </div>
-            <p className="text-2xl font-bold text-white">8</p>
+            <p className="text-2xl font-bold text-white">{dbUser?.bookings.length ? 1 : 0}</p>
             <p className="text-sm text-slate-400">Countries Visited</p>
           </div>
           <div className="bg-surface-dark border border-border-dark rounded-xl p-5">
@@ -69,7 +234,7 @@ export default async function TravelerProfileDashboardPage() {
                 <span className="material-symbols-outlined">loyalty</span>
               </div>
             </div>
-            <p className="text-2xl font-bold text-white">2,450</p>
+            <p className="text-2xl font-bold text-white">0</p>
             <p className="text-sm text-slate-400">Reward Points</p>
           </div>
           <div className="bg-surface-dark border border-border-dark rounded-xl p-5">
@@ -78,7 +243,7 @@ export default async function TravelerProfileDashboardPage() {
                 <span className="material-symbols-outlined">favorite</span>
               </div>
             </div>
-            <p className="text-2xl font-bold text-white">5</p>
+            <p className="text-2xl font-bold text-white">{dbUser?.wishlistItems.length || 0}</p>
             <p className="text-sm text-slate-400">Wishlist Items</p>
           </div>
         </div>
@@ -91,73 +256,84 @@ export default async function TravelerProfileDashboardPage() {
               <Link href="/tours" className="text-primary text-sm font-medium hover:underline">Book New Trip</Link>
             </div>
 
-            {upcomingTrips.map((trip) => (
-              <div key={trip.destination} className="group bg-surface-dark border border-border-dark rounded-xl overflow-hidden hover:border-primary/30 transition-all">
-                <div className="flex flex-col sm:flex-row">
-                  <div className="w-full sm:w-48 h-32 sm:h-auto relative">
-                    <img src={trip.image} alt={trip.destination} className="absolute inset-0 w-full h-full object-cover" />
-                  </div>
-                  <div className="flex-1 p-5">
-                    <div className="flex items-start justify-between mb-2">
-                      <div>
-                        <h3 className="text-lg font-bold text-white group-hover:text-primary transition-colors">{trip.destination}</h3>
-                        <p className="text-sm text-slate-400">{trip.type}</p>
-                      </div>
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${trip.statusColor}`}>
-                        {trip.status}
-                      </span>
+            {userTrips.length > 0 ? (
+              userTrips.map((trip: {
+                destination: string;
+                type: string;
+                image: string;
+                status: string;
+                statusColor: string;
+                dates: string;
+              }, idx: number) => (
+                <div key={`${trip.destination}-${idx}`} className="group bg-surface-dark border border-border-dark rounded-xl overflow-hidden hover:border-primary/30 transition-all">
+                  <div className="flex flex-col sm:flex-row">
+                    <div className="w-full sm:w-48 h-32 sm:h-auto relative">
+                      <img src={trip.image} alt={trip.destination} className="absolute inset-0 w-full h-full object-cover" />
                     </div>
-                    <div className="flex items-center gap-4 mt-3 text-sm text-slate-400">
-                      <div className="flex items-center gap-1">
-                        <span className="material-symbols-outlined text-[16px]">calendar_month</span>
-                        {trip.dates}
+                    <div className="flex-1 p-5">
+                      <div className="flex items-start justify-between mb-2">
+                        <div>
+                          <h3 className="text-lg font-bold text-white group-hover:text-primary transition-colors">{trip.destination}</h3>
+                          <p className="text-sm text-slate-400">{trip.type}</p>
+                        </div>
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${trip.statusColor}`}>
+                          {trip.status}
+                        </span>
                       </div>
-                    </div>
-                    <div className="flex gap-3 mt-4">
-                      <Link href="/contact" className="text-sm font-medium text-primary hover:underline">View Details</Link>
-                      <span className="text-border-dark">|</span>
-                      <Link href="/contact" className="text-sm font-medium text-slate-400 hover:text-white">Contact Concierge</Link>
+                      <div className="flex items-center gap-4 mt-3 text-sm text-slate-400">
+                        <div className="flex items-center gap-1">
+                          <span className="material-symbols-outlined text-[16px]">calendar_month</span>
+                          {trip.dates}
+                        </div>
+                      </div>
+                      <div className="flex gap-3 mt-4">
+                        <Link href="/contact" className="text-sm font-medium text-primary hover:underline">View Details</Link>
+                        <span className="text-border-dark">|</span>
+                        <Link href="/contact" className="text-sm font-medium text-slate-400 hover:text-white">Contact Concierge</Link>
+                      </div>
                     </div>
                   </div>
                 </div>
+              ))
+            ) : (
+              <div className="bg-surface-dark border border-dashed border-border-dark rounded-xl p-12 text-center">
+                <span className="material-symbols-outlined text-4xl text-slate-600 mb-4">explore</span>
+                <p className="text-white font-medium mb-1">No upcoming trips found</p>
+                <p className="text-slate-400 text-sm mb-6">Ready to explore the world? Start planning your next adventure today.</p>
+                <Link href="/tours" className="inline-flex items-center justify-center px-6 py-2.5 bg-primary hover:bg-red-700 text-white font-bold rounded-lg transition-colors">
+                  Browse Tours
+                </Link>
               </div>
-            ))}
+            )}
 
             {/* Past Trips */}
             <div className="mt-8">
               <h2 className="text-xl font-bold text-white mb-4">Recent Activity</h2>
               <div className="bg-surface-dark border border-border-dark rounded-xl p-5 space-y-4">
-                <div className="flex items-center gap-4">
-                  <div className="p-2 bg-green-500/10 rounded-lg text-green-500">
-                    <span className="material-symbols-outlined text-[20px]">check_circle</span>
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm text-white font-medium">Maldives Escape completed</p>
-                    <p className="text-xs text-slate-400">Feb 10, 2025</p>
-                  </div>
-                  <Link href="/tours" className="text-xs text-primary font-medium hover:underline">Leave Review</Link>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="p-2 bg-primary/10 rounded-lg text-primary">
-                    <span className="material-symbols-outlined text-[20px]">loyalty</span>
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm text-white font-medium">+500 loyalty points earned</p>
-                    <p className="text-xs text-slate-400">Feb 10, 2025</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="p-2 bg-blue-500/10 rounded-lg text-primary">
-                    <span className="material-symbols-outlined text-[20px]">payment</span>
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm text-white font-medium">Payment of $3,800 processed</p>
-                    <p className="text-xs text-slate-400">Jan 28, 2025</p>
-                  </div>
-                </div>
+                {dbUser?.activityLogs && dbUser.activityLogs.length > 0 ? (
+                  dbUser.activityLogs.map((log: {
+                    id: string;
+                    action: string;
+                    module: string;
+                    createdAt: Date;
+                  }) => (
+                    <div key={log.id} className="flex items-center gap-4">
+                      <div className="p-2 bg-primary/10 rounded-lg text-primary">
+                        <span className="material-symbols-outlined text-[20px]">history</span>
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm text-white font-medium">{log.action} in {log.module}</p>
+                        <p className="text-xs text-slate-400">{new Date(log.createdAt).toLocaleDateString()}</p>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-slate-500 text-center py-4 italic">No recent activity found.</p>
+                )}
               </div>
             </div>
           </div>
+
 
           {/* Quick Links Sidebar */}
           <div className="space-y-6">

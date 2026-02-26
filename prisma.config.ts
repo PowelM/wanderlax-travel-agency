@@ -1,5 +1,5 @@
 import "dotenv/config"; 
-// @ts-ignore
+// @ts-expect-error - Prisma config types may not be fully recognized by the bundler
 import { defineConfig, env } from "prisma/config";
 
 export default defineConfig({

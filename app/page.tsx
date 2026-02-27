@@ -19,44 +19,8 @@ export default function HomePage() {
     { icon: 'map', label: 'Tours' },
   ];
 
-  const destinations = [
-    {
-      name: 'Venice',
-      country: 'Italy',
-      price: '$1,200',
-      tag: 'Popular',
-      tagStyle: 'bg-primary/90',
-      img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCfElhVBZd9Ptim2jWHPlAn09P2UGo2XUL7FW85EqAs_RYv88scy-kUMyMM8k53u_Kr_hKeTDi4hoi2nEOdonWBmNAMAOZCOCL01u-Gku0r5NdySiWBANAlwQ7gvW2_EXf63PnIrpPAJwXe1gptVE2_36ij5xdl4nYby2GnOMuvNE2dq7dENzF6Bq2Yv55JG5_efsO0H8sFShpPDOKyQegWTmTjZpZeqbCfQX7oPMBbhTWtrZupZ3Y-dzEOq0d0TTKV_c6UwYOXAg',
-      slug: '/tours?destination=venice',
-    },
-    {
-      name: 'Maldives',
-      country: 'South Asia',
-      price: '$2,450',
-      tag: 'Beach',
-      tagStyle: 'bg-white/20 backdrop-blur-md',
-      img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBTpBxYrTRuys4EpukZ7pAKpCdISHESgode32osxKs03Jl4Waja66Mw5rpWTbClN8vzRZOoaV7hHoGFJOc3r6Wwz6z8nDoJ1ewT9J7K0KCBqMMD-11M1JGivAFkt65uPLm8Zyajq5hkIVbswsthaHHGP0mg_AMYcOpazisdB5PV3dcIjy7XHL2AiAtgZLp-QMJeSegpq0U-ozvXJdOjeDn7mdSnjwbo6nZlvq6SWD-HM9fZLepd6u5DxcmDm4vdMTw5msOlGE2htg',
-      slug: '/tours?destination=maldives',
-    },
-    {
-      name: 'Swiss Alps',
-      country: 'Switzerland',
-      price: '$3,100',
-      tag: 'Ski',
-      tagStyle: 'bg-white/20 backdrop-blur-md',
-      img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCxIjYgqRX1q1PfxVue80is3SCJJmQ4BbUUNsT8bhuV13c-UZ2Z0k-0noPvafkSDyIjbLrABLhSk9MnRwEsCi1dGKjyhGRW6sSwetStKgXumTgBh0zBblZFKAvvaBS6mmAQKvY-mkY6xhNULNZ9521hWHP22WnHRDra2NQ_4EM7AY64lBpksEpZR5b0Yz0QQNIR-hWNbR9of74vQtyRVX8ioqnOJfr4yGew0E4438dRUoHWRBrBayZcMv9OGGDar04K784_333R4Q',
-      slug: '/tours?destination=swiss-alps',
-    },
-    {
-      name: 'Tokyo',
-      country: 'Japan',
-      price: '$950',
-      tag: 'Urban',
-      tagStyle: 'bg-white/20 backdrop-blur-md',
-      img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDniwPg-EnPxcMasV7QF8BEPIPiDsDYrRweZ3nudIoyCD3EcmxGEo6xggYf5OoBgo9Cj8yJuimmETZcoO6rogTTpACSJJTNHBt_CSRliATG2NUKyv7YjngYfHOWOKBVMTV-ueahhDXyhqX0cfuoxqfkbT0gYGSdMBm227VxCY-_tNIjtP2slcZ3yAHc5h6LcJFOU3NpMiHiRo4RNGxAugHXufMzgYT7rtCQ95WFjd8RLAalR4htzd_bFEDeCS9dNRUtefRHq6f5Cg',
-      slug: '/tours?destination=tokyo',
-    },
-  ];
+  type Destination = { name: string; country: string; price: string; tag: string; tagStyle: string; img: string; slug: string; };
+  const destinations: Destination[] = [];
 
   const scrollCarousel = (direction: 'left' | 'right') => {
     if (!carouselRef.current) return;

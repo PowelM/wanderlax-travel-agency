@@ -4,80 +4,8 @@ import React from 'react';
 /* eslint-disable @next/next/no-img-element */
 
 export default function CarHirePage() {
-  const cars = [
-    {
-      id: 1,
-      name: "Porsche 911 Carrera",
-      type: "Sports",
-      description: "The definitive sports car icon.",
-      image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBQ3pJ8ddFP2PlAwV7_05qyRJLHIs-8RXOE5HgF_69Swt-RmcjRLduAJiNXMqCNK0pZ2ymkaRRofxEovK4lCfCxfwuzy3v-BuUrk00fNy1SQATjPN6HZnXXEG0y2ttK2V_5JNUTGqgofAxLcN_kPMM-mXWPHxeRqPNYu3-PFuSH_Nt28qvMiJEbPxW0sjknk1bHP52s8aaEtIy9zuIsBVwhQnwkfLfhlfkG2y1UCa0oBC11GvUvT5qvT5U_abWocn1MEnezLkgIOg",
-      seats: "2 Seats",
-      transmission: "Automatic",
-      performance: "3.2s 0-100",
-      fuel: "Petrol",
-      price: "$450"
-    },
-    {
-      id: 2,
-      name: "Mercedes-AMG G 63",
-      type: "SUV",
-      description: "Commanding presence and power.",
-      image: "https://lh3.googleusercontent.com/aida-public/AB6AXuCPMPY2i-O7Zb0utGFgC2qyVpUE4dzMNS_5ny8I4HXmmtABZ5zxbHLpBGhCe14OgfNwqs68uXmRu9ZSmiTUUOo15nn7xJdrVJOfmH_7Tve9bSb-dOs_Pw32YTXqlkgpv17bSa4LBqz-B759O3LC158xya3mXbAPFjtkK_89Ao09KDBxxohYjRxX-VWL3nurAH6cBE10HwjXq8aLINfSz-TsS1y9FkvnN22SZ49z1D04tp4oY-zlI8l5kxMDe70T7NmBbezOAc9UxA",
-      seats: "5 Seats",
-      transmission: "Automatic",
-      performance: "4 Bags",
-      fuel: "Petrol",
-      price: "$550"
-    },
-    {
-      id: 3,
-      name: "Rolls-Royce Phantom",
-      type: "Luxury",
-      description: "The pinnacle of automotive luxury.",
-      image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBFjRNIKGF2O918KNR3GHX0Un7X5xV8Zlp2RZirAtOwpRRWEl5lNdxZewfkGDAhKGyydNL72b0-uVqokRdV7KdkvaWWDiwOqMx6azU9OMozrElEfnkafcIDU3kICXKK8EABfLmZS7_EvMZW-I-ywaeOgj77nrLahb5Dl66-wVA9QDXFEMvA4avIZKS1qle3zyB_CWuY6BSAT8hpE0O2pE4bPEUa4pWfr-oVcynL5ZyAVeLLvgmLkUbLQcRWp7Q0YEWmOi8gAMMI9w",
-      seats: "4 Seats",
-      transmission: "Automatic",
-      performance: "Chauffeur",
-      fuel: "Petrol",
-      price: "$1,200"
-    },
-    {
-      id: 4,
-      name: "Tesla Model S Plaid",
-      type: "Electric",
-      description: "Future performance, available today.",
-      image: "https://lh3.googleusercontent.com/aida-public/AB6AXuDTNwnOxXuwUaOKk03ygvq7i0UvYCHemF6RE1Py39P50UqPNljow7sZwoBdXQqHitZ_mQx8yO0fNVsIvvGsiqlhnMU0-uWZKkbZCvBvKbgtomd1x-yyqFzMvCVLz0ggy5BLxLzL6pfohv7cjySkaBr_lJXFQUbIw8xpndvVuBkGopDLqANPhreGkDLvRCxLK54tmyiEO9mScfdlmcjN5MD1MAvIidDOEBZpXOYT3P2_tq3VAjcsvLEKakZV7hvQRRwkHmPL5K7QPQ",
-      seats: "5 Seats",
-      transmission: "Automatic",
-      performance: "Electric",
-      fuel: "1.9s 0-100",
-      price: "$380"
-    },
-    {
-      id: 5,
-      name: "BMW M8 Competition",
-      type: "Convertible",
-      description: "Open-top luxury grand tourer.",
-      image: "https://lh3.googleusercontent.com/aida-public/AB6AXuC0o46hxcr2VNH0zNvH3Fp9vkroeHH8CBpsQIwS11hnpKXsU-Kvj3YHA7HLP45QD8hiosktaOI7byBo0cUfJ1ENCVrqOIHWvEkZWpPAylJiZTPzoYpyyk-Y_QMxA2hGYgwa0SsBCQ8qvUP77QLbMjI0IAx6VTPu69_08WD0C3C6Z0IaKaCUlDLretymwDXpJfhaNVmndsig52MzvZUG03R9NV-Mq39MrLW8r6Vei1N-lmd3ZBBZGVDIYTbULtA3KvIA50V4HBG_DQ",
-      seats: "4 Seats",
-      transmission: "Automatic",
-      performance: "Top Down",
-      fuel: "Petrol",
-      price: "$420"
-    },
-    {
-      id: 6,
-      name: "Range Rover Autobiography",
-      type: "SUV",
-      description: "Unmatched refinement and capability.",
-      image: "https://lh3.googleusercontent.com/aida-public/AB6AXuAXn6f3UfObTvx7ARuwgTZRgrZ2zM5i7y5V4gBTRFStY6Zj-MtnjbjZ2Ki6kUkDH-kORSKp8AmBOZhSLNzYvtQ9Nl1CKxrL_FcLhz5uTd07r2BmdNpdM9mtHtEi2plRax6slq20-1RenrV6aKiSnQ2rqbFn9y8Z2wKbaQ8aDMo37f-VLRU8gqq_H3NBli9nW92V2hMip1BuYyj2WLc49b4tO01IyZdDMEftLsnjn5YeAQSn3YhJAM7H1QmDLCHR972VFDFjP4GVsw",
-      seats: "5 Seats",
-      transmission: "Automatic",
-      performance: "4x4",
-      fuel: "Diesel",
-      price: "$480"
-    }
-  ];
+  type Car = { id: number; name: string; type: string; description: string; image: string; seats: string; transmission: string; performance: string; fuel: string; price: string; };
+  const cars: Car[] = [];
 
   return (
     <div className="bg-background-dark text-slate-100 min-h-screen pt-[72px]">

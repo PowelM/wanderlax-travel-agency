@@ -47,18 +47,18 @@ export default async function TravelerProfileDashboardPage() {
     }
   }
 
-  const avatarUrl = user?.imageUrl || dbUser?.avatarUrl || 'https://lh3.googleusercontent.com/aida-public/AB6AXuBoramFqJhMsa0mC4aFilbg8kHsESJfaaKZnK0GybCNxPOzlkuz1CkMQLzSO94GnuQ-woVxXkNsd22xBSx6Zlu-NilL79gw38yQtjm0DEUkf1fmepl6vq6qBpWXxC-KyzTuQGNhYo98zUiY9c1FB6yLMbjio3dA-22989vG7Db9ToYL7EzeniaqAK1keBQuehPyfLb4eXyCbHWmJka_Rz5kaJU0xWRYYURCWr3MIEq4BE-xsJ-72EG_Jb0nM6BdCwIGLVnFHBEsCg';
-  const firstName = dbUser?.firstName || user?.firstName || 'Julian';
-  const lastName = dbUser?.lastName || user?.lastName || 'Ashford';
-  const fullName = `${firstName} ${lastName}`.trim() || 'Julian Ashford';
+  const avatarUrl = user?.imageUrl || dbUser?.avatarUrl || '';
+  const firstName = dbUser?.firstName || user?.firstName || '';
+  const lastName = dbUser?.lastName || user?.lastName || '';
+  const fullName = `${firstName} ${lastName}`.trim() || 'Traveler';
   
   const totalJourneys = dbUser?.bookings?.length || 0;
-  // Calculate total miles mock logic
-  const totalMiles = totalJourneys > 0 ? (totalJourneys * 3500).toLocaleString() : '0';
+  // Calculate total miles logic
+  const totalMiles = totalJourneys > 0 ? (totalJourneys * 0).toLocaleString() : '0';
   
   const memberSince = dbUser?.createdAt 
     ? new Date(dbUser.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
-    : 'Nov 2021';
+    : '';
     
   const loyaltyPoints = dbUser?.loyaltyPoints || 0;
   let loyaltyTier = 'Silver Tier';
@@ -221,7 +221,7 @@ export default async function TravelerProfileDashboardPage() {
                       </div>
                       <span className="material-symbols-outlined text-slate-500">more_vert</span>
                     </div>
-                    <p className="text-slate-400 text-sm mb-8 line-clamp-2 leading-relaxed italic">"A bespoke curated experience designed for Wanderlux elite travelers."</p>
+                    <p className="text-slate-400 text-sm mb-8 line-clamp-2 leading-relaxed italic">&quot;A bespoke curated experience designed for Wanderlux elite travelers.&quot;</p>
                     <div className="flex items-center justify-between gap-4">
                       <div className="flex -space-x-3">
                         <div className="size-8 rounded-full border-2 border-background-dark bg-cover bg-center" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuAMX0WKh8H9dwnm3yLSc7tkFlOSeFaWmXs51Y84C6IvaxJBzmczx5HY-oBdHS8ZEP0Xge4rMiyu4EfjXmZ_jEVxRbWPdrbqMyDEz8fnxyG2IkGJ99fSoFrJfx6CU1SjZpGomt5iT-yk4k0xdpdILQWLKTln4UDPjRFEObnMzIyoJzkH3ZD2hgeNGImWA7UkF-VoRe7LWgDwYkfJ_GKOxe_NqGlhi5GqpTApMDzd4sDpAd_sjP5_mlbbxJ8IBIcsYihTIQfycPdwug')" }}></div>

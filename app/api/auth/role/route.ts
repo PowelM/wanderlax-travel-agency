@@ -6,15 +6,11 @@ export async function GET() {
   try {
     console.log('[API/Role] Starting role identification');
     
-    // Wrap Clerk calls in a timeout race to prevent hanging
-    const clerkData = await Promise.race([
-      Promise.all([auth(), currentUser()]),
-      new Promise<never>((_, reject) => 
-        setTimeout(() => reject(new Error('Clerk API timeout')), 10000)
-      )
-    ]);
-
-    const [{ userId }, user] = clerkData;
+    // In Next.js 15 App Router, wrapping headers-accessing functions like 
+    // auth() and currentUser() in Promise.race can break the async context
+    // and cause a 500 error. Just await them sequentially.
+    const { userId } = await auth();
+    const user = await currentUser();
 
     if (!userId || !user) {
       console.log('[API/Role] User not authenticated');
@@ -24,18 +20,13 @@ export async function GET() {
     const primaryEmail = user.emailAddresses?.[0]?.emailAddress;
     const isAdminEmail = primaryEmail?.toLowerCase() === 'poweldayck@gmail.com';
 
-    // Look up user in database by Clerk ID with a potential timeout wrapper
     let dbUser = null;
     try {
       console.log(`[API/Role] Querying Prisma for user: ${userId}`);
-      // Add a simple timeout race for Prisma
-      dbUser = await Promise.race([
-        prisma.user.findUnique({
-          where: { clerkId: userId },
-          select: { role: true, email: true, firstName: true, lastName: true },
-        }),
-        new Promise<null>((_, reject) => setTimeout(() => reject(new Error('Prisma timeout')), 5000))
-      ]);
+      dbUser = await prisma.user.findUnique({
+        where: { clerkId: userId },
+        select: { role: true, email: true, firstName: true, lastName: true },
+      });
       console.log(`[API/Role] Prisma returned: ${dbUser ? 'User found' : 'User not found'}`);
     } catch (error: unknown) {
       console.error("[API/Role] Error fetching user role in /api/auth/role:", error);

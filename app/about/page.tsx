@@ -169,10 +169,16 @@ export default function AboutWanderluxBrandStoryPage() {
 <p className="text-slate-300 text-lg mb-10 max-w-xl">
                     Let us design the journey you&apos;ve always dreamed of. The world is waiting, and we hold the key.
                 </p>
+<div className="flex flex-col sm:flex-row gap-4">
 <Link href="/contact" className="group relative inline-flex items-center justify-center px-8 py-4 text-base font-bold text-white transition-all duration-200 bg-primary rounded-lg hover:bg-red-700 hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary focus:ring-offset-background-dark">
 <span className="mr-2">Join Our Journey</span>
 <span className="material-symbols-outlined transition-transform group-hover:translate-x-1">arrow_forward</span>
 </Link>
+<a href="/Wanderlux_Company_Profile.txt" download className="group relative inline-flex items-center justify-center px-8 py-4 text-base font-bold text-slate-300 transition-all duration-200 bg-white/5 border border-white/20 rounded-lg backdrop-blur-sm hover:bg-white/10 hover:text-white hover:shadow-lg hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white">
+<span className="mr-2">Download Profile</span>
+<span className="material-symbols-outlined transition-transform group-hover:translate-y-1">download</span>
+</a>
+</div>
 </div>
 </section>
 </div>

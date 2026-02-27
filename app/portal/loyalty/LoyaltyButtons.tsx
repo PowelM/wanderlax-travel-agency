@@ -105,14 +105,13 @@ export function RedeemButton({ reward, userPoints }: { reward: Reward, userPoint
     <div className="flex flex-col gap-2 w-full mt-auto">
       <button 
         onClick={() => setShowModal(true)}
-        disabled={!canRedeem}
         className={`w-full py-3 rounded-lg font-bold uppercase tracking-widest text-sm transition-all shadow-lg ${
           canRedeem 
             ? 'bg-white text-black hover:bg-primary hover:text-white hover:shadow-primary/20 cursor-pointer' 
-            : 'bg-white/10 text-slate-500 cursor-not-allowed border border-white/5 shadow-none'
+            : 'bg-white/10 text-slate-400 hover:text-white hover:bg-white/20 border border-white/5 cursor-pointer shadow-none'
         }`}
       >
-        {canRedeem ? 'Redeem Now' : 'Insufficient Points'}
+        Redeem Now
       </button>
 
       {/* MODAL */}
@@ -159,18 +158,22 @@ export function RedeemButton({ reward, userPoints }: { reward: Reward, userPoint
                   <span className="text-primary font-bold">- {reward.points.toLocaleString()} <span className="text-[10px] opacity-60">PTS</span></span>
                 </div>
                 <div className="pt-3 border-t border-slate-200 dark:border-white/10 flex justify-between items-center">
-                  <span className="text-slate-900 dark:text-white font-bold text-sm">Remaining Balance</span>
-                  <span className="text-slate-900 dark:text-white font-bold">{(userPoints - reward.points).toLocaleString()} <span className="text-[10px] opacity-60">PTS</span></span>
+                  <span className="text-slate-900 dark:text-white font-bold text-sm">{canRedeem ? 'Remaining Balance' : 'Points Shortfall'}</span>
+                  <span className={`font-bold ${canRedeem ? 'text-slate-900 dark:text-white' : 'text-red-500'}`}>
+                    {canRedeem ? (userPoints - reward.points).toLocaleString() : (reward.points - userPoints).toLocaleString()} <span className="text-[10px] opacity-60">PTS</span>
+                  </span>
                 </div>
               </div>
 
               {/* Security Verification */}
-              <div className="space-y-3">
+              <div className={`space-y-3 ${!canRedeem ? 'opacity-50 pointer-events-none grayscale' : ''}`}>
                 <div className="flex items-center gap-2">
                   <span className="material-symbols-outlined text-slate-400 text-sm">shield_lock</span>
                   <h4 className="text-slate-900 dark:text-white text-sm font-bold uppercase tracking-wider">Security Verification</h4>
                 </div>
-                <p className="text-slate-500 dark:text-slate-400 text-xs italic">Enter your 6-digit security code to authorize this transaction.</p>
+                <p className="text-slate-500 dark:text-slate-400 text-xs italic">
+                  {canRedeem ? 'Enter your 6-digit security code to authorize this transaction.' : 'You need more points to unlock this reward.'}
+                </p>
                 <div className="flex gap-2 justify-between">
                   {code.map((c, i) => (
                     <React.Fragment key={i}>
@@ -201,11 +204,15 @@ export function RedeemButton({ reward, userPoints }: { reward: Reward, userPoint
             <div className="p-6 bg-slate-50 dark:bg-white/5 flex flex-col sm:flex-row gap-3">
               <button 
                 onClick={handleRedeem}
-                disabled={loading || !isCodeComplete}
-                className={`relative overflow-hidden flex-1 bg-primary hover:bg-primary/90 text-white py-4 rounded-lg font-bold uppercase tracking-widest text-sm shadow-lg shadow-primary/20 transition-all active:scale-[0.98] after:content-[''] after:absolute after:-top-1/2 after:-left-[60%] after:w-1/5 after:h-[200%] after:bg-white/20 after:rotate-[30deg] hover:after:left-[120%] after:transition-all after:duration-700 ${loading || !isCodeComplete ? 'opacity-50 cursor-not-allowed hidden-after' : ''}`}
-                style={loading || !isCodeComplete ? { '--tw-content': 'none' } as React.CSSProperties : {}}
+                disabled={loading || !isCodeComplete || !canRedeem}
+                className={`relative overflow-hidden flex-1 py-4 rounded-lg font-bold uppercase tracking-widest text-sm shadow-lg transition-all active:scale-[0.98] ${
+                  canRedeem
+                    ? `bg-primary hover:bg-primary/90 text-white shadow-primary/20 after:content-[''] after:absolute after:-top-1/2 after:-left-[60%] after:w-1/5 after:h-[200%] after:bg-white/20 after:rotate-[30deg] hover:after:left-[120%] after:transition-all after:duration-700 ${loading || !isCodeComplete ? 'opacity-50 cursor-not-allowed hidden-after' : ''}`
+                    : 'bg-slate-200 dark:bg-white/5 text-slate-400 cursor-not-allowed shadow-none'
+                }`}
+                style={loading || !isCodeComplete || !canRedeem ? { '--tw-content': 'none' } as React.CSSProperties : {}}
               >
-                {loading ? 'Processing...' : 'Confirm & Redeem'}
+                {loading ? 'Processing...' : (!canRedeem ? 'Insufficient Points' : 'Confirm & Redeem')}
               </button>
               <button 
                 onClick={closeAndReset}

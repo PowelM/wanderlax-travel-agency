@@ -12,13 +12,16 @@ const experiencesLinks = [
 
 const companyLinks = [
   { label: 'Concierge', href: '/concierge' },
+  { label: 'Weather', href: '/weather' },
   { label: 'About', href: '/about' },
   { label: 'Contact', href: '/contact' },
 ];
 
 const adminLinks = [
+  { label: 'Tours', href: '/admin/tours', icon: 'tour' },
   { label: 'Fleet', href: '/admin/fleet', icon: 'directions_car' },
   { label: 'Bookings', href: '/admin/bookings', icon: 'confirmation_number' },
+  { label: 'Reports', href: '/admin/reports', icon: 'bar_chart' },
   { label: 'CRM', href: '/admin/crm', icon: 'analytics' },
   { label: 'Messages', href: '/admin/messages', icon: 'forum' },
 ];

@@ -1,63 +1,80 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-
-type WishlistItem = {
-  id: string;
-  location: string;
-  title: string;
-  image: string;
-  price: number;
-  rating: number;
-  reviews: number;
-  category: 'Private Jets' | 'Villas' | 'Other';
-};
-
-const initialItems: WishlistItem[] = [
-  {
-    id: '1',
-    location: 'Oceania • Private Island',
-    title: 'The Brando Reserve',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAHDZw2P1Bt42QqK3S_ze8EGY_eGv8ylghIyD24u4tctGSvrm3TkZi7DTdX8k96quBef24tZEXLSw2m20GtGFi5Ag8QdytJo0u1UHOT5luYFRwTasxvpdOnjnaw45l_DSdmb5buDAY19_syqliRIKNq1QVMzjDw5hXX9Xcwo0DCf9YRg3Yo9QTnIf02G1y16jN5feXinGeao4CjtRdK1ZMNSVasRdK-RLDUXDSKqA55KiebzwSE1zFM8ZyMClE3iGDMTdjHCEk_YA',
-    price: 24900,
-    rating: 4.9,
-    reviews: 120,
-    category: 'Villas',
-  },
-  {
-    id: '2',
-    location: 'Kyoto • Zen Experience',
-    title: 'Aman Kyoto Sanctuary',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAJfQGGrlZ1FJuDxdSJqjTokju1EWXWtHli-FGMs1L38ktE0sA8i3rqQEPVhmSe-y211S0WrLDDiuwMB7F3MY9gdlInRaVBnGNmEAZgjLndTuplAYLpIeqKeA8TYY9lIgqjAmR1gLbhcciBrBv9ZWwScwywuqYsqPTV2LpSWmUXGtEcTQ4QXtxhEkaFrqvmUVFA8Ix688GLdZ2WS1_aptrJDgnH9jLcqg_ffI1a97RHgKy-4Rk_F32GnS6tofOtGQIWJbqcg4XNXw',
-    price: 18500,
-    rating: 5.0,
-    reviews: 85,
-    category: 'Villas',
-  },
-  {
-    id: '3',
-    location: 'Tanzania • Ultra-Luxury Safari',
-    title: 'Singita Grumeti',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuD-xCu15TkqE2gKjOy-5legZG_kg0k-seYoAyjTOJxAXXXWYZMHHxygiznrneGLQ9P_K3wpW-YOr8l_5HZ6etP9mDO8uJorzVhASmkxFlAz6BiwBiBwnfMlpp7mpgX1ego9SEcLS1AgD93gTapFSJO0WEXaFYyea1GikFOzLl2Obk4_kNbl15zalhbZuv6BwuOXoaTJZ092rPMCDBFvPOWta5RDPZ-cObH0RDMViIg9jPVa77kts7MyGQyI8FAZG8P-t8qxlHsePw',
-    price: 32000,
-    rating: 4.8,
-    reviews: 42,
-    category: 'Villas',
-  }
-];
+import { useAuth } from '@clerk/nextjs';
+import { useRouter } from 'next/navigation';
+import { getWishlistItems, toggleWishlistItem } from '@/app/actions/wishlistActions';
+import { getWishlistItemDetails, WishlistItemLocal } from '@/app/lib/data/mockData';
 
 export default function TravelerWishlistSavedJourneysPage() {
-  const [items, setItems] = useState<WishlistItem[]>(initialItems);
-  const [activeFilter, setActiveFilter] = useState<'All Saved' | 'Private Jets' | 'Villas'>('All Saved');
+  const [items, setItems] = useState<WishlistItemLocal[]>([]);
+  const [activeFilter, setActiveFilter] = useState<'All Saved' | 'Private Jets' | 'Villas' | 'Tours'>('All Saved');
+  const [isLoading, setIsLoading] = useState(true);
+  const { isSignedIn } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    async function loadItems() {
+      if (!isSignedIn) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const dbItems = await getWishlistItems();
+        const mappedItems: WishlistItemLocal[] = [];
+
+        for (const dbItem of dbItems) {
+          const localDetails = getWishlistItemDetails(dbItem.itemType, dbItem.itemId);
+          if (localDetails) {
+            mappedItems.push({
+              ...localDetails,
+              id: dbItem.id // use db id for removal
+            });
+          }
+        }
+        setItems(mappedItems);
+      } catch (err) {
+        console.error("Failed to load wishlist items:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadItems();
+  }, [isSignedIn]);
 
   const filteredItems = items.filter(item => {
     if (activeFilter === 'All Saved') return true;
     return item.category === activeFilter;
   });
 
-  const handleRemove = (id: string) => {
+  const handleRemove = async (id: string, itemType: string, itemId: string) => {
+    if (!isSignedIn) {
+      router.push('/portal/login');
+      return;
+    }
+
+    // Optimistic update
     setItems(items.filter(item => item.id !== id));
+
+    try {
+      await toggleWishlistItem(itemType, itemId);
+    } catch (err) {
+      console.error("Failed to remove item:", err);
+      // Let's reload to be safe here if it fails, or we could just revert the UI
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="stitch-screen">
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-primary"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="stitch-screen">
@@ -68,12 +85,18 @@ export default function TravelerWishlistSavedJourneysPage() {
 <h1 className="text-4xl md:text-6xl font-black text-slate-100 tracking-tight">Your Dream <span className="text-primary italic">Portfolio</span></h1>
 <p className="text-slate-400 text-lg max-w-xl">A curated selection of the world&apos;s most exclusive escapes, reserved for your next journey.</p>
 </div>
-<div className="flex items-center gap-4 bg-accent-dark/30 p-1 rounded-xl border border-primary/10">
+<div className="flex items-center gap-4 bg-accent-dark/30 p-1 rounded-xl border border-primary/10 flex-wrap">
 <button 
   onClick={() => setActiveFilter('All Saved')}
   className={`px-6 py-2 text-sm font-bold rounded-lg transition-all ${activeFilter === 'All Saved' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-slate-400 hover:text-slate-100'}`}
 >
   All Saved
+</button>
+<button 
+  onClick={() => setActiveFilter('Tours')}
+  className={`px-6 py-2 text-sm font-bold rounded-lg transition-all ${activeFilter === 'Tours' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-slate-400 hover:text-slate-100'}`}
+>
+  Tours
 </button>
 <button 
   onClick={() => setActiveFilter('Private Jets')}
@@ -89,20 +112,37 @@ export default function TravelerWishlistSavedJourneysPage() {
 </button>
 </div>
 </div>
-{filteredItems.length === 0 ? (
-  <div className="flex flex-col items-center justify-center py-20 text-center glass-panel rounded-2xl">
+{!isSignedIn ? (
+  <div className="flex flex-col items-center justify-center py-20 text-center glass-panel rounded-2xl border border-primary/10">
+    <span className="material-symbols-outlined text-6xl text-slate-500 mb-4">login</span>
+    <h3 className="text-2xl font-bold text-slate-100 mb-2">Sign in to view your wishlist</h3>
+    <p className="text-slate-400 mb-6">Create an account or log in to save and view your dream destinations.</p>
+    <Link href="/portal/login" className="px-8 py-3 bg-primary text-white font-bold rounded-lg hover:bg-primary/90 transition-colors">
+      Sign In
+    </Link>
+  </div>
+) : filteredItems.length === 0 ? (
+  <div className="flex flex-col items-center justify-center py-20 text-center glass-panel rounded-2xl border border-primary/10">
     <span className="material-symbols-outlined text-6xl text-slate-500 mb-4">heart_broken</span>
     <h3 className="text-2xl font-bold text-slate-100 mb-2">No items found</h3>
     <p className="text-slate-400">Save some destinations to your wishlist to see them here.</p>
+    <Link href="/tours" className="mt-6 px-8 py-3 bg-primary text-white font-bold rounded-lg hover:bg-primary/90 transition-colors">
+      Explore Tours
+    </Link>
   </div>
 ) : (
 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-  {filteredItems.map(item => (
+  {filteredItems.map(item => {
+    // Determine original item mapping based on category to pass exact params structure to handleRemove
+    const dbItemType = item.category === 'Tours' ? 'TOUR_PACKAGE' : 'VILLA';
+    const dbItemId = item.category === 'Tours' ? item.title : item.title;
+    
+    return (
   <div key={item.id} className="group relative flex flex-col rounded-2xl overflow-hidden bg-card-dark border border-primary/5 shadow-2xl transition-transform hover:-translate-y-2">
   <div className="relative h-96 w-full bg-cover bg-center" data-alt={item.title} style={{ backgroundImage: `url('${item.image}')` }}>
   <div className="absolute inset-0 bg-gradient-to-t from-card-dark via-transparent to-transparent opacity-80"></div>
   <button 
-    onClick={() => handleRemove(item.id)}
+    onClick={() => handleRemove(item.id, dbItemType, dbItemId)}
     className="absolute top-6 right-6 w-12 h-12 flex items-center justify-center rounded-full glass-panel text-primary hover:scale-110 hover:bg-primary hover:text-white transition-all z-10"
     aria-label="Remove from wishlist"
   >
@@ -127,12 +167,12 @@ export default function TravelerWishlistSavedJourneysPage() {
   <p className="text-slate-500 text-xs uppercase font-medium">{item.reviews} reviews</p>
   </div>
   </div>
-  <button className="glare-sweep w-full bg-primary text-white py-4 rounded-xl font-extrabold uppercase tracking-widest text-sm hover:brightness-110 transition-all flex items-center justify-center gap-2">
+  <Link href={`/portal/book?tour=${encodeURIComponent(item.title)}`} className="glare-sweep w-full bg-primary text-white py-4 rounded-xl font-extrabold uppercase tracking-widest text-sm hover:brightness-110 transition-all flex items-center justify-center gap-2">
                               Book Now <span className="material-symbols-outlined text-lg">arrow_right_alt</span>
-  </button>
+  </Link>
   </div>
   </div>
-  ))}
+  )})}
 </div>
 )}
 <div className="mt-24 pt-12 border-t border-primary/10">

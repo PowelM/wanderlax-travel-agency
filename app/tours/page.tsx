@@ -6,88 +6,7 @@ import Link from 'next/link';
 import { useAuth } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 
-type TourCategory = 'All Packages' | 'Beach Escapes' | 'Safari Adventures' | 'City Breaks' | 'Mountain Treks' | 'Cultural Tours';
-
-interface Tour {
-  title: string;
-  description: string;
-  price: string;
-  duration: string;
-  group: string;
-  rating: string;
-  category: TourCategory[];
-  tags: { label: string; style?: string }[];
-  image: string;
-}
-
-const allTours: Tour[] = [
-  {
-    title: 'Maldives Escape',
-    description: '7 nights in an overwater villa with all-inclusive dining and private sunset cruises.',
-    price: '$5,400',
-    duration: '7 Days',
-    group: '2 ppl',
-    rating: '4.9',
-    category: ['All Packages', 'Beach Escapes'],
-    tags: [{ label: 'Relaxation' }],
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAUV2tyz6So6VwYE94GJFnhBGH8Dco3cLebnCAULJDZHqwUaLKIqIveE5DwU8t3QvmDynrG_oH8wB05jvBSSYmKWDU4ZVpmqanjb_8tZy8F9eF5tAr1F2TKEcj44BhRPocSSrw9Rc9e1rbRP4lLUSbOTf5FmQ0mrjFn3mzuperyO0o04qCNpg6x45XYXnCM-Hl2jeisCIPLdS1kudpqrnBlZAcLn8IQdcc2mjxxjTEfbGQoPF4q-JHwrfR63xUONYmT0Zvpkc1Xfw',
-  },
-  {
-    title: 'Ancient Kyoto',
-    description: 'Explore the historic temples, tea ceremonies, and bamboo forests of ancient Japan.',
-    price: '$3,200',
-    duration: '5 Days',
-    group: 'Group',
-    rating: '4.8',
-    category: ['All Packages', 'Cultural Tours'],
-    tags: [{ label: 'Culture' }],
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB_hhE52OZGgrrDPr3sPjMHs5sxUWPsEuBUaMhEHMiiZrHL3nq36rEfumHZzVvZzBqAciFltS802kVcL7QdQDNS8t7vNhnEnSTdzabGKtWFWUToeZg24ztzWiOQKUK6hfEWB6d2sbdQZ0PXHxt7zMSRZQlnsy2dQctFb66cKArvDoD2RLLDJRCjkrzL1UVmpk8XjR6uqkcyJKi1UV3Fd7hhTy_TUaBc9G-bs18Zm1v2UMDkJF4GfvugGQ_CC3Rlf62I6LhYaIIiBw',
-  },
-  {
-    title: 'Swiss Alpine Trek',
-    description: 'Guided hiking tour through the breathtaking landscapes of Zermatt and Interlaken.',
-    price: '$4,150',
-    duration: '8 Days',
-    group: 'Small Group',
-    rating: '5.0',
-    category: ['All Packages', 'Mountain Treks'],
-    tags: [{ label: 'Adventure' }, { label: 'Popular', style: 'bg-primary/90' }],
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBptty087RFv8nBqSoHJWVVHJKHF0NQhttWLEr5LTl8VdnU-vEwKdo6zRlM1oo-fbV-pDHbI_U3KFls8oG29PTMJS3H3nK_aDTAnd7RP7G_lkQQSL__vy8fNPrfveL3dKGjAcW-WJsS7yetY07aE2VPi3vKv8zFaWdVa2POQJ-guOxwu_l6Uir5DPujTA8Jm2T2aMUJP1Vhs1hiDTugzYgn-ndBaqGVJ6xQSsIdaWJnM1dHHKvkvSWeHWc8C_GBQxPFxlfNk2eHNA',
-  },
-  {
-    title: 'Santorini Sunset',
-    description: 'Experience the magic of the Aegean Sea with wine tasting and private yacht tours.',
-    price: '$3,800',
-    duration: '6 Days',
-    group: '2 ppl',
-    rating: '4.7',
-    category: ['All Packages', 'Beach Escapes'],
-    tags: [{ label: 'Romantic' }],
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAvoQ7Zvip5jn5ZaFMHXoEM4xSKpCN2Ih2qoH0roUXhbzZs-7ZSqG8ZzL4Cz9kS-1-Y94c1ZUregXQuU632IIgKboaohmGPX5sLqEMrmlsRbPTWfhkyEXX03RQX4ubesRC1WGOHYMWXtk02bodDUkEgW3RZBf1fS2YIeKYmJNbDrmFbaFpCmOAXTzN0x70thPnuXAKVWvKaUbJOCQcLZ5P4BlzU-UJuyNV_kxRfFIVfdzBuseetH5kf6snTVp9pJjzvqwRukC7lmg',
-  },
-  {
-    title: 'NYC Penthouse Week',
-    description: 'Luxury stay in Manhattan with Broadway tickets and helicopter tour included.',
-    price: '$6,200',
-    duration: '5 Days',
-    group: '2 ppl',
-    rating: '4.6',
-    category: ['All Packages', 'City Breaks'],
-    tags: [{ label: 'Urban' }],
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCIRXc2032U2hY-HLjoK1Ag0J7DSNRzbKAc2V_dKqy80CC3MwKwHe49ZZvhLMwn1IjGvh8jdeJSfm5cW1ryHRpDr3WfqvchFpTRPz_gUnOiBRUgYwRqOygImLBgjdM7a-03U9khRpKmfCgQLotc7v52Gnj2vi5gBlgMBlMk9rN0xb58wM8D6gCa_vjpRjJx0pkBz-5zCw4J8-9U26zjU267MLvmaCAR0zjTsrruI-UVxI8zHCaJxxdBBDUaxqlgfGYq51IYN4TGaA',
-  },
-  {
-    title: 'Mystic Machu Picchu',
-    description: 'A guided journey through the Sacred Valley to the lost city of the Incas.',
-    price: '$2,900',
-    duration: '6 Days',
-    group: 'Group',
-    rating: '4.9',
-    category: ['All Packages', 'Mountain Treks', 'Cultural Tours'],
-    tags: [{ label: 'History' }],
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDCAVUB0h5vQRfF5hJZn-4xznNzIOGFq0GqG3kc9GG30esdrWAKSL9UrJEn4F-UxeK1BfGOuteIHrBjyue5n18qFSsZDlwlcUcpCLuV1qgsvNPB12Uyl4c4T3ZsaBUZ2nZj3qwH2e9mpVKxHUcZQ9F3_RYwvyg_fP-tyhmqZ2la28ecc6g92erllKxG36UrBISc5HRp1-8ZeE9qBQ49IxXSv82Vwttnuz4Sb-1LzPePg3mwOIT4HghZ3FNWQXpsPcUtMqeSQk2isg',
-  },
-];
+import { allTours, TourCategory } from '@/app/lib/data/mockData';
 
 const categories: TourCategory[] = ['All Packages', 'Beach Escapes', 'Safari Adventures', 'City Breaks', 'Mountain Treks', 'Cultural Tours'];
 
@@ -106,7 +25,7 @@ export default function WanderluxToursCuratedTravelPackagesPage() {
         try {
           const { getWishlistItems } = await import('@/app/actions/wishlistActions');
           const items = await getWishlistItems();
-          setFavorites(new Set(items.map(item => item.itemId)));
+          setFavorites(new Set(items.map((item: { itemId: string }) => item.itemId)));
         } catch (err) {
           console.error("Failed to load wishlist:", err);
         }

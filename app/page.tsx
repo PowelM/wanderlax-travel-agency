@@ -22,6 +22,34 @@ export default function HomePage() {
   type Destination = { name: string; country: string; price: string; tag: string; tagStyle: string; img: string; slug: string; };
   const destinations: Destination[] = [];
 
+  type Hotel = { name: string; location: string; price: string; rating: string; img: string; slug: string; };
+  const featuredHotels: Hotel[] = [
+    {
+      name: "The Royal Kyoto Resort",
+      location: "Kyoto, Japan",
+      price: "$850",
+      rating: "5.0",
+      img: "https://lh3.googleusercontent.com/aida-public/AB6AXuC3LboRjFRBURcDK81YS2v0nIq8kE4O6WyivnqM816-FjZ-s97NPdp8dah9YsazAcO07rSurdssBW7jYT2QlIQi6bwiQ-o7zsUxwW3X7nkYicZ7UBZ2xx2Tkklb62hCp1xzapDUFP9iB22Jkp4UpWUTwi38_zNpWBX0-zS1FX_EAWcnEqewSvnAmuGieRkgLu3IFAU4qHWcvlaniG3KsaGV0cZFiyqxHm7f785h3hu99hyIwUfNo02YzpR0wMxF9sF7lwNuEvHj9g",
+      slug: "royal-kyoto-resort"
+    },
+    {
+      name: "Azure Bay Villa",
+      location: "Santorini, Greece",
+      price: "$1,200",
+      rating: "4.9",
+      img: "https://lh3.googleusercontent.com/aida-public/AB6AXuC3LboRjFRBURcDK81YS2v0nIq8kE4O6WyivnqM816-FjZ-s97NPdp8dah9YsazAcO07rSurdssBW7jYT2QlIQi6bwiQ-o7zsUxwW3X7nkYicZ7UBZ2xx2Tkklb62hCp1xzapDUFP9iB22Jkp4UpWUTwi38_zNpWBX0-zS1FX_EAWcnEqewSvnAmuGieRkgLu3IFAU4qHWcvlaniG3KsaGV0cZFiyqxHm7f785h3hu99hyIwUfNo02YzpR0wMxF9sF7lwNuEvHj9g",
+      slug: "azure-bay-villa"
+    },
+    {
+      name: "Serengeti Lodge",
+      location: "Tanzania",
+      price: "$950",
+      rating: "4.8",
+      img: "https://lh3.googleusercontent.com/aida-public/AB6AXuC3LboRjFRBURcDK81YS2v0nIq8kE4O6WyivnqM816-FjZ-s97NPdp8dah9YsazAcO07rSurdssBW7jYT2QlIQi6bwiQ-o7zsUxwW3X7nkYicZ7UBZ2xx2Tkklb62hCp1xzapDUFP9iB22Jkp4UpWUTwi38_zNpWBX0-zS1FX_EAWcnEqewSvnAmuGieRkgLu3IFAU4qHWcvlaniG3KsaGV0cZFiyqxHm7f785h3hu99hyIwUfNo02YzpR0wMxF9sF7lwNuEvHj9g",
+      slug: "serengeti-lodge"
+    }
+  ];
+
   const scrollCarousel = (direction: 'left' | 'right') => {
     if (!carouselRef.current) return;
     const scrollAmount = 360;

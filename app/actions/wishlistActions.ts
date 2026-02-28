@@ -4,7 +4,7 @@ import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
-export async function toggleWishlistItem(itemType: string, itemId: string) {
+export async function toggleWishlistItem(itemType: string, itemId: string, path?: string) {
   const { userId } = await auth();
 
   if (!userId) {
@@ -49,6 +49,9 @@ export async function toggleWishlistItem(itemType: string, itemId: string) {
   revalidatePath("/portal/dashboard");
   revalidatePath("/portal/wishlist");
   revalidatePath("/tours");
+  if (path) {
+    revalidatePath(path);
+  }
 }
 
 export async function getWishlistItems() {

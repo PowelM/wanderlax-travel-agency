@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
 import { getHotels, HotelFilters } from '@/app/actions/hotelActions';
 
 // Type definitions based on Prisma schema expectation
@@ -27,9 +29,14 @@ export default function HotelsPage() {
   const [starRatings, setStarRatings] = useState<number[]>([]);
   const [amenities, setAmenities] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState('Recommended');
+  const [isMapModalOpen, setIsMapModalOpen] = useState(false);
+  
+  // Date selection states
+  const [startDate, setStartDate] = useState('2026-10-12');
+  const [endDate, setEndDate] = useState('2026-10-18');
   
   // Simulated price range
-  const [priceRange, setPriceRange] = useState({ min: 0, max: 1000 });
+  const [priceRange, setPriceRange] = useState({ min: 0, max: 1500 });
 
   const fetchHotels = useCallback(async () => {
     setIsLoading(true);
@@ -39,6 +46,8 @@ export default function HotelsPage() {
         starRatings: starRatings.length > 0 ? starRatings : undefined,
         amenities: amenities.length > 0 ? amenities : undefined,
         sortBy,
+        minPrice: priceRange.min,
+        maxPrice: priceRange.max,
       };
       const data = await getHotels(filters);
       setHotels(data);
@@ -47,7 +56,7 @@ export default function HotelsPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [destination, starRatings, amenities, sortBy]);
+  }, [destination, starRatings, amenities, sortBy, priceRange]);
 
   useEffect(() => {
     fetchHotels();
@@ -65,6 +74,7 @@ export default function HotelsPage() {
       prev.includes(amenityLabel) ? prev.filter(a => a !== amenityLabel) : [...prev, amenityLabel]
     );
   };
+
 
   const getLowestPrice = (hotel: HotelWithRelations) => {
     if (!hotel.rooms || hotel.rooms.length === 0) return 'N/A';
@@ -116,17 +126,49 @@ export default function HotelsPage() {
           <div className="flex flex-col gap-3">
             <div className="flex justify-between items-center">
               <h3 className="text-sm font-bold text-white uppercase tracking-wider">Price Range</h3>
-              <span className="material-symbols-outlined text-hotel-text-muted text-sm">expand_less</span>
+              <button 
+                onClick={() => setPriceRange({ min: 0, max: 1500 })}
+                className="text-xs text-primary hover:underline"
+              >
+                Reset
+              </button>
             </div>
-            <div className="h-1 w-full bg-hotel-surface rounded-full relative mt-2 mb-4">
-              <div className="absolute left-[0%] right-[0%] top-0 bottom-0 bg-primary rounded-full"></div>
-              {/* Note: A real slider component is needed here for functionality */}
-              <div className="absolute left-[0%] top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full border-2 border-primary cursor-pointer"></div>
-              <div className="absolute right-[0%] top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full border-2 border-primary cursor-pointer"></div>
-            </div>
-            <div className="flex justify-between text-xs text-hotel-text-muted font-mono">
-              <span>$0</span>
-              <span>$1000+</span>
+            
+            <div className="flex flex-col gap-4 mt-2">
+              <div className="flex flex-col gap-1">
+                <div className="flex justify-between text-[10px] text-hotel-text-muted uppercase font-bold">
+                  <span>Min Price</span>
+                  <span>${priceRange.min}</span>
+                </div>
+                <input 
+                  type="range" 
+                  min="0" 
+                  max="1500" 
+                  step="50"
+                  value={priceRange.min}
+                  onChange={(e) => setPriceRange(prev => ({ ...prev, min: parseInt(e.target.value) }))}
+                  className="w-full h-1.5 bg-hotel-surface rounded-lg appearance-none cursor-pointer accent-primary"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <div className="flex justify-between text-[10px] text-hotel-text-muted uppercase font-bold">
+                  <span>Max Price</span>
+                  <span>${priceRange.max}</span>
+                </div>
+                <input 
+                  type="range" 
+                  min="0" 
+                  max="1500" 
+                  step="50"
+                  value={priceRange.max}
+                  onChange={(e) => setPriceRange(prev => ({ ...prev, max: parseInt(e.target.value) }))}
+                  className="w-full h-1.5 bg-hotel-surface rounded-lg appearance-none cursor-pointer accent-primary"
+                />
+              </div>
+              <div className="flex justify-between text-xs text-hotel-text-muted font-mono mt-1">
+                <span>$0</span>
+                <span>$1500+</span>
+              </div>
             </div>
           </div>
           
@@ -207,14 +249,27 @@ export default function HotelsPage() {
               {/* Dates */}
               <div className="flex flex-col flex-1 w-full">
                 <label className="text-xs font-bold text-hotel-text-muted uppercase tracking-wider mb-1.5 ml-1">Dates</label>
-                <div className="relative group">
-                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-hotel-text-muted group-focus-within:text-primary transition-colors">calendar_month</span>
-                  <input 
-                    className="w-full bg-hotel-surface border border-hotel-border rounded-lg py-3 pl-10 pr-4 text-white placeholder-hotel-text-muted/50 focus:ring-1 focus:ring-primary focus:border-primary transition-all outline-none" 
-                    placeholder="Check-in - Check-out" 
-                    type="text" 
-                    defaultValue="Oct 12 - Oct 18"
-                  />
+                <div className="flex flex-col sm:flex-row gap-2 relative group">
+                  <div className="relative flex-1">
+                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-hotel-text-muted transition-colors z-10 text-sm">calendar_today</span>
+                    <input 
+                      className="w-full bg-hotel-surface border border-hotel-border rounded-lg py-3 pl-10 pr-4 text-white placeholder-hotel-text-muted/50 focus:ring-1 focus:ring-primary focus:border-primary transition-all outline-none [color-scheme:dark] text-sm" 
+                      type="date" 
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                    />
+                    <div className="absolute -top-2 left-3 bg-[#111] px-1 text-[10px] text-hotel-text-muted uppercase font-bold tracking-tighter">Check-in</div>
+                  </div>
+                  <div className="relative flex-1">
+                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-hotel-text-muted transition-colors z-10 text-sm">calendar_month</span>
+                    <input 
+                      className="w-full bg-hotel-surface border border-hotel-border rounded-lg py-3 pl-10 pr-4 text-white placeholder-hotel-text-muted/50 focus:ring-1 focus:ring-primary focus:border-primary transition-all outline-none [color-scheme:dark] text-sm" 
+                      type="date" 
+                      value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                    />
+                    <div className="absolute -top-2 left-3 bg-[#111] px-1 text-[10px] text-hotel-text-muted uppercase font-bold tracking-tighter">Check-out</div>
+                  </div>
                 </div>
               </div>
               {/* Guests */}
@@ -233,7 +288,7 @@ export default function HotelsPage() {
               {/* Search Button */}
               <button 
                 className="h-[46px] aspect-square flex items-center justify-center bg-primary hover:bg-primary-dark text-white rounded-lg transition-colors shadow-lg shadow-primary/20"
-                onClick={fetchHotels}
+                onClick={() => fetchHotels()}
               >
                 <span className="material-symbols-outlined">search</span>
               </button>
@@ -249,14 +304,13 @@ export default function HotelsPage() {
                   <h2 className="text-2xl font-bold text-white mb-1">Featured Luxury Stays</h2>
                   <p className="text-hotel-text-muted text-sm">Hand-picked premium hotels for your perfect vacation</p>
                 </div>
-                <button className="text-primary text-sm font-medium hover:text-white transition-colors flex items-center gap-1">
-                  View All <span className="material-symbols-outlined text-sm">arrow_forward</span>
-                </button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                  {/* Hero Cards Placeholder - Can populate from DB */}
-                  <div className="group relative h-[400px] rounded-xl overflow-hidden cursor-pointer">
-                  <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuC3LboRjFRBURcDK81YS2v0nIq8kE4O6WyivnqM816-FjZ-s97NPdp8dah9YsazAcO07rSurdssBW7jYT2QlIQi6bwiQ-o7zsUxwW3X7nkYicZ7UBZ2xx2Tkklb62hCp1xzapDUFP9iB22Jkp4UpWUTwi38_zNpWBX0-zS1FX_EAWcnEqewSvnAmuGieRkgLu3IFAU4qHWcvlaniG3KsaGV0cZFiyqxHm7f785h3hu99hyIwUfNo02YzpR0wMxF9sF7lwNuEvHj9g')" }}></div>
+                  <div className="group relative h-[400px] rounded-xl overflow-hidden">
+                  <Link href="/hotels/the-royal-kyoto-resort" className="absolute inset-0">
+                    <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuC3LboRjFRBURcDK81YS2v0nIq8kE4O6WyivnqM816-FjZ-s97NPdp8dah9YsazAcO07rSurdssBW7jYT2QlIQi6bwiQ-o7zsUxwW3X7nkYicZ7UBZ2xx2Tkklb62hCp1xzapDUFP9iB22Jkp4UpWUTwi38_zNpWBX0-zS1FX_EAWcnEqewSvnAmuGieRkgLu3IFAU4qHWcvlaniG3KsaGV0cZFiyqxHm7f785h3hu99hyIwUfNo02YzpR0wMxF9sF7lwNuEvHj9g')" }}></div>
+                  </Link>
                   <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
                   <div className="absolute top-4 left-4 bg-primary text-white text-xs font-bold px-3 py-1 rounded uppercase tracking-wider shadow-lg">Wanderlux Choice</div>
                   <div className="absolute top-4 right-4 bg-white/10 backdrop-blur-md p-2 rounded-full hover:bg-white/20 transition-colors">
@@ -281,9 +335,11 @@ export default function HotelsPage() {
                         <span className="text-xs text-white/60">Price per night</span>
                         <span className="text-xl font-bold text-white">$850</span>
                       </div>
-                      <button className="bg-white text-black hover:bg-gray-200 px-6 py-2.5 rounded-lg text-sm font-bold transition-colors">
-                        View Details
-                      </button>
+                      <Link href="/hotels/the-royal-kyoto-resort">
+                        <button className="bg-white text-black hover:bg-gray-200 px-6 py-2.5 rounded-lg text-sm font-bold transition-colors">
+                          View Details
+                        </button>
+                      </Link>
                     </div>
                   </div>
                 </div>
@@ -324,17 +380,25 @@ export default function HotelsPage() {
                      </div>
                 ) : (
                     hotels.map((hotel) => (
-                    <div key={hotel.id} className="bg-hotel-surface border border-hotel-border rounded-xl overflow-hidden flex flex-col sm:flex-row h-auto sm:h-56 group hover:border-primary/50 transition-colors">
-                        <div className="w-full sm:w-64 bg-cover bg-center shrink-0 relative h-48 sm:h-full" style={{ backgroundImage: `url('${hotel.images[0] || 'https://via.placeholder.com/400x300?text=No+Image'}')` }}>
-                        <button className="absolute top-3 right-3 p-1.5 bg-black/50 backdrop-blur-sm rounded-full text-white hover:text-primary transition-colors">
-                            <span className="material-symbols-outlined text-lg">favorite</span>
-                        </button>
-                        </div>
+                    <div key={hotel.id} className="bg-hotel-surface border border-hotel-border rounded-xl overflow-hidden flex flex-col sm:flex-row h-auto sm:h-56 group hover:border-primary/50 transition-colors relative">
+                        <Link href={`/hotels/${hotel.slug}`} className="w-full sm:w-64 bg-cover bg-center shrink-0 relative h-48 sm:h-full block overflow-hidden">
+                          <Image 
+                            src={hotel.images[0] || 'https://via.placeholder.com/400x300?text=No+Image'} 
+                            alt={hotel.name}
+                            fill
+                            className="object-cover transition-transform duration-700 group-hover:scale-110"
+                          />
+                          <button className="absolute top-3 right-3 p-1.5 bg-black/50 backdrop-blur-sm rounded-full text-white hover:text-primary transition-colors z-10" onClick={(e) => { e.preventDefault(); /* wishlist logic */ }}>
+                              <span className="material-symbols-outlined text-lg">favorite</span>
+                          </button>
+                        </Link>
                         <div className="p-5 flex flex-col flex-1 justify-between gap-4">
                         <div>
                             <div className="flex justify-between items-start mb-2">
                             <div>
-                                <h4 className="text-xl font-bold text-white group-hover:text-primary transition-colors line-clamp-1">{hotel.name}</h4>
+                                <Link href={`/hotels/${hotel.slug}`}>
+                                  <h4 className="text-xl font-bold text-white group-hover:text-primary transition-colors line-clamp-1">{hotel.name}</h4>
+                                </Link>
                                 <p className="text-sm text-hotel-text-muted flex items-center gap-1 mt-1">
                                 <span className="material-symbols-outlined text-sm flex-shrink-0">location_on</span> 
                                 <span className="line-clamp-1">{hotel.address}</span>
@@ -384,7 +448,10 @@ export default function HotelsPage() {
                   ))}
                   
                   <div className="absolute bottom-4 left-4 bg-hotel-surface p-2 rounded-lg shadow-lg">
-                    <button className="bg-primary text-white text-sm font-bold px-4 py-2 rounded flex items-center gap-2 hover:bg-primary-dark transition-colors">
+                    <button 
+                      onClick={() => setIsMapModalOpen(true)}
+                      className="bg-primary text-white text-sm font-bold px-4 py-2 rounded flex items-center gap-2 hover:bg-primary-dark transition-colors"
+                    >
                       <span className="material-symbols-outlined text-lg">map</span> Show Map
                     </button>
                   </div>
@@ -403,6 +470,55 @@ export default function HotelsPage() {
           </div>
         </main>
       </div>
+      {/* Map Modal */}
+      {isMapModalOpen && (
+        <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex flex-col animate-in fade-in duration-300">
+          <header className="p-4 border-b border-white/10 flex justify-between items-center bg-[#141414]">
+            <div>
+              <h2 className="text-xl font-bold text-white">Interactive Map</h2>
+              <p className="text-hotel-text-muted text-sm">{hotels.length} hotels found in this area</p>
+            </div>
+            <button 
+              onClick={() => setIsMapModalOpen(false)}
+              className="size-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+            >
+              <span className="material-symbols-outlined pb-1">close</span>
+            </button>
+          </header>
+          
+          <main className="flex-1 relative overflow-hidden bg-[#0a0a0a]">
+            {/* Full Screen Map Placeholder */}
+            <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuCLjxD74aD-UYR1c_3fppC_-FyDCg_dRjNF8wwOcU1SJSuCgvkWfeKhBvp8uNl0z6YoJdTwESAz08FtNilT5pSC9Rs-sf-6vMRN2mXkVUb9mltqShF71VT8-N85BE6pO7_Gc6DfhUMuwKovxkoSZPHxa6V-5iP4aT8FOVtDF3kDWLhjgrI_Sp9DtLBlWU4sDAUXkjnsdJwUSC85Yv0dFAo_zmltiLauWcFE_h1r5i9gWzpl6pgTcy6N2kP_IQalgxzhZSrrf7NFRA')", opacity: 0.4 }}></div>
+            
+            {/* Map Interaction Layer */}
+            <div className="absolute inset-0 z-10 p-10">
+               {hotels.map((hotel, idx) => (
+                   <div key={hotel.id} className="absolute group cursor-pointer" style={{ top: `${15 + (idx * 8)}%`, left: `${10 + (idx%5 * 18)}%`}}>    
+                      <div className="bg-primary text-white text-sm font-bold px-3 py-1.5 rounded shadow-2xl group-hover:scale-110 transition-transform flex flex-col items-center">
+                        <span className="text-[10px] opacity-70 uppercase tracking-tight font-black leading-none mb-1">{hotel.name}</span>
+                        {getLowestPrice(hotel)}
+                      </div>
+                      <div className="w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[8px] border-t-primary mx-auto"></div>
+                   </div>
+               ))}
+            </div>
+
+            <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20 bg-hotel-surface/90 backdrop-blur-md border border-white/10 p-4 rounded-xl shadow-2xl flex items-center gap-6">
+              <div className="flex flex-col">
+                <span className="text-xs text-hotel-text-muted font-bold uppercase">Grid View</span>
+                <span className="text-white text-sm">{hotels.length} Properties</span>
+              </div>
+              <div className="h-8 w-px bg-white/10"></div>
+              <button 
+                onClick={() => setIsMapModalOpen(false)}
+                className="bg-primary hover:bg-primary-dark text-white px-6 py-2 rounded-lg font-bold text-sm transition-colors"
+              >
+                Return to List
+              </button>
+            </div>
+          </main>
+        </div>
+      )}
     </div>
   );
 }

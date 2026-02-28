@@ -38,6 +38,10 @@ export function AdminSidebar() {
           <span className="material-symbols-outlined text-[24px]">calendar_month</span>
           <span className="text-sm font-medium">Bookings</span>
         </Link>
+        <Link className={getLinkClasses("/admin/hotels")} href="/admin/hotels">
+          <span className="material-symbols-outlined text-[24px]">hotel</span>
+          <span className="text-sm font-medium">Hotels</span>
+        </Link>
         <Link className={getLinkClasses("/admin/tours")} href="/admin/tours">
           <span className="material-symbols-outlined text-[24px]">map</span>
           <span className="text-sm font-medium">Tours</span>

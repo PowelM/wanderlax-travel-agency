@@ -166,7 +166,7 @@ export default function WanderluxToursCuratedTravelPackagesPage() {
                   </div>
                 </div>
                 <div className="flex gap-4">
-                  <Link href="/contact" className="flex-1 bg-white/10 border border-white/20 text-white font-bold py-3 px-6 rounded-lg hover:bg-white/20 transition-all text-center">
+                  <Link href="/tours/serengeti" className="flex-1 bg-white/10 border border-white/20 text-white font-bold py-3 px-6 rounded-lg hover:bg-white/20 transition-all text-center">
                     View Details
                   </Link>
                   <button
@@ -273,13 +273,22 @@ export default function WanderluxToursCuratedTravelPackagesPage() {
                       </div>
                     </div>
                   </div>
-                  <button
-                    onClick={() => handleBookNow(tour.title)}
-                    className="w-full mt-4 bg-primary hover:bg-red-700 text-white font-bold py-2.5 px-4 rounded-lg transition-all shadow-[0_0_15px_rgba(198,16,16,0.2)] hover:shadow-[0_0_20px_rgba(198,16,16,0.4)] flex items-center justify-center gap-2 text-sm"
-                  >
-                    <span className="material-symbols-outlined text-[18px]">bookmark_add</span>
-                    Book Now
-                  </button>
+                  <div className="grid grid-cols-2 gap-3 mt-4">
+                    <Link
+                      href={`/tours/${tour.slug}`}
+                      className="bg-white/5 hover:bg-white/10 text-white font-bold py-2.5 px-4 rounded-lg transition-all border border-white/10 flex items-center justify-center gap-2 text-sm"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">info</span>
+                      Details
+                    </Link>
+                    <button
+                      onClick={() => handleBookNow(tour.title)}
+                      className="bg-primary hover:bg-red-700 text-white font-bold py-2.5 px-4 rounded-lg transition-all shadow-[0_0_15px_rgba(198,16,16,0.2)] hover:shadow-[0_0_20px_rgba(198,16,16,0.4)] flex items-center justify-center gap-2 text-sm"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">bookmark_add</span>
+                      Book
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}

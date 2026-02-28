@@ -1,8 +1,53 @@
+"use client";
+
 /* eslint-disable @next/next/no-img-element */
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@clerk/nextjs';
+import { allTours } from '@/app/lib/data/mockData';
 
 export default function AmalfiCoastPage() {
+  const router = useRouter();
+  const { isSignedIn } = useAuth();
+  const [isFavorited, setIsFavorited] = useState(false);
+  const tourTitle = "The Amalfi Coast";
+
+  // Load wishlist status on mount
+  useEffect(() => {
+    async function checkWishlist() {
+      if (isSignedIn) {
+        try {
+          const { getWishlistItems } = await import('@/app/actions/wishlistActions');
+          const items = await getWishlistItems();
+          setIsFavorited(items.some((item: { itemId: string }) => item.itemId === tourTitle));
+        } catch (err) {
+          console.error("Failed to check wishlist:", err);
+        }
+      }
+    }
+    checkWishlist();
+  }, [isSignedIn]);
+
+  const toggleFavorite = async () => {
+    if (!isSignedIn) {
+      router.push('/portal/login');
+      return;
+    }
+
+    // Optimistic update
+    setIsFavorited(!isFavorited);
+
+    try {
+      const { toggleWishlistItem } = await import('@/app/actions/wishlistActions');
+      await toggleWishlistItem('TOUR_PACKAGE', tourTitle, '/tours/amalfi-coast');
+    } catch (err) {
+      console.error("Failed to toggle favorite:", err);
+      // Revert optimistic update
+      setIsFavorited(prev => !prev);
+    }
+  };
+
   return (
     <div className="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased overflow-x-hidden amalfi-scrollbar pt-20">
       <div className="noise-overlay"></div>
@@ -16,7 +61,17 @@ export default function AmalfiCoastPage() {
         <div className="absolute inset-0 hero-gradient"></div>
         <div className="relative z-10 max-w-7xl mx-auto px-6 pb-24 w-full">
           <div className="max-w-3xl">
-            <span className="inline-block px-4 py-1 bg-primary text-[10px] font-black uppercase tracking-[0.2em] mb-6 rounded-sm text-white">Exclusive Journey</span>
+            <div className="flex items-center justify-between mb-6">
+              <span className="inline-block px-4 py-1 bg-primary text-[10px] font-black uppercase tracking-[0.2em] rounded-sm text-white">Exclusive Journey</span>
+              <button 
+                onClick={toggleFavorite}
+                className={`size-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all ${
+                  isFavorited ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20' : 'text-white hover:bg-white/20'
+                }`}
+              >
+                <span className="material-symbols-outlined">{isFavorited ? 'favorite' : 'favorite_border'}</span>
+              </button>
+            </div>
             <h1 className="text-6xl md:text-8xl font-extrabold leading-[1.1] mb-8 tracking-tighter text-white">The Eternal <br/><span className="text-primary">Amalfi</span> Coast</h1>
             <div className="flex flex-wrap gap-8 items-center border-t border-white/20 pt-10">
               <div className="flex flex-col">
@@ -221,51 +276,25 @@ export default function AmalfiCoastPage() {
             </div>
           </div>
           <div className="grid md:grid-cols-3 gap-8 text-white">
-            {/* Iceland */}
-            <Link href="/tours/iceland" className="group cursor-pointer block">
-              <div className="aspect-[4/5] overflow-hidden rounded-2xl relative mb-6">
-                <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBhW-OdqzIMU2BYXfD0K6fr71A-7Bye9GT4DRvsrw-xbkdb3DZT4jCZEK790En_X9ZRQB2gOg0lIz_ez90WUN0ZQsA65aQnfiI3bIrWf1WzTKg0isWgNwWDKS0Pgi6EOXllTFOWARlhyUKNIAStqebEXSf4tWq8wcJBJbQJy0v69CcbLrUDPyHDJEB5-_qMewGehm1tNYw1TG8hU8oCU1vAmlVSV2o1fNUKZGBuVtpnbnU812062e32Ed25cdbhYG-uJmgr-Ek2AQ" alt="Iceland" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
-                <div className="absolute bottom-6 left-6">
-                  <span className="text-[10px] font-bold bg-white text-black px-2 py-1 uppercase rounded-sm mb-2 inline-block">Northern Lights</span>
-                  <h4 className="text-xl font-bold">Icelandic Wilderness</h4>
+            {allTours.filter(t => t.slug !== 'amalfi-coast').slice(0, 3).map((other) => (
+              <Link key={other.slug} href={`/tours/${other.slug}`} className="group block">
+                <div className="aspect-[4/5] overflow-hidden rounded-2xl relative mb-6">
+                  <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110" style={{ backgroundImage: `url('${other.image}')` }}></div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                  <div className="absolute bottom-6 left-6">
+                    <span className="text-[10px] font-bold bg-white text-black px-2 py-1 uppercase rounded-sm mb-2 inline-block">{other.category[1] || other.category[0]}</span>
+                    <h4 className="text-xl font-bold">{other.title}</h4>
+                  </div>
+                  <div className="absolute top-6 right-6 bg-black/60 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-white">
+                    {other.rating} ★
+                  </div>
                 </div>
-              </div>
-              <div className="flex justify-between items-center px-2">
-                <span className="text-white/50 text-sm">8 Days • Private</span>
-                <span className="font-bold text-primary">From $9,200</span>
-              </div>
-            </Link>
-            {/* Japan */}
-            <div className="group cursor-pointer">
-              <div className="aspect-[4/5] overflow-hidden rounded-2xl relative mb-6">
-                <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuADiY8ZQOZZ5s1erLtjFlQD2-4hm9MbhdlgLweyjJt6fYYufypWSidRhxVylLfg6LCVIOVvewErHupLMnJ1jfG21oAwujjvT2-R4WhwNj9z7VBq-2fBgec9kG8LCLp_ozQQ52f3mzFhzXEN3t6K_GSXV5s6E-8lWK69ViP8GU3v48jZSqiwxFB5_DBDiwGT964vy2lIyDcCxIVRhGp_23f2_II4TTehCkW7PNBHJ2AECGIsZGkWE14SkCcYBJptjufn2q9tS5yD1g" alt="Japan" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
-                <div className="absolute bottom-6 left-6">
-                  <span className="text-[10px] font-bold bg-white text-black px-2 py-1 uppercase rounded-sm mb-2 inline-block">Heritage</span>
-                  <h4 className="text-xl font-bold">Zen & Shogun Heritage</h4>
+                <div className="flex justify-between items-center px-2">
+                  <span className="text-white/50 text-sm">{other.duration}</span>
+                  <span className="font-bold text-primary">{other.price}</span>
                 </div>
-              </div>
-              <div className="flex justify-between items-center px-2">
-                <span className="text-white/50 text-sm">14 Days • Private</span>
-                <span className="font-bold text-primary">From $18,400</span>
-              </div>
-            </div>
-            {/* Bora Bora */}
-            <div className="group cursor-pointer">
-              <div className="aspect-[4/5] overflow-hidden rounded-2xl relative mb-6">
-                <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBOg2GQOYtZfA2sCpK3mZtgopdOph-i5Kh2068BXRM0K268h89_iYbwOFhdD5pkTPcGV-IL4-dGpa5SSbYzYaZqcaiZ2u_fq7xUo09_NGNWtLucKIO-K1ErRso_Un-5ECeDTVgpzsb60OZGznLiHOcJXSHZPzkjQJPSrnMZl73900BKIG8fY1ZrUFOtQK22CnLYG_mg0mTLmK2uASyiQnMR2KZ_CLo186ZHnwRoGe_uoo-EkFiaoEW78cF7bS8TxFGQc8PKs1fAug" alt="Bora Bora" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
-                <div className="absolute bottom-6 left-6">
-                  <span className="text-[10px] font-bold bg-white text-black px-2 py-1 uppercase rounded-sm mb-2 inline-block">Island Paradise</span>
-                  <h4 className="text-xl font-bold">Polynesian Private Islands</h4>
-                </div>
-              </div>
-              <div className="flex justify-between items-center px-2">
-                <span className="text-white/50 text-sm">10 Days • Private</span>
-                <span className="font-bold text-primary">From $22,000</span>
-              </div>
-            </div>
+              </Link>
+            ))}
           </div>
         </div>
       </section>

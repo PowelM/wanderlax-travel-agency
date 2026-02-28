@@ -253,8 +253,8 @@ export default function Header() {
                         href={link.href}
                         className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-all group/item"
                       >
-                        <span className="material-symbols-outlined text-[20px] text-slate-400 group-hover/item:text-primary">{link.icon}</span>
-                        <span className="text-sm font-bold text-white group-hover/item:text-primary">{link.label}</span>
+                        <span className={`material-symbols-outlined text-[20px] transition-colors ${isActive(link.href) ? 'text-primary' : 'text-slate-400 group-hover/item:text-primary'}`}>{link.icon}</span>
+                        <span className={`text-sm font-bold transition-colors ${isActive(link.href) ? 'text-primary' : 'text-white group-hover/item:text-primary'}`}>{link.label}</span>
                       </Link>
                     ))}
                   </div>
@@ -268,7 +268,7 @@ export default function Header() {
               key={link.label}
               className={`text-sm font-medium tracking-wide transition-all duration-300 relative group overflow-hidden ${
                 isActive(link.href)
-                  ? 'text-white'
+                  ? 'text-primary font-bold'
                   : 'text-slate-400 hover:text-white'
               }`}
               href={link.href}
@@ -365,10 +365,16 @@ export default function Header() {
                     className="flex items-center gap-4 group"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    <div className="size-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-400">
+                    <div className={`size-12 rounded-xl border flex items-center justify-center transition-all ${
+                      isActive(link.href) 
+                        ? 'bg-primary/20 border-primary text-primary shadow-lg shadow-primary/20' 
+                        : 'bg-white/5 border-white/10 text-slate-400'
+                    }`}>
                       <span className="material-symbols-outlined">{link.icon}</span>
                     </div>
-                    <span className="text-xl font-bold text-white group-hover:text-primary transition-colors">{link.label}</span>
+                    <span className={`text-xl font-bold transition-colors ${
+                      isActive(link.href) ? 'text-primary' : 'text-white group-hover:text-primary'
+                    }`}>{link.label}</span>
                   </Link>
                 ))}
               </div>
@@ -380,7 +386,9 @@ export default function Header() {
                 {companyLinks.map((link) => (
                   <Link
                     key={link.label}
-                    className="text-2xl font-black text-white hover:text-primary transition-colors"
+                    className={`text-2xl font-black transition-colors ${
+                      isActive(link.href) ? 'text-primary' : 'text-white hover:text-primary'
+                    }`}
                     href={link.href}
                     onClick={() => setMobileMenuOpen(false)}
                   >
@@ -400,10 +408,12 @@ export default function Header() {
                         <Link
                           key={link.label}
                           href={link.href}
-                          className="flex items-center gap-4 text-2xl font-black text-white hover:text-primary transition-colors"
+                          className={`flex items-center gap-4 text-2xl font-black transition-colors ${
+                            isActive(link.href) ? 'text-primary' : 'text-white hover:text-primary'
+                          }`}
                           onClick={() => setMobileMenuOpen(false)}
                         >
-                          <span className="material-symbols-outlined text-[32px]">{link.icon}</span>
+                          <span className={`material-symbols-outlined text-[32px] ${isActive(link.href) ? 'text-primary' : ''}`}>{link.icon}</span>
                           {link.label}
                         </Link>
                       ))}
@@ -414,19 +424,23 @@ export default function Header() {
                     <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.3em] opacity-80">Account</p>
                     <Link
                       href="/portal/dashboard"
-                      className="flex items-center gap-4 text-2xl font-black text-slate-400 hover:text-white transition-colors"
+                      className={`flex items-center gap-4 text-2xl font-black transition-colors ${
+                        isActive('/portal/dashboard') ? 'text-primary' : 'text-slate-400 hover:text-white'
+                      }`}
                       onClick={() => setMobileMenuOpen(false)}
                     >
-                      <span className="material-symbols-outlined text-[32px]">dashboard</span>
+                      <span className={`material-symbols-outlined text-[32px] ${isActive('/portal/dashboard') ? 'text-primary' : ''}`}>dashboard</span>
                       Dashboard
                     </Link>
 
                     <Link
                       href="/portal/itinerary"
-                      className="flex items-center gap-4 text-2xl font-black text-slate-400 hover:text-white transition-colors"
+                      className={`flex items-center gap-4 text-2xl font-black transition-colors ${
+                        isActive('/portal/itinerary') ? 'text-primary' : 'text-slate-400 hover:text-white'
+                      }`}
                       onClick={() => setMobileMenuOpen(false)}
                     >
-                      <span className="material-symbols-outlined text-[32px]">event_available</span>
+                      <span className={`material-symbols-outlined text-[32px] ${isActive('/portal/itinerary') ? 'text-primary' : ''}`}>event_available</span>
                       Itinerary
                     </Link>
 
@@ -434,26 +448,32 @@ export default function Header() {
                       <>
                         <Link
                           href="/portal/history"
-                          className="flex items-center gap-4 text-2xl font-black text-slate-400 hover:text-white transition-colors"
+                          className={`flex items-center gap-4 text-2xl font-black transition-colors ${
+                            isActive('/portal/history') ? 'text-primary' : 'text-slate-400 hover:text-white'
+                          }`}
                           onClick={() => setMobileMenuOpen(false)}
                         >
-                          <span className="material-symbols-outlined text-[32px]">history_edu</span>
+                          <span className={`material-symbols-outlined text-[32px] ${isActive('/portal/history') ? 'text-primary' : ''}`}>history_edu</span>
                           Trip History
                         </Link>
                         <Link
                           href="/portal/loyalty"
-                          className="flex items-center gap-4 text-2xl font-black text-slate-400 hover:text-white transition-colors"
+                          className={`flex items-center gap-4 text-2xl font-black transition-colors ${
+                            isActive('/portal/loyalty') ? 'text-primary' : 'text-slate-400 hover:text-white'
+                          }`}
                           onClick={() => setMobileMenuOpen(false)}
                         >
-                          <span className="material-symbols-outlined text-[32px]">card_giftcard</span>
+                          <span className={`material-symbols-outlined text-[32px] ${isActive('/portal/loyalty') ? 'text-primary' : ''}`}>card_giftcard</span>
                           Loyalty
                         </Link>
                         <Link
                           href="/portal/wishlist"
-                          className="flex items-center gap-4 text-2xl font-black text-slate-400 hover:text-white transition-colors"
+                          className={`flex items-center gap-4 text-2xl font-black transition-colors ${
+                            isActive('/portal/wishlist') ? 'text-primary' : 'text-slate-400 hover:text-white'
+                          }`}
                           onClick={() => setMobileMenuOpen(false)}
                         >
-                          <span className="material-symbols-outlined text-[32px]">favorite</span>
+                          <span className={`material-symbols-outlined text-[32px] ${isActive('/portal/wishlist') ? 'text-primary' : ''}`}>favorite</span>
                           Wishlist
                         </Link>
                       </>

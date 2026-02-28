@@ -117,3 +117,87 @@ export async function getHotels(filters: HotelFilters = {}) {
     return [];
   }
 }
+
+export async function getHotelBySlug(slug: string) {
+  try {
+    const hotel = await prisma.hotel.findUnique({
+      where: { slug },
+      include: {
+        destination: true,
+        rooms: {
+          where: { isActive: true },
+        },
+        reviews: {
+          include: {
+            user: true,
+          },
+          orderBy: { createdAt: 'desc' },
+        },
+      },
+    });
+
+    if (!hotel) return null;
+
+    return JSON.parse(JSON.stringify(hotel));
+  } catch (error) {
+    console.error("Error fetching hotel by slug:", error);
+    return null;
+  }
+}
+
+export async function getAdminHotels() {
+  try {
+    const hotels = await prisma.hotel.findMany({
+      include: {
+        destination: true,
+        rooms: true,
+        reviews: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+    return JSON.parse(JSON.stringify(hotels));
+  } catch (error) {
+    console.error("Error fetching admin hotels:", error);
+    return [];
+  }
+}
+
+export async function createHotel(data: Prisma.HotelUncheckedCreateInput) {
+  try {
+    const hotel = await prisma.hotel.create({
+      data: {
+        ...data,
+        isActive: true,
+      },
+    });
+    return JSON.parse(JSON.stringify(hotel));
+  } catch (error) {
+    console.error("Error creating hotel:", error);
+    return null;
+  }
+}
+
+export async function updateHotel(id: string, data: Prisma.HotelUncheckedUpdateInput) {
+  try {
+    const hotel = await prisma.hotel.update({
+      where: { id },
+      data,
+    });
+    return JSON.parse(JSON.stringify(hotel));
+  } catch (error) {
+    console.error("Error updating hotel:", error);
+    return null;
+  }
+}
+
+export async function deleteHotel(id: string) {
+  try {
+    await prisma.hotel.delete({
+      where: { id },
+    });
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting hotel:", error);
+    return { success: false };
+  }
+}

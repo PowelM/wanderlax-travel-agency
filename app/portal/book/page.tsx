@@ -1,9 +1,11 @@
 "use client";
+
 import React, { useState, Suspense } from 'react';
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
-import { useSearchParams, useRouter } from 'next/navigation';
-import { createTourBooking } from '@/app/actions/bookingActions';
+import { createTourBooking, createHotelBooking } from '@/app/actions/bookingActions';
+import { getHotelBySlug, getRoomById } from '@/app/actions/hotelActions';
 
 const tourData: Record<string, { price: string; duration: string; description: string; image: string }> = {
   'Maldives Escape': {
@@ -48,25 +50,69 @@ const tourData: Record<string, { price: string; duration: string; description: s
     description: 'Immerse yourself in the wild heart of Africa with private game drives and luxury tented camps.',
     image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAae9-jgMtfLY4pZTb4At9kVVP0UyuN4ztEK3DfJyYBEKE971nIMS6zfggnNE4222TwuLC9qq0YmB-tqps4gRz_4oHkWZu9FTcu9RMCYyonHusYO-t0KIyenuZ8ZhATYeUgTkbssukdVW9eAHzo_46bLV52y6MCPq0dWHG8YQ99Mu3q8btP2iMLF8PpevjJAP4ut8hFo5YouwpHeIpWZ_7NQ0NAOtm2TMlTWUGl25gZSucltOaB_RiK03g-jT6fU2EwpDsbOLiFhg',
   },
+  'The Brando Reserve': {
+    price: '$24,900',
+    duration: '7 Days',
+    description: 'Exclusive private island resort featuring luxury villas with plunge pools and pristine beaches.',
+    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAHDZw2P1Bt42QqK3S_ze8EGY_eGv8ylghIyD24u4tctGSvrm3TkZi7DTdX8k96quBef24tZEXLSw2m20GtGFi5Ag8QdytJo0u1UHOT5luYFRwTasxvpdOnjnaw45l_DSdmb5buDAY19_syqliRIKNq1QVMzjDw5hXX9Xcwo0DCf9YRg3Yo9QTnIf02G1y16jN5feXinGeao4CjtRdK1ZMNSVasRdK-RLDUXDSKqA55KiebzwSE1zFM8ZyMClE3iGDMTdjHCEk_YA',
+  },
+  'Aman Kyoto Sanctuary': {
+    price: '$18,500',
+    duration: '5 Days',
+    description: 'A serene luxury pavilion set within a secret garden in the heart of ancient Kyoto.',
+    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAJfQGGrlZ1FJuDxdSJqjTokju1EWXWtHli-FGMs1L38ktE0sA8i3rqQEPVhmSe-y211S0WrLDDiuwMB7F3MY9gdlInRaVBnGNmEAZgjLndTuplAYLpIeqKeA8TYY9lIgqjAmR1gLbhcciBrBv9ZWwScwywuqYsqPTV2LpSWmUXGtEcTQ4QXtxhEkaFrqvmUVFA8Ix688GLdZ2WS1_aptrJDgnH9jLcqg_ffI1a97RHgKy-4Rk_F32GnS6tofOtGQIWJbqcg4XNXw',
+  },
+  'Singita Grumeti': {
+    price: '$32,000',
+    duration: '7 Days',
+    description: 'Ultra-luxury lodge offering exclusive access to the Serengeti wildlife and unparalleled service.',
+    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuD-xCu15TkqE2gKjOy-5legZG_kg0k-seYoAyjTOJxAXXXWYZMHHxygiznrneGLQ9P_K3wpW-YOr8l_5HZ6etP9mDO8uJorzVhASmkxFlAz6BiwBiBwnfMlpp7mpgX1ego9SEcLS1AgD93gTapFSJO0WEXaFYyea1GikFOzLl2Obk4_kNbl15zalhbZuv6BwuOXoaTJZ092rPMCDBFvPOWta5RDPZ-cObH0RDMViIg9jPVa77kts7MyGQyI8FAZG8P-t8qxlHsePw',
+  },
 };
 
 function BookingFormContent() {
   const { user, isLoaded } = useUser();
   const searchParams = useSearchParams();
   const tourName = searchParams.get('tour') || '';
+  const hotelSlug = searchParams.get('hotel') || '';
+  const roomId = searchParams.get('room') || '';
+  
   const tour = tourData[tourName];
+  const [hotel, setHotel] = useState<any>(null);
+  const [room, setRoom] = useState<any>(null);
+  const [isLoadingData, setIsLoadingData] = useState(false);
+
+  React.useEffect(() => {
+    async function fetchData() {
+      if (hotelSlug && roomId) {
+        setIsLoadingData(true);
+        try {
+          const [hotelData, roomData] = await Promise.all([
+            getHotelBySlug(hotelSlug),
+            getRoomById(roomId)
+          ]);
+          setHotel(hotelData);
+          setRoom(roomData);
+        } catch (err) {
+          console.error("Error fetching booking data:", err);
+        } finally {
+          setIsLoadingData(false);
+        }
+      }
+    }
+    fetchData();
+  }, [hotelSlug, roomId]);
 
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [guests, setGuests] = useState(2);
   const [specialRequirements, setSpecialRequirements] = useState('');
   const [submitted, setSubmitted] = useState(false);
-
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  if (!isLoaded) {
+  if (!isLoaded || isLoadingData) {
     return (
       <div className="flex items-center justify-center min-h-screen pt-[72px]">
         <div className="animate-spin size-8 border-2 border-primary border-t-transparent rounded-full"></div>
@@ -82,23 +128,39 @@ function BookingFormContent() {
     setError(null);
 
     try {
-      // Find the slug from tourData if possible, or fall back to name-based logic
-      const tourSlug = tourName.toLowerCase().replace(/ /g, '-');
-      
-      const result = await createTourBooking({
-        tourSlug,
-        tourName,
-        startDate,
-        endDate,
-        guestCount: guests,
-        totalAmount: parseFloat(tour.price.replace(/[^0-9.]/g, '')) * guests,
-        specialRequirements,
-        clerkId: user.id,
-        email: user.emailAddresses[0]?.emailAddress || '',
-        firstName: user.firstName || '',
-        lastName: user.lastName || '',
-        avatarUrl: user.imageUrl,
-      });
+      let result;
+      if (hotelSlug && roomId && hotel && room) {
+        result = await createHotelBooking({
+          hotelSlug,
+          roomId,
+          startDate,
+          endDate,
+          guestCount: guests,
+          totalAmount: Number(room.pricePerNight) * guests, // Simplified calculation
+          specialRequirements,
+          clerkId: user.id,
+          email: user.emailAddresses[0]?.emailAddress || '',
+          firstName: user.firstName || '',
+          lastName: user.lastName || '',
+          avatarUrl: user.imageUrl,
+        });
+      } else {
+        const tourSlug = tourName.toLowerCase().replace(/ /g, '-');
+        result = await createTourBooking({
+          tourSlug,
+          tourName,
+          startDate,
+          endDate,
+          guestCount: guests,
+          totalAmount: parseFloat(tour?.price.replace(/[^0-9.]/g, '') || '0') * guests,
+          specialRequirements,
+          clerkId: user.id,
+          email: user.emailAddresses[0]?.emailAddress || '',
+          firstName: user.firstName || '',
+          lastName: user.lastName || '',
+          avatarUrl: user.imageUrl,
+        });
+      }
 
       if (result.success) {
         setSubmitted(true);
@@ -156,9 +218,9 @@ function BookingFormContent() {
           <div className="flex items-center gap-2 text-sm text-slate-400 mb-8">
             <Link href="/" className="hover:text-white transition-colors">Home</Link>
             <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-            <Link href="/tours" className="hover:text-white transition-colors">Tours</Link>
+            <Link href={hotel ? "/hotels" : "/tours"} className="hover:text-white transition-colors">{hotel ? "Hotels" : "Tours"}</Link>
             <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-            <span className="text-white font-medium">{tourName || 'Book'}</span>
+            <span className="text-white font-medium">{hotel ? hotel.name : (tourName || 'Book')}</span>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -278,7 +340,7 @@ function BookingFormContent() {
                   )}
                   <button
                     type="submit"
-                    disabled={isSubmitting || !tour}
+                    disabled={isSubmitting || (!tour && !hotel)}
                     className="w-full bg-primary hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-extrabold py-4 rounded-xl shadow-[0_0_20px_rgba(195,9,9,0.3)] transition-all active:scale-[0.98] flex items-center justify-center gap-2 text-lg mt-4"
                   >
                     {isSubmitting ? (
@@ -296,19 +358,40 @@ function BookingFormContent() {
             <aside className="lg:col-span-4">
               <div className="sticky top-24 flex flex-col gap-6">
                 <div className="bg-background-dark border border-primary/20 rounded-2xl overflow-hidden shadow-xl">
-                  {/* Tour Image */}
-                  {tour && (
+                  {/* Summary Image */}
+                  {(tour || hotel) && (
                     <div
                       className="h-48 bg-cover bg-center relative"
-                      style={{ backgroundImage: `url('${tour.image}')` }}
+                      style={{ backgroundImage: `url('${hotel ? (room?.images[0] || hotel.images[0]) : tour?.image}')` }}
                     >
                       <div className="absolute inset-0 bg-gradient-to-t from-background-dark to-transparent"></div>
                     </div>
                   )}
                   <div className="p-6 relative">
                     <div className="absolute -top-12 -right-12 w-32 h-32 bg-primary/10 rounded-full blur-3xl"></div>
-                    <h3 className="text-lg font-bold text-white mb-1">{tourName || 'Custom Tour'}</h3>
-                    {tour && (
+                    <h3 className="text-lg font-bold text-white mb-1">
+                      {hotel ? `${hotel.name} - ${room?.name}` : (tourName || 'Custom Tour')}
+                    </h3>
+                    {hotel && (
+                      <>
+                        <p className="text-slate-400 text-sm mb-6">{hotel.address}</p>
+                        <div className="space-y-3 py-4 border-t border-b border-slate-800">
+                          <div className="flex justify-between text-sm">
+                            <span className="text-slate-400 flex items-center gap-2">
+                              <span className="material-symbols-outlined text-[16px]">payments</span> Price per night
+                            </span>
+                            <span className="text-white font-semibold">${room?.pricePerNight}</span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-slate-400 flex items-center gap-2">
+                              <span className="material-symbols-outlined text-[16px]">group</span> Guests
+                            </span>
+                            <span className="text-white font-semibold">{guests} {guests === 1 ? 'Guest' : 'Guests'}</span>
+                          </div>
+                        </div>
+                      </>
+                    )}
+                    {tour && !hotel && (
                       <>
                         <p className="text-slate-400 text-sm mb-6">{tour.description}</p>
                         <div className="space-y-3 py-4 border-t border-b border-slate-800">
@@ -333,9 +416,9 @@ function BookingFormContent() {
                         </div>
                       </>
                     )}
-                    {!tour && (
+                    {!tour && !hotel && (
                       <p className="text-slate-400 text-sm mt-2">
-                        No matching tour found. Please <Link href="/tours" className="text-primary hover:underline">browse tours</Link> and select one to book.
+                        No matching item found. Please <Link href="/hotels" className="text-primary hover:underline">browse hotels</Link> or <Link href="/tours" className="text-primary hover:underline">tours</Link> and select one to book.
                       </p>
                     )}
                   </div>

@@ -5,19 +5,23 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@clerk/nextjs';
 import { allTours } from '@/app/lib/data/mockData';
+import { getWishlistItems, toggleWishlistItem } from '@/app/actions/wishlistActions';
+
+type TabType = 'Overview' | 'Itinerary' | 'Inclusions' | 'Reviews' | 'Policies';
 
 export default function SerengetiSafariPage() {
   const router = useRouter();
-  const { isSignedIn } = useAuth();
+  const { isSignedIn, isLoaded } = useAuth();
   const [isFavorited, setIsFavorited] = useState(false);
+  const [activeTab, setActiveTab] = useState<TabType>('Overview');
+  const [showFullItinerary, setShowFullItinerary] = useState(false);
   const tourTitle = "The Royal Serengeti Safari";
 
   // Load wishlist status on mount
   useEffect(() => {
     async function checkWishlist() {
-      if (isSignedIn) {
+      if (isLoaded && isSignedIn) {
         try {
-          const { getWishlistItems } = await import('@/app/actions/wishlistActions');
           const items = await getWishlistItems();
           setIsFavorited(items.some((item: { itemId: string }) => item.itemId === tourTitle));
         } catch (err) {
@@ -26,26 +30,51 @@ export default function SerengetiSafariPage() {
       }
     }
     checkWishlist();
-  }, [isSignedIn]);
+  }, [isSignedIn, isLoaded]);
 
   const toggleFavorite = async () => {
+    alert("Wishlist toggle triggered!");
+    console.log("Toggle favorite clicked, isSignedIn:", isSignedIn);
     if (!isSignedIn) {
+      console.log("Not signed in, redirecting to login");
       router.push('/portal/login');
       return;
     }
 
     // Optimistic update
-    setIsFavorited(!isFavorited);
+    console.log("Performing optimistic update, current isFavorited:", isFavorited);
+    const nextState = !isFavorited;
+    setIsFavorited(nextState);
 
     try {
-      const { toggleWishlistItem } = await import('@/app/actions/wishlistActions');
+      console.log("Calling toggleWishlistItem for:", tourTitle);
       await toggleWishlistItem('TOUR_PACKAGE', tourTitle, '/tours/serengeti');
+      console.log("Wishlist toggle successful");
     } catch (err) {
       console.error("Failed to toggle favorite:", err);
       // Revert optimistic update
-      setIsFavorited(prev => !prev);
+      setIsFavorited(!nextState);
     }
   };
+
+  const handleShare = () => {
+    const url = window.location.href;
+    navigator.clipboard.writeText(url).then(() => {
+      alert("Link copied to clipboard!");
+    }).catch(err => {
+      console.error("Failed to copy link:", err);
+    });
+  };
+
+  const handleBookNow = () => {
+    if (!isSignedIn) {
+      router.push('/portal/login');
+      return;
+    }
+    router.push(`/portal/book?tour=${encodeURIComponent(tourTitle)}`);
+  };
+
+  const tabs: TabType[] = ['Overview', 'Itinerary', 'Inclusions', 'Reviews', 'Policies'];
 
   return (
     <div className="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen font-display antialiased pt-20">
@@ -82,8 +111,8 @@ export default function SerengetiSafariPage() {
 
         {/* Hero Section */}
         <section className="relative h-[600px] rounded-3xl overflow-hidden mb-12">
-          <div className="absolute inset-0 bg-cover bg-center" data-alt="Cinematic aerial view of the Serengeti savanna at sunset" style={{"backgroundImage":"linear-gradient(to top, rgba(15,15,15,0.9) 0%, rgba(15,15,15,0.2) 50%, rgba(15,15,15,0.4) 100%), url('https://lh3.googleusercontent.com/aida-public/AB6AXuCxLarKtK0cq2HAQj8cC730TZmxIFlSBa6-2h-qoaj1vn0sPKUkOloTBfknfkPvqWK3862UPmvPYtNrbNd7i14lG0zMQdtlwozod9Lc3Q1YYzLzKeRS0zfIRPh55L6VwrvwV4D54LwE2wvi-nmxlO5K7ykkElkgoLoge6Mx0yKMIs-o0-J5zuDVwRlYjX8KZqLCOw4eeklEkyLcX1HN4dYui5jStv6d5rnpYEVemJL2WdcwVfHYzHRvfaIPj5gfCRSmJn4CVIFE0Q')"}}></div>
-          <div className="absolute bottom-0 left-0 p-8 md:p-16 w-full flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div className="absolute inset-0 bg-cover bg-center z-10" data-alt="Cinematic aerial view of the Serengeti savanna at sunset" style={{"backgroundImage":"linear-gradient(to top, rgba(15,15,15,0.9) 0%, rgba(15,15,15,0.2) 50%, rgba(15,15,15,0.4) 100%), url('https://lh3.googleusercontent.com/aida-public/AB6AXuCxLarKtK0cq2HAQj8cC730TZmxIFlSBa6-2h-qoaj1vn0sPKUkOloTBfknfkPvqWK3862UPmvPYtNrbNd7i14lG0zMQdtlwozod9Lc3Q1YYzLzKeRS0zfIRPh55L6VwrvwV4D54LwE2wvi-nmxlO5K7ykkElkgoLoge6Mx0yKMIs-o0-J5zuDVwRlYjX8KZqLCOw4eeklEkyLcX1HN4dYui5jStv6d5rnpYEVemJL2WdcwVfHYzHRvfaIPj5gfCRSmJn4CVIFE0Q')"}}></div>
+          <div className="absolute bottom-0 left-0 p-8 md:p-16 w-full flex flex-col md:flex-row md:items-end justify-between gap-6 z-20">
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <div className="flex text-primary">
@@ -108,8 +137,11 @@ export default function SerengetiSafariPage() {
                 </span>
               </div>
             </div>
-            <div className="flex gap-3">
-              <button className="size-12 rounded-full serengeti-glass-card flex items-center justify-center text-white hover:bg-primary transition-colors">
+            <div className="flex gap-3 relative z-30">
+              <button 
+                onClick={handleShare}
+                className="size-12 rounded-full serengeti-glass-card flex items-center justify-center text-white hover:bg-primary transition-colors"
+              >
                 <span className="material-symbols-outlined">share</span>
               </button>
               <button 
@@ -118,7 +150,9 @@ export default function SerengetiSafariPage() {
                   isFavorited ? 'bg-primary text-white border-primary' : 'text-white hover:bg-primary'
                 }`}
               >
-                <span className="material-symbols-outlined">{isFavorited ? 'favorite' : 'favorite_border'}</span>
+                <span className="material-symbols-outlined" style={{ fontVariationSettings: isFavorited ? "'FILL' 1" : "'FILL' 0" }}>
+                  {isFavorited ? 'favorite' : 'favorite_border'}
+                </span>
               </button>
             </div>
           </div>
@@ -130,74 +164,221 @@ export default function SerengetiSafariPage() {
           <div className="lg:col-span-2 space-y-12">
             {/* Tab Bar */}
             <div className="flex border-b border-white/10 overflow-x-auto whitespace-nowrap">
-              <button className="px-6 py-4 text-sm font-bold border-b-2 border-primary text-primary">Overview</button>
-              <button className="px-6 py-4 text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-colors">Itinerary</button>
-              <button className="px-6 py-4 text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-colors">Inclusions</button>
-              <button className="px-6 py-4 text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-colors">Reviews</button>
-              <button className="px-6 py-4 text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-colors">Policies</button>
+              {tabs.map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`px-6 py-4 text-sm font-bold border-b-2 transition-all ${
+                    activeTab === tab
+                      ? 'border-primary text-primary'
+                      : 'border-transparent text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  {tab}
+                </button>
+              ))}
             </div>
             
-            {/* Overview Tab Content */}
-            <div className="serengeti-glass-card p-8 rounded-3xl leading-relaxed">
-              <h3 className="text-2xl font-bold mb-6">Experience the Untamed</h3>
-              <p className="text-slate-400 mb-6">
-                Embark on a journey through the vast plains of the Serengeti, where the rhythm of life is dictated by the ancient cycles of migration. Our private safari offers an intimate encounter with the &apos;Big Five&apos; and the spectacular Great Migration, all while staying in some of the most luxurious eco-lodges in Tanzania.
-              </p>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
-                <div className="text-center p-4 serengeti-glass-card rounded-2xl">
-                  <span className="material-symbols-outlined text-primary mb-2">hotel</span>
-                  <p className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Stay</p>
-                  <p className="text-sm font-bold">Luxury Tents</p>
-                </div>
-                <div className="text-center p-4 serengeti-glass-card rounded-2xl">
-                  <span className="material-symbols-outlined text-primary mb-2">restaurant</span>
-                  <p className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Dining</p>
-                  <p className="text-sm font-bold">All Meals Inc.</p>
-                </div>
-                <div className="text-center p-4 serengeti-glass-card rounded-2xl">
-                  <span className="material-symbols-outlined text-primary mb-2">airport_shuttle</span>
-                  <p className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Transport</p>
-                  <p className="text-sm font-bold">4x4 Land Cruiser</p>
-                </div>
-                <div className="text-center p-4 serengeti-glass-card rounded-2xl">
-                  <span className="material-symbols-outlined text-primary mb-2">camera_enhance</span>
-                  <p className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Expert</p>
-                  <p className="text-sm font-bold">Private Guide</p>
+            {/* Tab Content */}
+            {activeTab === 'Overview' && (
+              <div className="serengeti-glass-card p-8 rounded-3xl leading-relaxed">
+                <h3 className="text-2xl font-bold mb-6">Experience the Untamed</h3>
+                <p className="text-slate-400 mb-6">
+                  Embark on a journey through the vast plains of the Serengeti, where the rhythm of life is dictated by the ancient cycles of migration. Our private safari offers an intimate encounter with the &apos;Big Five&apos; and the spectacular Great Migration, all while staying in some of the most luxurious eco-lodges in Tanzania.
+                </p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+                  <div className="text-center p-4 serengeti-glass-card rounded-2xl">
+                    <span className="material-symbols-outlined text-primary mb-2">hotel</span>
+                    <p className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Stay</p>
+                    <p className="text-sm font-bold">Luxury Tents</p>
+                  </div>
+                  <div className="text-center p-4 serengeti-glass-card rounded-2xl">
+                    <span className="material-symbols-outlined text-primary mb-2">restaurant</span>
+                    <p className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Dining</p>
+                    <p className="text-sm font-bold">All Meals Inc.</p>
+                  </div>
+                  <div className="text-center p-4 serengeti-glass-card rounded-2xl">
+                    <span className="material-symbols-outlined text-primary mb-2">airport_shuttle</span>
+                    <p className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Transport</p>
+                    <p className="text-sm font-bold">4x4 Land Cruiser</p>
+                  </div>
+                  <div className="text-center p-4 serengeti-glass-card rounded-2xl">
+                    <span className="material-symbols-outlined text-primary mb-2">camera_enhance</span>
+                    <p className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Expert</p>
+                    <p className="text-sm font-bold">Private Guide</p>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
-            {/* Itinerary Tab content */}
-            <div className="space-y-8">
-              <h3 className="text-2xl font-bold">Your Journey</h3>
-              <div className="relative pl-8 space-y-12 before:absolute before:left-3 before:top-2 before:bottom-2 before:w-px before:bg-white/10">
-                {/* Day 1 */}
-                <div className="relative">
-                  <div className="absolute -left-8 top-1.5 size-6 rounded-full bg-primary border-4 border-background-dark"></div>
-                  <div className="serengeti-glass-card p-6 rounded-2xl">
-                    <div className="flex items-center justify-between mb-4">
-                      <span className="text-primary text-xs font-black uppercase tracking-widest">Day 01</span>
-                      <span className="material-symbols-outlined text-slate-500">flight_land</span>
+            {activeTab === 'Itinerary' && (
+              <div className="space-y-8">
+                <h3 className="text-2xl font-bold">Your Journey</h3>
+                <div className="relative pl-8 space-y-12 before:absolute before:left-3 before:top-2 before:bottom-2 before:w-px before:bg-white/10">
+                  {/* Day 1 */}
+                  <div className="relative">
+                    <div className="absolute -left-8 top-1.5 size-6 rounded-full bg-primary border-4 border-background-dark"></div>
+                    <div className="serengeti-glass-card p-6 rounded-2xl">
+                      <div className="flex items-center justify-between mb-4">
+                        <span className="text-primary text-xs font-black uppercase tracking-widest">Day 01</span>
+                        <span className="material-symbols-outlined text-slate-500">flight_land</span>
+                      </div>
+                      <h4 className="text-lg font-bold mb-2">Arrival in Kilimanjaro & Private Transfer</h4>
+                      <p className="text-slate-400 text-sm">Upon arrival, your private guide will meet you at Kilimanjaro International Airport and escort you to your boutique villa in Arusha for a welcome dinner.</p>
                     </div>
-                    <h4 className="text-lg font-bold mb-2">Arrival in Kilimanjaro &amp; Private Transfer</h4>
-                    <p className="text-slate-400 text-sm">Upon arrival, your private guide will meet you at Kilimanjaro International Airport and escort you to your boutique villa in Arusha for a welcome dinner.</p>
+                  </div>
+                  {/* Day 2 */}
+                  <div className="relative">
+                    <div className="absolute -left-8 top-1.5 size-6 rounded-full bg-primary border-4 border-background-dark"></div>
+                    <div className="serengeti-glass-card p-6 rounded-2xl">
+                      <div className="flex items-center justify-between mb-4">
+                        <span className="text-primary text-xs font-black uppercase tracking-widest">Day 02</span>
+                        <span className="material-symbols-outlined text-slate-500">nature_people</span>
+                      </div>
+                      <h4 className="text-lg font-bold mb-2">Into the Heart of the Serengeti</h4>
+                      <p className="text-slate-400 text-sm">Catch a bush flight to the central Serengeti. Embark on your first afternoon game drive searching for the elusive leopard and majestic lions.</p>
+                    </div>
+                  </div>
+                  {showFullItinerary && (
+                    <>
+                      {/* Day 3 */}
+                      <div className="relative">
+                        <div className="absolute -left-8 top-1.5 size-6 rounded-full bg-primary border-4 border-background-dark"></div>
+                        <div className="serengeti-glass-card p-6 rounded-2xl">
+                          <div className="flex items-center justify-between mb-4">
+                            <span className="text-primary text-xs font-black uppercase tracking-widest">Day 03</span>
+                            <span className="material-symbols-outlined text-slate-500">visibility</span>
+                          </div>
+                          <h4 className="text-lg font-bold mb-2">The Great Migration Pursuit</h4>
+                          <p className="text-slate-400 text-sm">Follow the massive herds of wildebeest and zebras. Your guide will interpret the complex behaviors of the African savanna.</p>
+                        </div>
+                      </div>
+                      {/* Day 4-8 */}
+                      <div className="relative">
+                        <div className="absolute -left-8 top-1.5 size-6 rounded-full bg-primary border-4 border-background-dark"></div>
+                        <div className="serengeti-glass-card p-6 rounded-2xl">
+                          <div className="flex items-center justify-between mb-4">
+                            <span className="text-primary text-xs font-black uppercase tracking-widest">Day 04 - 07</span>
+                            <span className="material-symbols-outlined text-slate-500">landscape</span>
+                          </div>
+                          <h4 className="text-lg font-bold mb-2">Savanna Sunsets & Luxury Camps</h4>
+                          <p className="text-slate-400 text-sm">Explore different sectors of the park, from the Seronera Valley to the Western Corridor. Evenings are spent around the campfire under starry skies.</p>
+                        </div>
+                      </div>
+                      <div className="relative">
+                        <div className="absolute -left-8 top-1.5 size-6 rounded-full bg-primary border-4 border-background-dark"></div>
+                        <div className="serengeti-glass-card p-6 rounded-2xl">
+                          <div className="flex items-center justify-between mb-4">
+                            <span className="text-primary text-xs font-black uppercase tracking-widest">Day 08</span>
+                            <span className="material-symbols-outlined text-slate-500">flight_takeoff</span>
+                          </div>
+                          <h4 className="text-lg font-bold mb-2">Farewell to the Wild</h4>
+                          <p className="text-slate-400 text-sm">One final sunrise game drive before heading back to Arusha for your departing flight.</p>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+                <button 
+                  onClick={() => setShowFullItinerary(!showFullItinerary)}
+                  className="w-full py-4 serengeti-glass-card rounded-2xl text-sm font-bold text-slate-400 hover:text-white transition-all"
+                >
+                  {showFullItinerary ? 'Show Less' : 'View Full Itinerary'}
+                </button>
+              </div>
+            )}
+
+            {activeTab === 'Inclusions' && (
+              <div className="serengeti-glass-card p-8 rounded-3xl space-y-6">
+                <h3 className="text-2xl font-bold">What is Included</h3>
+                <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <li className="flex items-start gap-3">
+                    <span className="material-symbols-outlined text-primary">check_circle</span>
+                    <span className="text-slate-300">Luxury tented camp accommodation</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="material-symbols-outlined text-primary">check_circle</span>
+                    <span className="text-slate-300">All meals and selected beverages</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="material-symbols-outlined text-primary">check_circle</span>
+                    <span className="text-slate-300">Private 4x4 Land Cruiser with pop-up roof</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="material-symbols-outlined text-primary">check_circle</span>
+                    <span className="text-slate-300">Professional English-speaking guide</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="material-symbols-outlined text-primary">check_circle</span>
+                    <span className="text-slate-300">National Park entrance fees</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="material-symbols-outlined text-primary">check_circle</span>
+                    <span className="text-slate-300">Airport transfers</span>
+                  </li>
+                </ul>
+              </div>
+            )}
+
+            {activeTab === 'Reviews' && (
+              <div className="serengeti-glass-card p-8 rounded-3xl space-y-8">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-2xl font-bold">Guest Reviews</h3>
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl font-bold">5.0</span>
+                    <div className="flex text-primary">
+                      <span className="material-symbols-outlined fill-1 text-lg">star</span>
+                      <span className="material-symbols-outlined fill-1 text-lg">star</span>
+                      <span className="material-symbols-outlined fill-1 text-lg">star</span>
+                      <span className="material-symbols-outlined fill-1 text-lg">star</span>
+                      <span className="material-symbols-outlined fill-1 text-lg">star</span>
+                    </div>
                   </div>
                 </div>
-                {/* Day 2 */}
-                <div className="relative">
-                  <div className="absolute -left-8 top-1.5 size-6 rounded-full bg-primary border-4 border-background-dark"></div>
-                  <div className="serengeti-glass-card p-6 rounded-2xl">
-                    <div className="flex items-center justify-between mb-4">
-                      <span className="text-primary text-xs font-black uppercase tracking-widest">Day 02</span>
-                      <span className="material-symbols-outlined text-slate-500">nature_people</span>
+                <div className="space-y-6">
+                  <div className="border-b border-white/5 pb-6">
+                    <div className="flex items-center gap-4 mb-3">
+                      <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center font-bold text-primary">EA</div>
+                      <div>
+                        <p className="font-bold">Elizabeth A.</p>
+                        <p className="text-xs text-slate-500">October 2023</p>
+                      </div>
                     </div>
-                    <h4 className="text-lg font-bold mb-2">Into the Heart of the Serengeti</h4>
-                    <p className="text-slate-400 text-sm">Catch a bush flight to the central Serengeti. Embark on your first afternoon game drive searching for the elusive leopard and majestic lions.</p>
+                    <p className="text-slate-400 text-sm italic">&quot;The most incredible experience of my life. Our guide David was so knowledgeable and we saw everything we hoped for and more.&quot;</p>
+                  </div>
+                  <div className="border-b border-white/5 pb-6">
+                    <div className="flex items-center gap-4 mb-3">
+                      <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center font-bold text-primary">JL</div>
+                      <div>
+                        <p className="font-bold">James L.</p>
+                        <p className="text-xs text-slate-500">September 2023</p>
+                      </div>
+                    </div>
+                    <p className="text-slate-400 text-sm italic">&quot;Luxury in the middle of the wilderness. The tents were better than many 5-star hotels I&apos;ve stayed in.&quot;</p>
                   </div>
                 </div>
               </div>
-              <button className="w-full py-4 serengeti-glass-card rounded-2xl text-sm font-bold text-slate-400 hover:text-white transition-all">View Full Itinerary</button>
-            </div>
+            )}
+
+            {activeTab === 'Policies' && (
+              <div className="serengeti-glass-card p-8 rounded-3xl space-y-6">
+                <h3 className="text-2xl font-bold">Booking Policies</h3>
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-bold text-primary mb-2">Cancellation Policy</h4>
+                    <p className="text-sm text-slate-400">Full refund if cancelled at least 30 days before the departure date. 50% refund if cancelled 15-29 days before.</p>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-primary mb-2">Payment Terms</h4>
+                    <p className="text-sm text-slate-400">20% deposit required at the time of booking. Balance due 45 days prior to arrival.</p>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-primary mb-2">Travel Insurance</h4>
+                    <p className="text-sm text-slate-400">We highly recommend comprehensive travel insurance including medical evacuation coverage.</p>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Gallery Section */}
             <div className="space-y-6">
@@ -239,7 +420,10 @@ export default function SerengetiSafariPage() {
                     <span className="material-symbols-outlined text-primary text-lg">check_circle</span> Flexible cancellation
                   </li>
                 </ul>
-                <button className="w-full bg-primary hover:bg-primary/90 text-white py-4 rounded-xl font-black uppercase tracking-widest transition-all">
+                <button 
+                  onClick={handleBookNow}
+                  className="w-full bg-primary hover:bg-primary/90 text-white py-4 rounded-xl font-black uppercase tracking-widest transition-all"
+                >
                   Book This Experience
                 </button>
               </div>

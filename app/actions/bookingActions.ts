@@ -256,3 +256,110 @@ export async function createTourBooking(data: {
     return { success: false, error: error instanceof Error ? error.message : "Failed to create booking" };
   }
 }
+export async function createHotelBooking(data: {
+  hotelSlug: string;
+  roomId: string;
+  startDate: string;
+  endDate: string;
+  guestCount: number;
+  totalAmount: number;
+  specialRequirements?: string;
+  clerkId: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  avatarUrl?: string;
+}) {
+  try {
+    // 1. Identify or Create User
+    let user = await prisma.user.findUnique({ where: { clerkId: data.clerkId } });
+    
+    if (!user) {
+      user = await prisma.user.findUnique({ where: { email: data.email } });
+      if (user) {
+        user = await prisma.user.update({
+          where: { id: user.id },
+          data: { clerkId: data.clerkId }
+        });
+      } else {
+        user = await prisma.user.create({
+          data: {
+            clerkId: data.clerkId,
+            email: data.email,
+            firstName: data.firstName,
+            lastName: data.lastName,
+            avatarUrl: data.avatarUrl,
+            role: "CUSTOMER",
+          }
+        });
+      }
+    }
+
+    // 2. Fetch Hotel and Room to verify IDs
+    const hotel = await prisma.hotel.findUnique({
+      where: { slug: data.hotelSlug }
+    });
+    if (!hotel) throw new Error("Hotel not found");
+
+    const room = await prisma.hotelRoom.findUnique({
+      where: { id: data.roomId }
+    });
+    if (!room) throw new Error("Room not found");
+
+    const checkInDate = new Date(data.startDate);
+    const checkOutDate = new Date(data.endDate);
+    const totalNights = Math.max(1, Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)));
+
+    // 3. Create HotelBooking
+    const hotelBooking = await prisma.hotelBooking.create({
+      data: {
+        userId: user.id,
+        hotelId: hotel.id,
+        roomId: room.id,
+        checkIn: checkInDate,
+        checkOut: checkOutDate,
+        guestsAdults: data.guestCount,
+        guestsKids: 0,
+        totalNights,
+        pricePerNight: room.pricePerNight,
+        totalAmount: data.totalAmount,
+        status: "PENDING",
+        specialRequests: data.specialRequirements,
+      }
+    });
+
+    // 4. Create Main Booking record
+    const bookingRef = `WL-H-${Math.floor(1000 + Math.random() * 9000)}`;
+    const mainBooking = await prisma.booking.create({
+      data: {
+        bookingRef,
+        userId: user.id,
+        serviceType: "HOTEL_STAY" as import("@prisma/client").ServiceType,
+        hotelBookingId: hotelBooking.id,
+        status: "PENDING",
+        paymentStatus: "PENDING",
+        totalAmount: data.totalAmount,
+        finalAmount: data.totalAmount,
+        currency: "USD",
+      }
+    });
+
+    // 5. Log Activity
+    await prisma.activityLog.create({
+      data: {
+        userId: user.id,
+        module: "BOOKINGS",
+        action: "CREATE",
+        details: { bookingRef, hotelName: hotel.name, roomName: room.name }
+      }
+    });
+
+    revalidatePath("/portal/dashboard");
+    revalidatePath("/admin/bookings");
+
+    return { success: true, booking: JSON.parse(JSON.stringify(mainBooking)) };
+  } catch (error) {
+    console.error("Error creating hotel booking:", error);
+    return { success: false, error: error instanceof Error ? error.message : "Failed to create booking" };
+  }
+}

@@ -8,10 +8,26 @@ import { getWishlistItemDetails, WishlistItemLocal } from '@/app/lib/data/mockDa
 
 export default function TravelerWishlistSavedJourneysPage() {
   const [items, setItems] = useState<WishlistItemLocal[]>([]);
-  const [activeFilter, setActiveFilter] = useState<'All Saved' | 'Private Jets' | 'Villas' | 'Tours'>('All Saved');
+  const [activeFilter, setActiveFilter] = useState<'All Saved' | 'Villas' | 'Tours'>('All Saved');
   const [isLoading, setIsLoading] = useState(true);
   const { isSignedIn } = useAuth();
   const router = useRouter();
+  const [handpicked1Saved, setHandpicked1Saved] = useState(false);
+  const [handpicked2Saved, setHandpicked2Saved] = useState(false);
+
+  const handleToggleHandpicked = async (itemType: string, itemId: string, savedState: boolean, setter: React.Dispatch<React.SetStateAction<boolean>>) => {
+    if (!isSignedIn) {
+      router.push('/portal/login');
+      return;
+    }
+    
+    setter(!savedState);
+    try {
+      await toggleWishlistItem(itemType, itemId);
+    } catch {
+      setter(savedState);
+    }
+  };
 
   useEffect(() => {
     async function loadItems() {
@@ -99,12 +115,6 @@ export default function TravelerWishlistSavedJourneysPage() {
   Tours
 </button>
 <button 
-  onClick={() => setActiveFilter('Private Jets')}
-  className={`px-6 py-2 text-sm font-bold rounded-lg transition-all ${activeFilter === 'Private Jets' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-slate-400 hover:text-slate-100'}`}
->
-  Private Jets
-</button>
-<button 
   onClick={() => setActiveFilter('Villas')}
   className={`px-6 py-2 text-sm font-bold rounded-lg transition-all ${activeFilter === 'Villas' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-slate-400 hover:text-slate-100'}`}
 >
@@ -190,16 +200,22 @@ export default function TravelerWishlistSavedJourneysPage() {
 <div>
 <div className="flex justify-between items-start mb-4">
 <span className="px-3 py-1 bg-primary/20 text-primary text-[10px] font-black uppercase rounded-full">New Addition</span>
-<span className="material-symbols-outlined text-slate-500 cursor-pointer hover:text-primary transition-colors">favorite</span>
+<button 
+  onClick={() => handleToggleHandpicked('TOUR_PACKAGE', 'The Alpina Gstaad Peak', handpicked1Saved, setHandpicked1Saved)}
+  className={`material-symbols-outlined cursor-pointer transition-colors ${handpicked1Saved ? 'text-primary' : 'text-slate-500 hover:text-primary'}`}
+  style={{ fontVariationSettings: handpicked1Saved ? "'FILL' 1" : "'FILL' 0" }}
+>
+  {handpicked1Saved ? 'favorite' : 'favorite_border'}
+</button>
 </div>
 <h4 className="text-xl font-bold text-slate-100 mb-2">The Alpina Gstaad Peak</h4>
 <p className="text-slate-400 text-sm line-clamp-2">Exclusive access to the ultimate Swiss mountain retreat, featuring private helicopter transfers and a Michelin-starred personal chef.</p>
 </div>
 <div className="mt-6 flex items-center justify-between">
 <p className="text-lg font-bold text-slate-100">$12,400 <span className="text-xs font-normal text-slate-500">/ night</span></p>
-<button className="text-primary text-sm font-bold uppercase tracking-widest hover:translate-x-1 transition-transform inline-flex items-center gap-1">
+<Link href="/tours" className="text-primary text-sm font-bold uppercase tracking-widest hover:translate-x-1 transition-transform inline-flex items-center gap-1">
                                     Details <span className="material-symbols-outlined">chevron_right</span>
-</button>
+</Link>
 </div>
 </div>
 </div>
@@ -209,16 +225,22 @@ export default function TravelerWishlistSavedJourneysPage() {
 <div>
 <div className="flex justify-between items-start mb-4">
 <span className="px-3 py-1 bg-primary/20 text-primary text-[10px] font-black uppercase rounded-full">Highly Rated</span>
-<span className="material-symbols-outlined text-slate-500 cursor-pointer hover:text-primary transition-colors">favorite</span>
+<button 
+  onClick={() => handleToggleHandpicked('TOUR_PACKAGE', 'The Amalfi Coast', handpicked2Saved, setHandpicked2Saved)}
+  className={`material-symbols-outlined cursor-pointer transition-colors ${handpicked2Saved ? 'text-primary' : 'text-slate-500 hover:text-primary'}`}
+  style={{ fontVariationSettings: handpicked2Saved ? "'FILL' 1" : "'FILL' 0" }}
+>
+  {handpicked2Saved ? 'favorite' : 'favorite_border'}
+</button>
 </div>
 <h4 className="text-xl font-bold text-slate-100 mb-2">Amalfi Coast Superyacht</h4>
 <p className="text-slate-400 text-sm line-clamp-2">A 7-day bespoke voyage through Positano and Capri aboard the 65m Wanderlux Solis. Fully crewed excellence.</p>
 </div>
 <div className="mt-6 flex items-center justify-between">
 <p className="text-lg font-bold text-slate-100">$85,000 <span className="text-xs font-normal text-slate-500">/ week</span></p>
-<button className="text-primary text-sm font-bold uppercase tracking-widest hover:translate-x-1 transition-transform inline-flex items-center gap-1">
+<Link href="/tours/amalfi-coast" className="text-primary text-sm font-bold uppercase tracking-widest hover:translate-x-1 transition-transform inline-flex items-center gap-1">
                                     Details <span className="material-symbols-outlined">chevron_right</span>
-</button>
+</Link>
 </div>
 </div>
 </div>

@@ -5,150 +5,54 @@ import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { AdminHeader } from '@/components/admin/AdminHeader';
 
-// ─── Types ───────────────────────────────────────────────────────────────────
-type VehicleStatus = 'Available' | 'Rented' | 'Maintenance';
-type VehicleCategory = 'Luxury' | 'SUV' | 'Sports' | 'Electric';
+import { Car } from '@prisma/client';
+import { getCars, createCar, updateCar, deleteCar, updateCarStatus } from '@/app/actions/carActions';
 
-interface Vehicle {
-  id: string;
-  name: string;
-  category: VehicleCategory;
-  type: string;
-  plate: string;
-  fuel: string;
-  mileage: string;
-  transmission: string;
-  pricePerDay: number;
-  status: VehicleStatus;
-  image: string;
-  lastNote: string;
-  renterAvatar?: string;
-  returnDate?: string;
-}
+// ─── Types ───────────────────────────────────────────────────────────────────
+export type VehicleStatus = 'AVAILABLE' | 'RENTED' | 'MAINTENANCE' | 'DECOMMISSIONED';
+export type VehicleCategory = 'LUXURY' | 'SUV' | 'SPORTS' | 'ELECTRIC';
 
 // ─── Seed data ────────────────────────────────────────────────────────────────
-const INITIAL_VEHICLES: Vehicle[] = [
-  {
-    id: '1',
-    name: 'Mercedes-Benz S-Class',
-    category: 'Luxury',
-    type: 'Luxury Sedan',
-    plate: 'ABC-1234',
-    fuel: 'Diesel',
-    mileage: '12k km',
-    transmission: 'Auto',
-    pricePerDay: 250,
-    status: 'Available',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBnCWeKjKSDfdcPP67eNOKuCBz9Sk9tpkV4z0wIOFUQ_WzwoIDT35SVClOCL74HTpdW276ppeJGutNBnyab7TtqpURUqePGTE8hpHGUCIQbq867Iozi2AAZvXcHGVKwNhO1IxG2Gb4QnF1_UkMInwJUi3L7JbdWRqeHOCC-DIqMI9-mZKoAE0AMzY67u7oBGmKqWJTwnYMVJSHR5X1n1InHLbySqhPc_Hj_vxgNY87Mhr7ib3p9T-10jb-4n4oUruyvVIUYv2CQVg',
-    lastNote: 'Last cleaned: 2h ago',
-  },
-  {
-    id: '2',
-    name: 'Range Rover Autobiography',
-    category: 'SUV',
-    type: 'Premium SUV',
-    plate: 'RRA-9988',
-    fuel: 'Petrol',
-    mileage: '45k km',
-    transmission: 'Auto',
-    pricePerDay: 380,
-    status: 'Rented',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBCDhFbosfflFvcK-YbMTBGNYNOgmhr1RjoIHmDOj8fjAsBFC3kyw3YOorehkVOhg_TR1k2od1hKn_7mbPqDnxJ_p2JR3FiW57TVhI3rN0LAPNq4Haa-IieOl3C7Ldeo_AmLhHGacjVPowzqtfHM-5ogHnFq-MgiaeCjSRSebdT8Fr4hgDyuYoe0qV_3QiQiJAYv2m3BOem-OF2YnujiVedFskOG_SUx16UX4lVU4qv_pN2G1irnQX0eShW5vzzMV729D7EcC5qKw',
-    lastNote: '',
-    renterAvatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB1eKpVNhfLN4Xff5OqUxBgwSQukfvYQ6r4tLjg9hSo3jSQMqh68_bvEUYRBZCv2yyDY-Fk9j-Ml9AEM465sFJ_Vv5lNNslmcCSbdqPRwwqks3UaaWcRWo4vHgcXt9S1cZOA46kg2_Gyo9Tit9hdJPdp5Qv2mr6RwDSxLKye2Fxpb8Ha29rU3r0zxSuQEliZgnuDy-BRrsO8qsw3vZ-doLOl2mgh0K59vOjf-tEZbw_-lTSdeqBBA-T6L9Kc8VnNewqng68lA8T-A',
-    returnDate: 'in 2 days',
-  },
-  {
-    id: '3',
-    name: 'Porsche 911 Carrera',
-    category: 'Sports',
-    type: 'Sports Coupe',
-    plate: 'PRS-9111',
-    fuel: 'Petrol',
-    mileage: '8k km',
-    transmission: 'Auto',
-    pricePerDay: 450,
-    status: 'Maintenance',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuArndRIjBo0X12YmQI6cVHiQH1wnquDlkRDyXUg6qk5kzfUHGNmN57GrObS2bAnzD4iOZ8J1kZRuhtdZTCXLke8eLWPiU7XEIiCWLTdtqicPQ1XFu0hKsDPoZ_VcYQZmxwvEodn3MAao9gCywGqj9fmcIusNIELrea3c9utOPlcdsJltutuAKr5bWZPQJNTxJKLknKUoDxTNyTakxe5F3MLZD1XfrmmaWLQlDPWoFEQXVMOy-jxL-LU_4QG7R0efRyMR5Acw5aZNg',
-    lastNote: 'Est. finish: 14 Oct',
-  },
-  {
-    id: '4',
-    name: 'Tesla Model S Plaid',
-    category: 'Electric',
-    type: 'Electric Luxury',
-    plate: 'TSL-5544',
-    fuel: 'Electric',
-    mileage: '15k km',
-    transmission: 'Auto',
-    pricePerDay: 220,
-    status: 'Available',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDxbtDXqMH03Z5Ysc-NwO7w1sISMpMZn47IcgBLiC-U_0bu5p9NMXRPbCQUe6BdJPkOF7rVR35jI2YWOz6I9ug80bpoyzXGqFNjjBhY5s6nyleKaEJTsNHtkcreAa_5fbqSh8SIdSgC1CxOG_pI_l94EdIZyKzLeQk7ezeritfGWe33H-zJslRBMl3gbFbS-Hi-UjWZ0-8Np3ALbMhrw5k_5Q4bRmVSXxr_zZaRLkHzqKLAVUdIb760BQ7VYFLHr_35pZzyu69qwg',
-    lastNote: 'Last cleaned: 1 day ago',
-  },
-  {
-    id: '5',
-    name: 'BMW X5 xDrive',
-    category: 'SUV',
-    type: 'Luxury SUV',
-    plate: 'BMX-2023',
-    fuel: 'Diesel',
-    mileage: '32k km',
-    transmission: 'Auto',
-    pricePerDay: 290,
-    status: 'Rented',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBZWqlITk92Ss_uuQtqaasF_82RJZtd5RLPJn8yUUhHf0eCLziBB3VXZz758tb5CUXlEXpo3gCb-mh_u8C4tXuQ6tivA_4hHrDfAQ-9D6QpXyht1XiSmM9m-oNSUZyAfEtjBiyMcsvwtafd68hImbUK6yKpMUG0GtO1F4EQuoRBxMyaXqbVjQmQFP0KSX2mLqh4kcrgddGm19RbDdLCdQOHjk2ZAsooYFuDfKNhtwiBXtDyRun1WD2OA',
-    lastNote: '',
-    renterAvatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCKDYt1feWC08i2Ht3FTI2d6YB_PCEFkvpAvjBUYvZPx81mxsly-fxhalCpvoUUEe4LflkNIBdgJYjhSGihn1DLK9c1CPHmVRe4f7b41jPZQI4UKmJIpuxGec8wlFZ1XhGOEOrbNaL4UzJxs3j4owaPmn733BP0h3TE1FrenElfLneOHPUmzBgURk7ONqMM0qs0B_Imb-q1hY4yfwbdZndzo_eDcQOqQQNbWM_X3j1hRVmhNpHPeEPADxw44ZJn6dY19xUwGJIKKg',
-    returnDate: 'Tomorrow',
-  },
-  {
-    id: '6',
-    name: 'Audi A8 L',
-    category: 'Luxury',
-    type: 'Executive Sedan',
-    plate: 'ADL-8888',
-    fuel: 'Hybrid',
-    mileage: '10k km',
-    transmission: 'Auto',
-    pricePerDay: 270,
-    status: 'Available',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAB8fcWpXGVy5U_ZMcAx7j7QzlegVq8pmb3Vc5YNMmAH9r6hLgP2nPjcgPm0PBO9b_blrsqMgFbhiWBIbTUXrZ2QWDJv3c42eQdpRPU35ibry3M3Iu1IpV_sA3IVKjniKcdq78THAKOsMRVeJbaocwSdNj4f-SfJ7gvvZf6-AodGTWe4XTDu3PIivcvm2hmdVGcRHlxIyOLyHGkSK0WvoSLeMeROtfAD80OI_rXGRHy_Cd81ehKumvraUZIdgASfcRlL6A2yAxSVA',
-    lastNote: 'New addition',
-  },
-];
+const INITIAL_VEHICLES: Car[] = [];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-function getStatusBadge(status: VehicleStatus) {
+function getStatusBadge(status: Car['status']) {
   switch (status) {
-    case 'Available':
+    case 'AVAILABLE':
       return (
         <span className="inline-flex items-center rounded-full bg-emerald-400/10 px-2 py-1 text-xs font-medium text-emerald-400 ring-1 ring-inset ring-emerald-400/20">
           Available
         </span>
       );
-    case 'Rented':
+    case 'RENTED':
       return (
         <span className="inline-flex items-center rounded-full bg-blue-400/10 px-2 py-1 text-xs font-medium text-blue-400 ring-1 ring-inset ring-blue-400/20">
           Rented
         </span>
       );
-    case 'Maintenance':
+    case 'MAINTENANCE':
       return (
         <span className="inline-flex items-center rounded-full bg-orange-400/10 px-2 py-1 text-xs font-medium text-orange-400 ring-1 ring-inset ring-orange-400/20">
           Maintenance
         </span>
       );
+    case 'DECOMMISSIONED':
+      return (
+        <span className="inline-flex items-center rounded-full bg-gray-400/10 px-2 py-1 text-xs font-medium text-gray-400 ring-1 ring-inset ring-gray-400/20">
+          Decommissioned
+        </span>
+      );
   }
 }
 
-const STATUS_CYCLE: VehicleStatus[] = ['Available', 'Rented', 'Maintenance'];
+const STATUS_CYCLE: Car['status'][] = ['AVAILABLE', 'RENTED', 'MAINTENANCE', 'DECOMMISSIONED'];
 
 // ─── Main Page Component ──────────────────────────────────────────────────────
 export default function AdminFleetManagementPage() {
-  const [vehicles, setVehicles] = useState<Vehicle[]>(INITIAL_VEHICLES);
+  const [vehicles, setVehicles] = useState<Car[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState<'All' | VehicleCategory>('All');
+  const [categoryFilter, setCategoryFilter] = useState<'All' | VehicleCategory | string>('All');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(null);
@@ -168,24 +72,45 @@ export default function AdminFleetManagementPage() {
     return () => document.removeEventListener('mousedown', handleOutside);
   }, []);
 
-  // Stats
+  // Fetch cars
+  const fetchCars = async () => {
+    setLoading(true);
+    try {
+      // NOTE: Using a custom action to skip the "AVAILABLE" default status filter if needed, 
+      // but for now, we'll just refetch passing no filters to get all available ones or modify carActions.ts to allow skipping.
+      // Since it's admin, they should see ALL cars. The `getCars` action currently forces `AVAILABLE`.
+      // Let's modify the action later if needed, but we'll fetch them here first.
+      const data = await getCars(); 
+      setVehicles(data);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCars();
+  }, []);
+
   const stats = useMemo(() => ({
     total: vehicles.length,
-    rented: vehicles.filter(v => v.status === 'Rented').length,
-    maintenance: vehicles.filter(v => v.status === 'Maintenance').length,
+    rented: vehicles.filter(v => v.status === 'RENTED').length,
+    maintenance: vehicles.filter(v => v.status === 'MAINTENANCE').length,
     monthlyRevenue: vehicles
-      .filter(v => v.status === 'Rented')
-      .reduce((sum, v) => sum + v.pricePerDay * 30, 0),
+      .filter(v => v.status === 'RENTED')
+      .reduce((sum, v) => sum + Number(v.dailyRate) * 30, 0),
   }), [vehicles]);
 
   // Filtered vehicles
   const filteredVehicles = useMemo(() => {
     return vehicles.filter(v => {
+      const vehicleName = `${v.make} ${v.model}`;
       const matchesSearch =
-        v.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        v.plate.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        v.type.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesCat = categoryFilter === 'All' || v.category === categoryFilter;
+        vehicleName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        v.licensePlate.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (v.features[0] || '').toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCat = categoryFilter === 'All' || v.category.toUpperCase() === categoryFilter.toUpperCase();
       return matchesSearch && matchesCat;
     });
   }, [vehicles, searchQuery, categoryFilter]);
@@ -193,33 +118,52 @@ export default function AdminFleetManagementPage() {
   const selectedVehicle = vehicles.find(v => v.id === selectedVehicleId) ?? null;
 
   // Actions
-  const handleCycleStatus = (id: string) => {
-    setVehicles(curr =>
-      curr.map(v => {
-        if (v.id !== id) return v;
-        const next = STATUS_CYCLE[(STATUS_CYCLE.indexOf(v.status) + 1) % STATUS_CYCLE.length];
-        return { ...v, status: next };
-      })
-    );
+  const handleCycleStatus = async (id: string, currentStatus: Car['status']) => {
+    const cycleMap: Record<Car['status'], Car['status']> = {
+      AVAILABLE: 'RENTED',
+      RENTED: 'MAINTENANCE',
+      MAINTENANCE: 'DECOMMISSIONED',
+      DECOMMISSIONED: 'AVAILABLE'
+    };
+    const nextStatus = cycleMap[currentStatus] || 'AVAILABLE';
+    
+    try {
+      await updateCarStatus(id, nextStatus);
+      await fetchCars();
+    } catch (e) {
+      console.error(e);
+    }
     setOpenMenuId(null);
   };
 
-  const handleEdit = (updated: Vehicle) => {
-    setVehicles(curr => curr.map(v => v.id === updated.id ? updated : v));
-    setEditVehicleId(null);
+  const handleEdit = async (updated: Partial<Car> & { name?: string, type?: string, plate?: string, pricePerDay?: number, fuel?: string, image?: string }) => {
+    if (!editVehicleId) return;
+    try {
+      await updateCar(editVehicleId, updated);
+      await fetchCars();
+      setEditVehicleId(null);
+    } catch (e) {
+      console.error(e);
+    }
   };
 
-  const handleDelete = (id: string) => {
-    setVehicles(curr => curr.filter(v => v.id !== id));
-    if (selectedVehicleId === id) setSelectedVehicleId(null);
-    setDeleteConfirmId(null);
-    setOpenMenuId(null);
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteCar(id);
+      await fetchCars();
+      if (selectedVehicleId === id) setSelectedVehicleId(null);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setDeleteConfirmId(null);
+      setOpenMenuId(null);
+    }
   };
 
   const handleExport = () => {
     const headers = ['Name', 'Category', 'Type', 'Plate', 'Fuel', 'Mileage', 'Price/Day (USD)', 'Status'];
     const rows = filteredVehicles.map(v => [
-      `"${v.name}"`, v.category, `"${v.type}"`, v.plate, v.fuel, v.mileage, v.pricePerDay, v.status,
+      `"${v.make} ${v.model}"`, v.category, `"${v.features[0] || ''}"`, v.licensePlate, v.fuelType, v.mileage ? String(v.mileage) : "0", Number(v.dailyRate), v.status,
     ]);
     const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -368,9 +312,8 @@ export default function AdminFleetManagementPage() {
 
                 {/* Category Tabs + view toggle row */}
                 <div className="flex items-center gap-3 w-full overflow-x-auto pb-1">
-                  {/* Category filter tabs */}
                   <div className="flex items-center gap-1 bg-surface-dark border border-border-dark rounded-lg p-1 shrink-0">
-                    {(['All', 'Luxury', 'SUV', 'Sports', 'Electric'] as const).map(cat => (
+                    {(['All', 'ECONOMY', 'COMPACT', 'SUV', 'LUXURY', 'VAN', 'BUS'] as const).map(cat => (
                       <button
                         key={cat}
                         onClick={() => setCategoryFilter(cat)}
@@ -420,10 +363,10 @@ export default function AdminFleetManagementPage() {
               {/* ── GRID VIEW ── */}
               {viewMode === 'grid' && filteredVehicles.length > 0 && (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6 pb-8">
-                  {filteredVehicles.map(vehicle => (
+                  {filteredVehicles.map((vehicle) => (
                     <VehicleCard
                       key={vehicle.id}
-                      vehicle={vehicle}
+                      vehicle={vehicle as any}
                       isSelected={selectedVehicleId === vehicle.id}
                       openMenuId={openMenuId}
                       deleteConfirmId={deleteConfirmId}
@@ -431,7 +374,7 @@ export default function AdminFleetManagementPage() {
                       onSelect={() => setSelectedVehicleId(selectedVehicleId === vehicle.id ? null : vehicle.id)}
                       onToggleMenu={() => setOpenMenuId(openMenuId === vehicle.id ? null : vehicle.id)}
                       onEdit={() => { setEditVehicleId(vehicle.id); }}
-                      onCycleStatus={() => handleCycleStatus(vehicle.id)}
+                      onCycleStatus={() => handleCycleStatus(vehicle.id, vehicle.status)}
                       onDeleteConfirm={() => setDeleteConfirmId(vehicle.id)}
                       onDeleteCancel={() => { setDeleteConfirmId(null); setOpenMenuId(null); }}
                       onDelete={() => handleDelete(vehicle.id)}
@@ -456,7 +399,7 @@ export default function AdminFleetManagementPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border-dark">
-                      {filteredVehicles.map(vehicle => (
+                      {filteredVehicles.map((vehicle) => (
                         <tr
                           key={vehicle.id}
                           onClick={() => setSelectedVehicleId(selectedVehicleId === vehicle.id ? null : vehicle.id)}
@@ -466,20 +409,20 @@ export default function AdminFleetManagementPage() {
                             <div className="flex items-center gap-3">
                               <div
                                 className="h-10 w-14 rounded-lg bg-cover bg-center"
-                                style={{ backgroundImage: `url('${vehicle.image}')` }}
+                                style={{ backgroundImage: `url('${vehicle.images?.[0] || 'https://via.placeholder.com/400x300?text=No+Image'}')` }}
                               />
                               <div>
-                                <div className="text-sm font-medium text-white">{vehicle.name}</div>
-                                <div className="text-xs text-text-secondary">{vehicle.type}</div>
+                                <div className="text-sm font-medium text-white">{vehicle.make} {vehicle.model}</div>
+                                <div className="text-xs text-text-secondary">{vehicle.features?.[0] || 'Car'}</div>
                               </div>
                             </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-text-secondary">{vehicle.plate}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-text-secondary">{vehicle.licensePlate}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-text-secondary hidden md:table-cell">{vehicle.category}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-text-secondary hidden lg:table-cell">
-                            {vehicle.fuel} · {vehicle.mileage}
+                            {vehicle.fuelType} · {vehicle.mileage || 0} km
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-white">${vehicle.pricePerDay}/day</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-white">${Number(vehicle.dailyRate)}/day</td>
                           <td className="px-6 py-4 whitespace-nowrap">{getStatusBadge(vehicle.status)}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-right" onClick={e => e.stopPropagation()}>
                             <div className="relative inline-block" ref={openMenuId === vehicle.id ? menuRef : null}>
@@ -506,7 +449,7 @@ export default function AdminFleetManagementPage() {
                                     Edit Vehicle
                                   </button>
                                   <button
-                                    onClick={() => handleCycleStatus(vehicle.id)}
+                                    onClick={() => handleCycleStatus(vehicle.id, vehicle.status)}
                                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-white hover:bg-background-dark transition-colors text-left"
                                   >
                                     <span className="material-symbols-outlined text-[18px] text-text-secondary">sync</span>
@@ -575,14 +518,14 @@ export default function AdminFleetManagementPage() {
 
                 <div className="flex-1 overflow-y-auto custom-scrollbar">
                   {/* Image */}
-                  <div className="h-44 bg-cover bg-center" style={{ backgroundImage: `url('${selectedVehicle.image}')` }} />
+                  <div className="h-44 bg-cover bg-center" style={{ backgroundImage: `url('${(selectedVehicle as any).images?.[0] || 'https://via.placeholder.com/400x300?text=No+Image'}')` }} />
 
                   <div className="p-5">
                     {/* Header */}
                     <div className="flex justify-between items-start mb-5">
                       <div>
-                        <h3 className="text-lg font-bold text-white">{selectedVehicle.name}</h3>
-                        <p className="text-sm text-text-secondary">{selectedVehicle.type}</p>
+                        <h3 className="text-lg font-bold text-white">{selectedVehicle.make} {selectedVehicle.model}</h3>
+                        <p className="text-white font-medium">{selectedVehicle.fuelType}</p>
                       </div>
                       {getStatusBadge(selectedVehicle.status)}
                     </div>
@@ -590,12 +533,12 @@ export default function AdminFleetManagementPage() {
                     {/* Details grid */}
                     <div className="grid grid-cols-2 gap-3 mb-5">
                       {[
-                        { label: 'Plate', value: selectedVehicle.plate, icon: 'pin' },
+                        { label: 'Plate', value: selectedVehicle.licensePlate, icon: 'pin' },
                         { label: 'Category', value: selectedVehicle.category, icon: 'category' },
-                        { label: 'Fuel', value: selectedVehicle.fuel, icon: selectedVehicle.fuel === 'Electric' ? 'bolt' : 'local_gas_station' },
-                        { label: 'Mileage', value: selectedVehicle.mileage, icon: 'speed' },
+                        { label: 'Fuel', value: selectedVehicle.fuelType, icon: selectedVehicle.fuelType === 'Electric' ? 'bolt' : 'local_gas_station' },
+                        { label: 'Mileage', value: `${selectedVehicle.mileage || 0} km`, icon: 'speed' },
                         { label: 'Transmission', value: selectedVehicle.transmission, icon: 'settings' },
-                        { label: 'Price / Day', value: `$${selectedVehicle.pricePerDay}`, icon: 'payments' },
+                        { label: 'Price / Day', value: `$${Number(selectedVehicle.dailyRate)}`, icon: 'payments' },
                       ].map(({ label, value, icon }) => (
                         <div key={label} className="bg-background-dark rounded-xl p-3 border border-border-dark">
                           <span className="text-xs text-text-secondary uppercase font-semibold block mb-1 flex items-center gap-1">
@@ -608,22 +551,20 @@ export default function AdminFleetManagementPage() {
                     </div>
 
                     {/* Status note */}
-                    {selectedVehicle.status === 'Rented' && selectedVehicle.returnDate && (
-                      <div className="flex items-center gap-2 p-3 rounded-xl bg-blue-400/10 border border-blue-400/20 mb-4">
+                    {selectedVehicle.status === 'RENTED' && (                  <div className="flex items-center gap-2 p-3 rounded-xl bg-blue-400/10 border border-blue-400/20 mb-4">
                         <span className="material-symbols-outlined text-blue-400 text-[20px]">schedule</span>
-                        <span className="text-sm text-blue-300">Return expected: {selectedVehicle.returnDate}</span>
+                        <span className="text-sm text-blue-300">Vehicle is currently rented.</span>
                       </div>
                     )}
-                    {selectedVehicle.status === 'Maintenance' && (
+                    {selectedVehicle.status === 'MAINTENANCE' && (
                       <div className="flex items-center gap-2 p-3 rounded-xl bg-orange-400/10 border border-orange-400/20 mb-4">
                         <span className="material-symbols-outlined text-orange-400 text-[20px]">build_circle</span>
-                        <span className="text-sm text-orange-300">{selectedVehicle.lastNote || 'Vehicle under maintenance'}</span>
+                        <span className="text-sm text-orange-300">Vehicle under maintenance</span>
                       </div>
                     )}
-                    {selectedVehicle.status === 'Available' && selectedVehicle.lastNote && (
-                      <div className="flex items-center gap-2 p-3 rounded-xl bg-emerald-400/10 border border-emerald-400/20 mb-4">
+                    {selectedVehicle.status === 'AVAILABLE' && (                  <div className="flex items-center gap-2 p-3 rounded-xl bg-emerald-400/10 border border-emerald-400/20 mb-4">
                         <span className="material-symbols-outlined text-emerald-400 text-[20px]">check_circle</span>
-                        <span className="text-sm text-emerald-300">{selectedVehicle.lastNote}</span>
+                        <span className="text-sm text-emerald-300">Vehicle is ready for hire.</span>
                       </div>
                     )}
                   </div>
@@ -638,7 +579,7 @@ export default function AdminFleetManagementPage() {
                     Edit Vehicle
                   </button>
                   <button
-                    onClick={() => handleCycleStatus(selectedVehicle.id)}
+                    onClick={() => handleCycleStatus(selectedVehicle.id, selectedVehicle.status)}
                     className="flex-1 py-2.5 rounded-lg border border-border-dark bg-transparent text-white font-bold text-sm hover:bg-surface-dark transition-colors"
                   >
                     Status
@@ -660,12 +601,12 @@ export default function AdminFleetManagementPage() {
       {showAddModal && (
         <AddVehicleModal
           onClose={() => setShowAddModal(false)}
-          onAdd={(v) => {
-            setVehicles(curr => [
-              { ...v, id: Date.now().toString() },
-              ...curr,
-            ]);
-            setShowAddModal(false);
+          onAdd={async (v) => {
+            try {
+              await createCar(v as Omit<Car, 'id' | 'createdAt' | 'updatedAt'>);
+              await fetchCars();
+              setShowAddModal(false);
+            } catch(e) { console.error(e); }
           }}
         />
       )}
@@ -675,7 +616,7 @@ export default function AdminFleetManagementPage() {
         const target = vehicles.find(v => v.id === editVehicleId);
         return target ? (
           <EditVehicleModal
-            vehicle={target}
+            vehicle={target as Partial<Car> & { make?: string, model?: string, features?: string[], licensePlate?: string, fuelType?: string, mileage?: number, transmission?: string, dailyRate?: number, status?: any, images?: string[], lastNote?: string }}
             onClose={() => setEditVehicleId(null)}
             onSave={handleEdit}
           />
@@ -700,7 +641,7 @@ function VehicleCard({
   onDeleteCancel,
   onDelete,
 }: {
-  vehicle: Vehicle;
+  vehicle: any;
   isSelected: boolean;
   openMenuId: string | null;
   deleteConfirmId: string | null;
@@ -790,9 +731,9 @@ function VehicleCard({
           </div>
         </div>
         <img
-          alt={vehicle.name}
-          className={`h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 ${vehicle.status === 'Maintenance' ? 'opacity-60 grayscale-[50%]' : ''}`}
-          src={vehicle.image}
+          alt={`${vehicle.make} ${vehicle.model}`}
+          className={`h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 ${vehicle.status === 'MAINTENANCE' ? 'opacity-60 grayscale-[50%]' : ''}`}
+          src={vehicle.images?.[0] || 'https://via.placeholder.com/400x300?text=No+Image'}
         />
       </div>
 
@@ -800,26 +741,26 @@ function VehicleCard({
       <div className="p-5 flex flex-col flex-1">
         <div className="flex justify-between items-start mb-2">
           <div>
-            <h3 className="text-base font-bold text-white group-hover:text-primary transition-colors">{vehicle.name}</h3>
-            <p className="text-text-secondary text-xs">{vehicle.type}</p>
+            <h3 className="text-base font-bold text-white group-hover:text-primary transition-colors">{vehicle.make} {vehicle.model}</h3>
+            <p className="text-text-secondary text-xs">{vehicle.features?.[0] || 'Car'}</p>
           </div>
           <div className="text-right">
-            <p className="text-white font-bold">${vehicle.pricePerDay}<span className="text-text-secondary text-xs font-normal">/day</span></p>
+            <p className="text-white font-bold">${Number(vehicle.dailyRate)}<span className="text-text-secondary text-xs font-normal">/day</span></p>
           </div>
         </div>
 
         <div className="mt-3 grid grid-cols-2 gap-y-2.5 text-sm text-text-secondary">
           <div className="flex items-center gap-2">
             <span className="material-symbols-outlined text-[16px]">pin</span>
-            <span>{vehicle.plate}</span>
+            <span>{vehicle.licensePlate}</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-[16px]">{vehicle.fuel === 'Electric' ? 'bolt' : 'local_gas_station'}</span>
-            <span>{vehicle.fuel}</span>
+            <span className="material-symbols-outlined text-[16px]">{vehicle.fuelType === 'Electric' ? 'bolt' : 'local_gas_station'}</span>
+            <span>{vehicle.fuelType}</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="material-symbols-outlined text-[16px]">speed</span>
-            <span>{vehicle.mileage}</span>
+            <span>{vehicle.mileage || 0} km</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="material-symbols-outlined text-[16px]">settings</span>
@@ -829,21 +770,15 @@ function VehicleCard({
 
         <div className="mt-5 pt-4 border-t border-border-dark flex items-center justify-between">
           <div className="flex items-center gap-2">
-            {vehicle.renterAvatar && vehicle.status === 'Rented' ? (
-              <>
-                <div
-                  className="h-6 w-6 rounded-full bg-cover bg-center"
-                  style={{ backgroundImage: `url('${vehicle.renterAvatar}')` }}
-                />
-                <span className="text-xs text-text-secondary">Return: {vehicle.returnDate}</span>
-              </>
-            ) : vehicle.status === 'Maintenance' ? (
+            {vehicle.status === 'MAINTENANCE' ? (
               <>
                 <span className="material-symbols-outlined text-orange-400 text-sm">build_circle</span>
-                <span className="text-xs text-text-secondary">{vehicle.lastNote}</span>
+                <span className="text-xs text-text-secondary">Vehicle under maintenance</span>
               </>
+            ) : vehicle.status === 'AVAILABLE' ? (
+              <span className="text-xs text-text-secondary italic">Ready for rental</span>
             ) : (
-              <span className="text-xs text-text-secondary italic">{vehicle.lastNote}</span>
+                <span className="text-xs text-text-secondary italic">Currently Rented</span>
             )}
           </div>
           <button
@@ -864,26 +799,27 @@ function AddVehicleModal({
   onAdd,
 }: {
   onClose: () => void;
-  onAdd: (v: Omit<Vehicle, 'id'>) => void;
+  onAdd: (v: Partial<Car> & { name?: string, type?: string, plate?: string, pricePerDay?: number, fuel?: string, image?: string, returnDate?: string, mileage?: number }) => void;
 }) {
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<{ name: string, category: string, type: string, plate: string, fuel: string, mileage: string, transmission: string, pricePerDay: number, status: string, image: string, lastNote: string, returnDate: string }>({
     name: '',
-    category: 'Luxury' as VehicleCategory,
-    type: '',
+    category: 'SUV',
+    type: 'Car',
     plate: '',
     fuel: 'Petrol',
-    mileage: '0 km',
+    mileage: '0',
     transmission: 'Auto',
     pricePerDay: 200,
-    status: 'Available' as VehicleStatus,
+    status: 'AVAILABLE',
     image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=800&q=80',
     lastNote: '',
+    returnDate: '',
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name.trim() || !form.plate.trim()) return;
-    onAdd(form);
+    onAdd({ ...form, mileage: form.mileage ? parseInt(form.mileage) : undefined } as any);
   };
 
   return (
@@ -920,7 +856,7 @@ function AddVehicleModal({
                 value={form.category}
                 onChange={e => setForm(f => ({ ...f, category: e.target.value as VehicleCategory }))}
               >
-                {(['Luxury', 'SUV', 'Sports', 'Electric'] as const).map(c => (
+                {(['LUXURY', 'SUV', 'SPORTS', 'ELECTRIC'] as const).map(c => (
                   <option key={c} value={c}>{c}</option>
                 ))}
               </select>
@@ -949,18 +885,6 @@ function AddVehicleModal({
               />
             </div>
 
-            {/* Price */}
-            <div>
-              <label className="block text-xs font-semibold text-text-secondary uppercase mb-1">Price / Day (USD)</label>
-              <input
-                type="number"
-                min={1}
-                className="w-full bg-background-dark border border-border-dark rounded-lg px-4 py-2.5 text-white text-sm focus:ring-1 focus:ring-primary"
-                value={form.pricePerDay}
-                onChange={e => setForm(f => ({ ...f, pricePerDay: Number(e.target.value) }))}
-              />
-            </div>
-
             {/* Fuel */}
             <div>
               <label className="block text-xs font-semibold text-text-secondary uppercase mb-1">Fuel</label>
@@ -975,28 +899,89 @@ function AddVehicleModal({
               </select>
             </div>
 
-            {/* Status */}
+            {/* Mileage */}
             <div>
-              <label className="block text-xs font-semibold text-text-secondary uppercase mb-1">Initial Status</label>
+              <label className="block text-xs font-semibold text-text-secondary uppercase mb-1">Mileage</label>
+              <input
+                className="w-full bg-background-dark border border-border-dark rounded-lg px-4 py-2.5 text-white text-sm placeholder-text-secondary focus:ring-1 focus:ring-primary"
+                placeholder="e.g. 25k km"
+                value={form.mileage}
+                onChange={e => setForm(f => ({ ...f, mileage: e.target.value }))}
+              />
+            </div>
+
+            {/* Transmission */}
+            <div>
+              <label className="block text-xs font-semibold text-text-secondary uppercase mb-2">Transmission</label>
+              <div className="grid grid-cols-2 gap-3">
+                {['Automatic', 'Manual'].map(t => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setForm(f => ({ ...f, transmission: t }))}
+                    className={`py-2 rounded-lg border text-sm font-medium transition-colors ${form.transmission === t ? 'border-primary bg-primary/10 text-primary' : 'border-border-dark text-text-secondary hover:text-white'}`}
+                  >
+                    {t}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-6">
+              <div>
+                <label className="block text-xs font-semibold text-text-secondary uppercase mb-2">Price per Day ($)</label>
+                <input
+                  type="number"
+                  required
+                  value={form.pricePerDay || ''}
+                  onChange={e => setForm(f => ({ ...f, pricePerDay: Number(e.target.value) }))}
+                  className="w-full bg-background border border-border-dark rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors"
+                  placeholder="e.g., 250"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-text-secondary uppercase mb-2">Category</label>
+                <div className="relative">
+                  <select
+                    value={form.category}
+                    onChange={e => setForm(f => ({ ...f, category: e.target.value as any }))}
+                    className="w-full bg-background border border-border-dark rounded-xl px-4 py-3 text-white appearance-none focus:outline-none focus:border-primary transition-colors pr-10"
+                  >
+                    <option value="ECONOMY">Economy</option>
+                    <option value="COMPACT">Compact</option>
+                    <option value="SUV">SUV</option>
+                    <option value="LUXURY">Luxury</option>
+                    <option value="VAN">Van</option>
+                    <option value="BUS">Bus</option>
+                  </select>
+                  <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary pointer-events-none">
+                    expand_more
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-text-secondary uppercase mb-1">Status</label>
               <select
                 className="w-full bg-background-dark border border-border-dark rounded-lg px-4 py-2.5 text-white text-sm focus:ring-1 focus:ring-primary"
                 value={form.status}
                 onChange={e => setForm(f => ({ ...f, status: e.target.value as VehicleStatus }))}
               >
-                {(['Available', 'Rented', 'Maintenance'] as const).map(s => (
+                {['AVAILABLE', 'RENTED', 'MAINTENANCE'].map(s => (
                   <option key={s} value={s}>{s}</option>
                 ))}
               </select>
             </div>
 
-            {/* Note */}
-            <div className="col-span-2">
-              <label className="block text-xs font-semibold text-text-secondary uppercase mb-1">Note</label>
+            <div>
+              <label className="block text-xs font-semibold text-text-secondary uppercase mb-2">Latest Note (Optional)</label>
               <input
-                className="w-full bg-background-dark border border-border-dark rounded-lg px-4 py-2.5 text-white text-sm placeholder-text-secondary focus:ring-1 focus:ring-primary"
-                placeholder="e.g. Last cleaned: today"
+                type="text"
                 value={form.lastNote}
                 onChange={e => setForm(f => ({ ...f, lastNote: e.target.value }))}
+                className="w-full bg-background border border-border-dark rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors"
+                placeholder="e.g., Scheduled for maintenance next week"
               />
             </div>
           </div>
@@ -1030,16 +1015,29 @@ function EditVehicleModal({
   onClose,
   onSave,
 }: {
-  vehicle: Vehicle;
+  vehicle: Partial<Car> & { make?: string, model?: string, features?: string[], licensePlate?: string, fuelType?: string, mileage?: number, transmission?: string, dailyRate?: number, status?: any, images?: string[], lastNote?: string };
   onClose: () => void;
-  onSave: (updated: Vehicle) => void;
+  onSave: (updated: Partial<Car> & { name?: string, type?: string, plate?: string, pricePerDay?: number, fuel?: string, image?: string, lastNote?: string, returnDate?: string, mileage?: number }) => void;
 }) {
-  const [form, setForm] = useState<Vehicle>({ ...vehicle });
+  const [form, setForm] = useState<{ name: string, category: string, type: string, plate: string, fuel: string, mileage: string, transmission: string, pricePerDay: number, status: string, image: string, lastNote: string, returnDate: string }>({
+    name: `${vehicle.make} ${vehicle.model}`,
+    category: vehicle.category || 'SUV',
+    type: vehicle.features?.[0] || 'Car',
+    plate: vehicle.licensePlate || '',
+    fuel: vehicle.fuelType || 'Petrol',
+    mileage: vehicle.mileage ? String(vehicle.mileage) : '0',
+    transmission: vehicle.transmission || 'Auto',
+    pricePerDay: Number(vehicle.dailyRate),
+    status: vehicle.status || 'AVAILABLE',
+    image: vehicle.images?.[0] || 'https://via.placeholder.com/400x300?text=No+Image',
+    lastNote: '',
+    returnDate: '', // Add returnDate to the form state
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.name.trim() || !form.plate.trim()) return;
-    onSave(form);
+    if (!form.name?.trim() || !form.plate?.trim()) return;
+    onSave({ ...form, mileage: form.mileage ? parseInt(form.mileage) : undefined } as any);
   };
 
   return (
@@ -1049,7 +1047,7 @@ function EditVehicleModal({
         <div className="flex items-center justify-between p-6 border-b border-border-dark">
           <div>
             <h2 className="text-lg font-bold text-white">Edit Vehicle</h2>
-            <p className="text-xs text-text-secondary mt-0.5">{vehicle.name}</p>
+            <p className="text-xs text-text-secondary mt-0.5">{vehicle.make} {vehicle.model}</p>
           </div>
           <button onClick={onClose} className="text-text-secondary hover:text-white transition-colors">
             <span className="material-symbols-outlined">close</span>
@@ -1165,7 +1163,7 @@ function EditVehicleModal({
                 value={form.status}
                 onChange={e => setForm(f => ({ ...f, status: e.target.value as VehicleStatus }))}
               >
-                {(['Available', 'Rented', 'Maintenance'] as const).map(s => (
+                {(['AVAILABLE', 'RENTED', 'MAINTENANCE'] as const).map(s => (
                   <option key={s} value={s}>{s}</option>
                 ))}
               </select>

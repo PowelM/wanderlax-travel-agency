@@ -18,6 +18,7 @@ export type WishlistItemLocal = {
   id: string;
   location: string;
   title: string;
+  slug?: string;
   image: string;
   price: number;
   rating: number;
@@ -166,6 +167,7 @@ export function getWishlistItemDetails(itemType: string, itemId: string): Wishli
       id: "tour-" + itemId, // This will be overridden by the db id
       location: 'Tour Package',
       title: tour.title,
+      slug: tour.slug,
       image: tour.image,
       price: parseInt(tour.price.replace(/[^0-9]/g, ''), 10),
       rating: parseFloat(tour.rating),

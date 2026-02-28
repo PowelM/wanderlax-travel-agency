@@ -112,7 +112,7 @@ export default function HotelsPage() {
   };
 
   return (
-    <div className="bg-hotel-bg text-text-main min-h-screen flex flex-col font-body pt-[73px]">
+    <div className="bg-hotel-bg text-white min-h-screen flex flex-col font-body pt-[73px]">
       {/* Main Content Layout */}
       <div className="flex flex-1 flex-col lg:flex-row h-[calc(100vh-73px)] overflow-hidden">
         {/* Sidebar Filters */}

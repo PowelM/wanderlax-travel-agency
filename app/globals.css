@@ -11,11 +11,11 @@
   --color-foreground: #ededed;
   --font-sans: 'Plus Jakarta Sans', sans-serif;
   
-  /* Hotel specific theme colors */
-  --color-hotel-bg: #181111;
-  --color-hotel-surface: #251a1a;
-  --color-hotel-border: #392828;
-  --color-hotel-text-muted: #b99d9d;
+  /* Hotel specific theme colors - Deeper Charcoal/Black for Premium Feel */
+  --color-hotel-bg: #0a0a0b;
+  --color-hotel-surface: #121214;
+  --color-hotel-border: #1e1e20;
+  --color-hotel-text-muted: #71717a;
 }
 
 /* ===== Base Styles ===== */

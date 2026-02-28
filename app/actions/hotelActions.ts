@@ -201,3 +201,14 @@ export async function deleteHotel(id: string) {
     return { success: false };
   }
 }
+export async function getRoomById(id: string) {
+  try {
+    const room = await prisma.hotelRoom.findUnique({
+      where: { id },
+    });
+    return JSON.parse(JSON.stringify(room));
+  } catch (error) {
+    console.error("Error fetching room by id:", error);
+    return null;
+  }
+}

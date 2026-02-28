@@ -3,6 +3,7 @@ import React from 'react';
 import Link from 'next/link';
 import { currentUser, auth } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/prisma';
+import { getWishlistItemDetails, WishlistItemLocal } from '@/app/lib/data/mockData';
 
 const travelerLinks = [
   { icon: 'person', label: 'My Profile', href: '/portal/profile', description: 'View & edit your info' },
@@ -154,6 +155,8 @@ export default async function TravelerProfileDashboardPage() {
   const userName = dbUser?.firstName || clerkUser?.firstName || 'Traveler';
   const bookingsCount = dbUser?.bookings?.length || 0;
   
+  const wishlistItems = dbUser?.wishlistItems?.map(item => getWishlistItemDetails(item.itemType, item.itemId)).filter(Boolean) as WishlistItemLocal[] || [];
+
   // Maps the database bookings to the UI format
   const userTrips = dbUser?.bookings?.map((b: { 
     createdAt: Date; 
@@ -298,6 +301,37 @@ export default async function TravelerProfileDashboardPage() {
                 <Link href="/tours" className="inline-flex items-center justify-center px-6 py-2.5 bg-primary hover:bg-red-700 text-white font-bold rounded-lg transition-colors">
                   Browse Tours
                 </Link>
+              </div>
+            )}
+            
+            {/* Wishlist Section */}
+            {wishlistItems.length > 0 && (
+              <div className="mt-8">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-bold text-white">My Wishlist</h2>
+                  <Link href="/portal/wishlist" className="text-primary text-sm font-medium hover:underline">View All</Link>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {wishlistItems.slice(0, 4).map((item) => (
+                    <Link key={item.id} href={item.category === 'Tours' ? `/tours/${item.slug || 'serengeti'}` : '#'} className="group bg-surface-dark border border-border-dark rounded-xl overflow-hidden hover:border-primary/30 transition-all flex flex-col">
+                      <div className="relative h-32 w-full">
+                        <img src={item.image} alt={item.title} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                        <div className="absolute bottom-2 left-3">
+                          <p className="text-white font-bold text-sm line-clamp-1">{item.title}</p>
+                          <p className="text-primary text-[10px] font-bold uppercase tracking-wider">{item.location}</p>
+                        </div>
+                      </div>
+                      <div className="p-3 flex items-center justify-between mt-auto">
+                        <span className="text-xs font-bold text-slate-200">${item.price.toLocaleString()}</span>
+                        <div className="flex items-center gap-1 text-yellow-500">
+                          <span className="material-symbols-outlined text-[14px] fill-1" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                          <span className="text-[10px] font-bold">{item.rating}</span>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
               </div>
             )}
 

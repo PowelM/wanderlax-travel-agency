@@ -250,7 +250,7 @@ export async function deleteHotel(id: string) {
     return { success: true };
   } catch (error) {
     console.error("Error deleting hotel:", error);
-    return { success: false, error: String(error) };
+    return { success: false, error: "Failed to delete hotel. Please try again or contact support." };
   }
 }
 export async function getRoomById(id: string) {

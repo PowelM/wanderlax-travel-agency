@@ -65,14 +65,21 @@ export function AdminHotelsClient({ initialHotels }: { initialHotels: Hotel[] })
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this hotel? This will also remove all associated bookings and reviews.")) return;
-    const result = await deleteHotel(id);
-    if (result.success) {
-      setHotels(current => current.filter(h => h.id !== id));
-      if (selectedHotelId === id) setSelectedHotelId(null);
-    } else {
-      alert("Failed to delete hotel. Please try again.");
+    setIsUpdating(true);
+    try {
+      const result = await deleteHotel(id);
+      if (result.success) {
+        setHotels(current => current.filter(h => h.id !== id));
+        if (selectedHotelId === id) setSelectedHotelId(null);
+      } else {
+        alert("Failed to delete hotel. Please try again.");
+      }
+    } catch {
+      alert("An error occurred while deleting the hotel. Please try again.");
+    } finally {
+      setIsUpdating(false);
+      setOpenMenuId(null);
     }
-    setOpenMenuId(null);
   };
 
   const handleStatusToggle = async (id: string, currentStatus: boolean) => {

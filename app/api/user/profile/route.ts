@@ -58,9 +58,9 @@ export async function PUT(request: Request) {
       create: {
         clerkId: userId,
         email,
-        firstName: firstName || user.firstName || null,
-        lastName: lastName || user.lastName || null,
-        phone: phone || null,
+        firstName: firstName !== undefined ? firstName : (user.firstName || null),
+        lastName: lastName !== undefined ? lastName : (user.lastName || null),
+        phone: phone !== undefined ? phone : null,
         avatarUrl: user.imageUrl || null,
       },
       select: {

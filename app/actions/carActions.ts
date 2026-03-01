@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { Prisma, Car } from "@prisma/client";
+import { revalidatePath } from "next/cache";
 
 export interface CarFilters {
   category?: string;
@@ -75,6 +76,8 @@ export async function createCar(data: Partial<Omit<Car, "id" | "createdAt" | "up
         features: data.features && data.features.length > 0 ? data.features : (data.type ? [data.type] : []),
       },
     });
+    revalidatePath('/car-hire');
+    revalidatePath('/admin/fleet');
     return JSON.parse(JSON.stringify(car));
   } catch (error) {
     console.error("Error creating car:", error);
@@ -100,6 +103,8 @@ export async function updateCar(id: string, data: Partial<Car> & { name?: string
         features: data.features && data.features.length > 0 ? data.features : (data.type ? [data.type] : undefined),
       },
     });
+    revalidatePath('/car-hire');
+    revalidatePath('/admin/fleet');
     return JSON.parse(JSON.stringify(car));
   } catch (error) {
     console.error("Error updating car:", error);
@@ -113,6 +118,8 @@ export async function updateCarStatus(id: string, status: Car["status"]) {
       where: { id },
       data: { status },
     });
+    revalidatePath('/car-hire');
+    revalidatePath('/admin/fleet');
     return JSON.parse(JSON.stringify(car));
   } catch (error) {
     console.error("Error updating car status:", error);
@@ -125,6 +132,8 @@ export async function deleteCar(id: string) {
     await prisma.car.delete({
       where: { id },
     });
+    revalidatePath('/car-hire');
+    revalidatePath('/admin/fleet');
     return { success: true };
   } catch (error) {
     console.error("Error deleting car:", error);

@@ -10,7 +10,7 @@ async function testLoyalty() {
     return;
   }
 
-  console.log(`Testing with user: ${user.email} (ID: ${user.id})`);
+  console.log(`Testing with user ID: ${user.id}`);
   console.log(`Initial points: ${user.loyaltyPoints}`);
 
   // Check last claim
@@ -54,7 +54,11 @@ async function testLoyalty() {
     });
 
     console.log(`Success! New points: ${updatedUser.loyaltyPoints}`);
-    console.log(`New activity log created at: ${updatedUser.activityLogs[0].createdAt}`);
+    if (updatedUser.activityLogs.length > 0) {
+      console.log(`New activity log created at: ${updatedUser.activityLogs[0].createdAt}`);
+    } else {
+      console.log("Warning: Activity log not found in response.");
+    }
   } catch (error) {
     console.error("Test failed:", error);
   }

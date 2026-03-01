@@ -23,6 +23,7 @@ export default function AmalfiPrintableItineraryPage() {
                     body, html { margin: 0; padding: 0; background-color: white !important; }
                     .no-print { display: none !important; }
                     .print-break { page-break-before: always; }
+                    .print-break-avoid { page-break-inside: avoid; }
                     /* Tailwind color mapping fixes for print */
                     .bg-primary { background-color: #c51110 !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
                     .text-primary { color: #c51110 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -224,9 +225,10 @@ export default function AmalfiPrintableItineraryPage() {
                             </div>
                         </div>
                     </div>
+                    </div>
                     
-                    <div className="mt-12 pt-8 border-t border-slate-800 text-center">
-                        <p className="text-[10px] text-slate-500 uppercase tracking-[0.3em]">© 2024 Wanderlux Private Travel. All rights reserved.</p>
+                    <div className="mt-8 text-center">
+                        <p className="text-[10px] text-slate-500 uppercase tracking-[0.3em]">© {new Date().getFullYear()} Wanderlux Private Travel. All rights reserved.</p>
                     </div>
                 </footer>
 

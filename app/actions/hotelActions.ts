@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
+import { revalidatePath } from "next/cache";
 
 export interface HotelFilters {
   destination?: string;
@@ -95,23 +96,23 @@ export async function getHotels(filters: HotelFilters = {}) {
       orderBy,
     });
 
-    // Handle complex sorting in JS for now as Prisma relational sorting (like min price of rooms) can be tricky
     const sortedHotels = [...hotels];
     if (filters.sortBy === 'Price: Low to High') {
         sortedHotels.sort((a, b) => {
-            const minPriceA = Math.min(...a.rooms.map(r => Number(r.pricePerNight)));
-            const minPriceB = Math.min(...b.rooms.map(r => Number(r.pricePerNight)));
-            return (isFinite(minPriceA) ? minPriceA : 0) - (isFinite(minPriceB) ? minPriceB : 0);
+            const minPriceA = a.rooms.length > 0 ? Math.min(...a.rooms.map(r => Number(r.pricePerNight))) : Infinity;
+            const minPriceB = b.rooms.length > 0 ? Math.min(...b.rooms.map(r => Number(r.pricePerNight))) : Infinity;
+            return minPriceA - minPriceB;
         });
     } else if (filters.sortBy === 'Price: High to Low') {
         sortedHotels.sort((a, b) => {
-            const minPriceA = Math.min(...a.rooms.map(r => Number(r.pricePerNight)));
-            const minPriceB = Math.min(...b.rooms.map(r => Number(r.pricePerNight)));
-            return (isFinite(minPriceB) ? minPriceB : 0) - (isFinite(minPriceA) ? minPriceA : 0);
+            const minPriceA = a.rooms.length > 0 ? Math.min(...a.rooms.map(r => Number(r.pricePerNight))) : -Infinity;
+            const minPriceB = b.rooms.length > 0 ? Math.min(...b.rooms.map(r => Number(r.pricePerNight))) : -Infinity;
+            return minPriceB - minPriceA;
         });
     }
 
     return JSON.parse(JSON.stringify(sortedHotels));
+
   } catch (error) {
     console.error("Error fetching hotels:", error);
     return [];
@@ -170,6 +171,8 @@ export async function createHotel(data: Prisma.HotelUncheckedCreateInput) {
         isActive: true,
       },
     });
+    revalidatePath('/hotels');
+    revalidatePath('/admin/hotels');
     return JSON.parse(JSON.stringify(hotel));
   } catch (error) {
     console.error("Error creating hotel:", error);
@@ -183,6 +186,9 @@ export async function updateHotel(id: string, data: Prisma.HotelUncheckedUpdateI
       where: { id },
       data,
     });
+    revalidatePath('/hotels');
+    revalidatePath('/admin/hotels');
+    revalidatePath(`/hotels/${hotel.slug}`);
     return JSON.parse(JSON.stringify(hotel));
   } catch (error) {
     console.error("Error updating hotel:", error);
@@ -195,6 +201,8 @@ export async function deleteHotel(id: string) {
     await prisma.hotel.delete({
       where: { id },
     });
+    revalidatePath('/hotels');
+    revalidatePath('/admin/hotels');
     return { success: true };
   } catch (error) {
     console.error("Error deleting hotel:", error);

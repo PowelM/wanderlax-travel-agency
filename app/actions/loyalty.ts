@@ -22,35 +22,43 @@ export async function claimDailyReward() {
     }
 
     // Check if the user has claimed a reward in the last 24 hours
-    const lastClaim = await prisma.activityLog.findFirst({
-      where: {
-        userId: dbUser.id,
-        action: 'CLAIM_DAILY_REWARD',
-        createdAt: {
-          gte: new Date(Date.now() - 24 * 60 * 60 * 1000)
+    const result = await prisma.$transaction(async (tx) => {
+      const lastClaim = await tx.activityLog.findFirst({
+        where: {
+          userId: dbUser.id,
+          action: 'CLAIM_DAILY_REWARD',
+          createdAt: {
+            gte: new Date(Date.now() - 24 * 60 * 60 * 1000)
+          }
         }
-      }
-    });
+      });
 
-    if (lastClaim) {
+      if (lastClaim) {
+        return { alreadyClaimed: true };
+      }
+
+      const updatedUser = await tx.user.update({
+        where: { id: dbUser.id },
+        data: { 
+          loyaltyPoints: { increment: 100 },
+          activityLogs: {
+            create: {
+              module: 'LOYALTY',
+              action: 'CLAIM_DAILY_REWARD',
+              details: { points: 100 }
+            }
+          }
+        }
+      });
+
+      return { updatedUser };
+    }, { isolationLevel: 'Serializable' });
+
+    if ('alreadyClaimed' in result) {
       return { success: false, error: "Reward already claimed today. Come back tomorrow!" };
     }
 
-    const updatedUser = await prisma.user.update({
-      where: { id: dbUser.id },
-      data: { 
-        loyaltyPoints: { 
-          increment: 100 
-        },
-        activityLogs: {
-          create: {
-            module: 'LOYALTY',
-            action: 'CLAIM_DAILY_REWARD',
-            details: { points: 100 }
-          }
-        }
-      }
-    });
+    const { updatedUser } = result;
     
     revalidatePath('/portal/loyalty');
     revalidatePath('/portal/dashboard');
@@ -70,34 +78,42 @@ export async function redeemReward(rewardName: string, pointsCost: number) {
   }
 
   try {
-    const dbUser = await prisma.user.findUnique({
-      where: { clerkId },
-      select: { id: true, loyaltyPoints: true }
-    });
+    const result = await prisma.$transaction(async (tx) => {
+      const dbUser = await tx.user.findUnique({
+        where: { clerkId },
+        select: { id: true, loyaltyPoints: true }
+      });
 
-    if (!dbUser) {
-      return { success: false, error: "User not found" };
-    }
+      if (!dbUser) {
+        return { error: "User not found" };
+      }
 
-    if (dbUser.loyaltyPoints < pointsCost) {
-      return { success: false, error: "Insufficient points" };
-    }
+      if (dbUser.loyaltyPoints < pointsCost) {
+        return { error: "Insufficient points" };
+      }
 
-    const updatedUser = await prisma.user.update({
-      where: { id: dbUser.id },
-      data: { 
-        loyaltyPoints: { 
-          decrement: pointsCost 
-        },
-        activityLogs: {
-          create: {
-            module: 'LOYALTY',
-            action: 'REDEEM_REWARD',
-            details: { reward: rewardName, points: pointsCost }
+      const updatedUser = await tx.user.update({
+        where: { id: dbUser.id },
+        data: { 
+          loyaltyPoints: { decrement: pointsCost },
+          activityLogs: {
+            create: {
+              module: 'LOYALTY',
+              action: 'REDEEM_REWARD',
+              details: { reward: rewardName, points: pointsCost }
+            }
           }
         }
-      }
-    });
+      });
+
+      return { updatedUser };
+    }, { isolationLevel: 'Serializable' });
+
+    if ('error' in result) {
+      return { success: false, error: result.error };
+    }
+
+    const { updatedUser } = result;
     
     revalidatePath('/portal/loyalty');
     revalidatePath('/portal/dashboard');

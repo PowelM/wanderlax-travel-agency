@@ -35,6 +35,23 @@ export async function getDestinations() {
   }
 }
 
+export async function getPublicTours() {
+  try {
+    const tours = await prisma.tourPackage.findMany({
+      where: { status: "ACTIVE" },
+      include: {
+        destination: true,
+        reviews: { select: { rating: true } },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    return JSON.parse(JSON.stringify(tours));
+  } catch (error) {
+    console.error("Error fetching public tours:", error);
+    return [];
+  }
+}
+
 export interface TourFormData {
   destinationId: string;
   title: string;
@@ -74,6 +91,7 @@ export async function createTour(data: TourFormData) {
     });
 
     revalidatePath("/admin/tours");
+    revalidatePath("/tours");
     return { success: true, tour: JSON.parse(JSON.stringify(tour)) };
   } catch (error) {
     console.error("Error creating tour:", error);
@@ -94,6 +112,7 @@ export async function updateTour(id: string, data: Partial<TourFormData>) {
     });
 
     revalidatePath("/admin/tours");
+    revalidatePath("/tours");
     return { success: true, tour: JSON.parse(JSON.stringify(tour)) };
   } catch (error) {
     console.error("Error updating tour:", error);
@@ -109,6 +128,7 @@ export async function updateTourStatus(id: string, newStatus: string) {
     });
 
     revalidatePath("/admin/tours");
+    revalidatePath("/tours");
     return { success: true, tour: JSON.parse(JSON.stringify(updated)) };
   } catch (error) {
     console.error("Error updating tour status:", error);
@@ -123,6 +143,7 @@ export async function deleteTour(id: string) {
     });
 
     revalidatePath("/admin/tours");
+    revalidatePath("/tours");
     return { success: true };
   } catch (error) {
     console.error("Error deleting tour:", error);

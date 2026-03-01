@@ -97,6 +97,66 @@ export default async function TripHistoryArchivePage() {
   });
   const uniqueCountriesCount = countries.size;
 
+  // Serialize Prisma Decimal and Date objects to plain JSON-safe primitives
+  // before passing to the Client Component (Next.js cannot serialize these across the boundary).
+  const serializedBookings = bookings.map((b) => ({
+    ...b,
+    finalAmount: b.finalAmount != null ? Number(b.finalAmount) : null,
+    createdAt: b.createdAt.toISOString(),
+    updatedAt: b.updatedAt.toISOString(),
+    tourBooking: b.tourBooking
+      ? {
+          ...b.tourBooking,
+          startDate: b.tourBooking.startDate instanceof Date
+            ? b.tourBooking.startDate.toISOString()
+            : b.tourBooking.startDate,
+          endDate: b.tourBooking.endDate instanceof Date
+            ? b.tourBooking.endDate.toISOString()
+            : b.tourBooking.endDate,
+          createdAt: b.tourBooking.createdAt instanceof Date
+            ? b.tourBooking.createdAt.toISOString()
+            : b.tourBooking.createdAt,
+          updatedAt: b.tourBooking.updatedAt instanceof Date
+            ? b.tourBooking.updatedAt.toISOString()
+            : b.tourBooking.updatedAt,
+        }
+      : null,
+    hotelBooking: b.hotelBooking
+      ? {
+          ...b.hotelBooking,
+          checkIn: b.hotelBooking.checkIn instanceof Date
+            ? b.hotelBooking.checkIn.toISOString()
+            : b.hotelBooking.checkIn,
+          checkOut: b.hotelBooking.checkOut instanceof Date
+            ? b.hotelBooking.checkOut.toISOString()
+            : b.hotelBooking.checkOut,
+          createdAt: b.hotelBooking.createdAt instanceof Date
+            ? b.hotelBooking.createdAt.toISOString()
+            : b.hotelBooking.createdAt,
+          updatedAt: b.hotelBooking.updatedAt instanceof Date
+            ? b.hotelBooking.updatedAt.toISOString()
+            : b.hotelBooking.updatedAt,
+        }
+      : null,
+    carHireBooking: b.carHireBooking
+      ? {
+          ...b.carHireBooking,
+          pickupDateTime: b.carHireBooking.pickupDateTime instanceof Date
+            ? b.carHireBooking.pickupDateTime.toISOString()
+            : b.carHireBooking.pickupDateTime,
+          returnDateTime: b.carHireBooking.returnDateTime instanceof Date
+            ? b.carHireBooking.returnDateTime.toISOString()
+            : b.carHireBooking.returnDateTime,
+          createdAt: b.carHireBooking.createdAt instanceof Date
+            ? b.carHireBooking.createdAt.toISOString()
+            : b.carHireBooking.createdAt,
+          updatedAt: b.carHireBooking.updatedAt instanceof Date
+            ? b.carHireBooking.updatedAt.toISOString()
+            : b.carHireBooking.updatedAt,
+        }
+      : null,
+  }));
+
   return (
     <div className="stitch-screen">
       <div className="noise-overlay"></div>
@@ -114,8 +174,7 @@ export default async function TripHistoryArchivePage() {
                   {/* We rendered the filter buttons inside the Client Component now. But to keep layout structure, we can just remove the old hardcoded ones from here. */}
                 </div>
               </header>
-              
-              <TripHistoryList bookings={bookings} />
+              <TripHistoryList bookings={serializedBookings} />
               
               {/* Footer Stats (Subtle) */}
               <footer className="mt-20 py-8 border-t border-slate-200 dark:border-border-dark flex flex-col md:flex-row justify-between items-center gap-4">
@@ -130,7 +189,7 @@ export default async function TripHistoryArchivePage() {
                     <p className="text-slate-500 dark:text-slate-400 text-[10px] uppercase font-bold tracking-widest">Countries</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-slate-900 dark:text-white text-xl font-black italic">${(totalSpent / 1000).toLocaleString('en-US', {maximumFractionDigits: 0})}k</p>
+                     <p className="text-slate-900 dark:text-white text-xl font-black italic">{totalSpent < 1000 ? `$${totalSpent.toLocaleString('en-US', { maximumFractionDigits: 0 })}` : `$${(totalSpent / 1000 % 1 === 0 ? (totalSpent / 1000).toLocaleString('en-US', { maximumFractionDigits: 0 }) : (totalSpent / 1000).toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 }))}k`}</p>
                     <p className="text-slate-500 dark:text-slate-400 text-[10px] uppercase font-bold tracking-widest">Total Spent</p>
                   </div>
                 </div>

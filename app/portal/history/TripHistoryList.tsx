@@ -66,8 +66,12 @@ export function TripHistoryList({ bookings }: { bookings: any[] }) {
       <div className="flex flex-col gap-10">
         {filteredBookings.length === 0 ? (
           <div className="text-center py-20 bg-white/50 dark:bg-card-dark/50 rounded-2xl border border-slate-200 dark:border-border-dark">
-            <p className="text-slate-500 dark:text-slate-400 text-lg">You have no {filter === 'ALL' ? '' : filter.toLowerCase()} booking history.</p>
-            <Link href="/tours" className="mt-4 inline-block px-6 py-2.5 bg-primary text-white text-xs font-black uppercase tracking-widest rounded-lg shadow-lg hover:bg-primary/90 transition-all">
+            <p className="text-slate-500 dark:text-slate-400 text-lg">
+              {filter === 'ALL'
+                ? 'You have no booking history.'
+                : `You have no ${filter.toLowerCase()} trips.`}
+            </p>
+            <Link href="/destinations" className="mt-4 inline-block px-6 py-2.5 bg-primary text-white text-xs font-black uppercase tracking-widest rounded-lg shadow-lg hover:bg-primary/90 transition-all">
               Explore Destinations
             </Link>
           </div>

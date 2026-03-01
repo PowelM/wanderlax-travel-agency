@@ -3,7 +3,8 @@
 import React, { useEffect } from 'react';
 
 export default function AmalfiCoastGalleryPDFPage() {
-    
+  const year = new Date().getFullYear();
+
     useEffect(() => {
         // Optional: Trigger print automatically after load if desired
     }, []);
@@ -49,7 +50,7 @@ export default function AmalfiCoastGalleryPDFPage() {
                         <h2 className="text-slate-900 text-xl font-black tracking-[0.2em]">WANDERLUX</h2>
                     </div>
                     <div className="text-primary font-medium tracking-widest text-xs uppercase">
-                        Private Collection — 2024
+                        Private Collection — {year}
                     </div>
                 </header>
 
@@ -168,7 +169,7 @@ export default function AmalfiCoastGalleryPDFPage() {
                     </div>
                     <div className="text-right">
                         <p className="text-slate-900 text-sm font-bold tracking-tighter mb-1">UNCOMPROMISING LUXURY</p>
-                        <p className="text-slate-400 text-[9px] uppercase tracking-widest">Wanderlux Bespoke Travel Itineraries © 2024</p>
+                        <p className="text-slate-400 text-[9px] uppercase tracking-widest">Wanderlux Bespoke Travel Itineraries © {year}</p>
                     </div>
                 </footer>
 

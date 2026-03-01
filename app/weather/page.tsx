@@ -37,7 +37,7 @@ export default function WeatherAndSeasonalTipsPage() {
                     <header className="relative h-[45vh] w-full overflow-hidden">
                         <div 
                             className="absolute inset-0 bg-cover bg-center" 
-                            data-alt="Cinematic sunset view over the Amalfi Coast cliffs" 
+                            aria-hidden="true"
                             style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuB5-n3ZFEu9cTurbNv4I5jyNU-hLBN3_pnnUDj5HPb6jEpqlpOzXErvqjNRNLh-FjTv9UC_JQU-C7mN8_TiuerZ5DpNjS5_Sk0es2Z2512w7yQ-KypYrixpIZKtifpixjibebOeoMN_RLTI514GJ-deXVReOeHw_b02Ix9sOL6V1Hppt0j4lW7SeTB9A54FLK_R5ph1l8L8S9E3JzW3EhyYvsBwPtTceV44Kd1xu98FhEn7d0bYKff5YCJJWRgPKujRb3C0XEfswQ')" }}
                         >
                             <div className="absolute inset-0 bg-black/40"></div>
@@ -111,6 +111,7 @@ export default function WeatherAndSeasonalTipsPage() {
                                             <td className="py-5">13°C / 55°F</td>
                                             <td className="py-5 text-center"><span className="text-[#c51110]">6</span></td>
                                             <td className="py-5 text-right">
+                                                <span className="sr-only">Low</span>
                                                 <div className="flex justify-end gap-1">
                                                     <div className="w-2 h-2 rounded-full bg-[#c51110]"></div>
                                                     <div className="w-2 h-2 rounded-full bg-white/10"></div>

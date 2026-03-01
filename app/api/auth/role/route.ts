@@ -20,7 +20,9 @@ export async function GET() {
     }
 
     const primaryEmail = user.emailAddresses?.[0]?.emailAddress;
-    const isAdminEmail = primaryEmail?.toLowerCase() === 'poweldayck@gmail.com';
+    const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase();
+    const isAdminEmail = adminEmail && primaryEmail?.toLowerCase() === adminEmail;
+    const isAdminEmail = primaryEmail ? adminEmails.includes(primaryEmail.toLowerCase()) : false;
 
     let dbUser = null;
     try {

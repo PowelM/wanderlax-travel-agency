@@ -12,8 +12,7 @@ async function main() {
   });
 
   if (!kyoto) {
-    console.log("❌ Kyoto destination not found. Please run the main seed first.");
-    return;
+    throw new Error("Kyoto destination not found. Please run the main seed first.");
   }
 
   const hotels = [

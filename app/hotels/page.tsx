@@ -38,11 +38,13 @@ export default function HotelsPage() {
   // Simulated price range
   const [priceRange, setPriceRange] = useState({ min: 0, max: 1500 });
 
-  const fetchHotels = useCallback(async () => {
+  // destination is passed as a param so typing doesn't trigger re-fetches;
+  // only the search button (or filter toggles) call this explicitly.
+  const fetchHotels = useCallback(async (searchDestination: string = destination) => {
     setIsLoading(true);
     try {
       const filters: HotelFilters = {
-        destination,
+        destination: searchDestination,
         starRatings: starRatings.length > 0 ? starRatings : undefined,
         amenities: amenities.length > 0 ? amenities : undefined,
         sortBy,
@@ -56,10 +58,14 @@ export default function HotelsPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [destination, starRatings, amenities, sortBy, priceRange]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [starRatings, amenities, sortBy, priceRange]);
 
+  // Runs once on mount (initial load) and whenever filter toggles change.
+  // destination is intentionally excluded — typing alone does not trigger a fetch.
   useEffect(() => {
-    fetchHotels();
+    fetchHotels(destination);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchHotels]);
 
   // Handlers
@@ -146,7 +152,10 @@ export default function HotelsPage() {
                   max="1500" 
                   step="50"
                   value={priceRange.min}
-                  onChange={(e) => setPriceRange(prev => ({ ...prev, min: parseInt(e.target.value) }))}
+                  onChange={(e) => {
+                    const newMin = parseInt(e.target.value);
+                    setPriceRange(prev => ({ ...prev, min: Math.min(newMin, prev.max) }));
+                  }}
                   className="w-full h-1.5 bg-hotel-surface rounded-lg appearance-none cursor-pointer accent-primary"
                 />
               </div>
@@ -161,7 +170,10 @@ export default function HotelsPage() {
                   max="1500" 
                   step="50"
                   value={priceRange.max}
-                  onChange={(e) => setPriceRange(prev => ({ ...prev, max: parseInt(e.target.value) }))}
+                  onChange={(e) => {
+                    const newMax = parseInt(e.target.value);
+                    setPriceRange(prev => ({ ...prev, max: Math.max(newMax, prev.min) }));
+                  }}
                   className="w-full h-1.5 bg-hotel-surface rounded-lg appearance-none cursor-pointer accent-primary"
                 />
               </div>
@@ -288,7 +300,7 @@ export default function HotelsPage() {
               {/* Search Button */}
               <button 
                 className="w-full lg:w-auto h-[46px] flex items-center justify-center bg-primary hover:bg-primary-dark text-white rounded-lg transition-colors shadow-lg shadow-primary/20 font-bold"
-                onClick={() => fetchHotels()}
+                onClick={() => fetchHotels(destination)}
               >
                 <span className="material-symbols-outlined mr-2">search</span>
                 Search Hotels
@@ -493,7 +505,7 @@ export default function HotelsPage() {
             
             {/* Map Interaction Layer */}
             <div className="absolute inset-0 z-10 p-10">
-               {hotels.map((hotel, idx) => (
+               {hotels.slice(0, 10).map((hotel, idx) => (
                    <div key={hotel.id} className="absolute group cursor-pointer" style={{ top: `${15 + (idx * 8)}%`, left: `${10 + (idx%5 * 18)}%`}}>    
                       <div className="bg-primary text-white text-sm font-bold px-3 py-1.5 rounded shadow-2xl group-hover:scale-110 transition-transform flex flex-col items-center">
                         <span className="text-[10px] opacity-70 uppercase tracking-tight font-black leading-none mb-1">{hotel.name}</span>

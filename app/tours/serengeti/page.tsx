@@ -140,14 +140,14 @@ export default function SerengetiSafariPage() {
             <div className="flex gap-3 relative z-30">
               <button 
                 onClick={handleShare}
-                className="size-12 rounded-full serengeti-glass-card flex items-center justify-center text-white hover:bg-primary transition-colors"
-              >
-                <span className="material-symbols-outlined">share</span>
-              </button>
-              <button 
-                onClick={toggleFavorite}
-                className={`size-12 rounded-full serengeti-glass-card flex items-center justify-center transition-colors ${
-                  isFavorited ? 'bg-primary text-white border-primary' : 'text-white hover:bg-primary'
+<div className="flex gap-3">
+<button aria-label="Share this experience" className="size-12 rounded-full serengeti-glass-card flex items-center justify-center text-white hover:bg-primary transition-colors">
+<span className="material-symbols-outlined">share</span>
+</button>
+<button aria-label="Add to favorites" className="size-12 rounded-full serengeti-glass-card flex items-center justify-center text-white hover:bg-primary transition-colors">
+<span className="material-symbols-outlined">favorite</span>
+</button>
+</div>
                 }`}
               >
                 <span className="material-symbols-outlined" style={{ fontVariationSettings: isFavorited ? "'FILL' 1" : "'FILL' 0" }}>

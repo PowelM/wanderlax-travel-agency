@@ -2,14 +2,50 @@
 
 import React from 'react';
 import Image from 'next/image';
-import jsPDF from 'jspdf';
+import Link from 'next/link';
+import { jsPDF } from 'jspdf';
 
-type ServiceType = 'TOUR_PACKAGE' | 'HOTEL' | 'CAR_HIRE';
+interface Booking {
+  id: string;
+  status: string;
+  serviceType: 'TOUR_PACKAGE' | 'HOTEL' | 'CAR_HIRE';
+  finalAmount: number;
+  tourBooking?: {
+    startDate: string;
+    endDate: string;
+    tourPackage?: {
+      title: string;
+      destination?: { country: string };
+      images?: string[];
+    };
+  };
+  hotelBooking?: {
+    checkIn: string;
+    checkOut: string;
+    totalNights: number;
+    hotel?: {
+      name: string;
+      destination?: { country: string };
+      images?: string[];
+    };
+  };
+  carHireBooking?: {
+    pickupDateTime: string;
+    returnDateTime: string;
+    totalDays: number;
+    pickupLocation: string;
+    car?: {
+      make: string;
+      model: string;
+      images?: string[];
+    };
+  };
+}
 
 export function TripHistoryCard({ 
   booking 
 }: { 
-  booking: any 
+  booking: Booking 
 }) {
   const [isReviewing, setIsReviewing] = React.useState(false);
   const [rating, setRating] = React.useState(5);
@@ -244,9 +280,9 @@ export function TripHistoryCard({
             </div>
           </div>
           <div className="flex flex-wrap gap-3 pt-6 border-t border-slate-100 dark:border-border-dark print:hidden">
-            <button className="px-6 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-black text-xs font-black uppercase tracking-widest rounded-lg hover:bg-slate-800 dark:hover:bg-slate-200 transition-all">
+            <Link href={`/portal/itinerary/${booking.id}`} className="px-6 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-black text-xs font-black uppercase tracking-widest rounded-lg hover:bg-slate-800 dark:hover:bg-slate-200 transition-all flex items-center justify-center">
               View Itinerary
-            </button>
+            </Link>
             <button 
               className="px-6 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-black uppercase tracking-widest rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-all border border-slate-200 dark:border-slate-700"
               onClick={handleDownloadPDF}

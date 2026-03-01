@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useUser } from '@clerk/nextjs';
+import Link from 'next/link';
 
 export default function ConsultationPage() {
   const { user, isLoaded } = useUser();
@@ -157,7 +158,7 @@ export default function ConsultationPage() {
                     {!isSubmitting && <span className="material-symbols-outlined text-sm">arrow_forward</span>}
                   </button>
                   <p className="text-xs text-center text-slate-400 dark:text-[#b99d9d] mt-2">
-                    By booking, you agree to our <a className="underline hover:text-primary" href="#">Terms of Service</a>.
+                    By booking, you agree to our <Link className="underline hover:text-primary" href="/about">Terms of Service</Link>.
                   </p>
                 </form>
               </div>
@@ -244,10 +245,10 @@ export default function ConsultationPage() {
                   Hand-picked specialists with decades of experience in crafting bespoke luxury itineraries tailored to your unique tastes.
                 </p>
               </div>
-              <a className="text-primary hover:text-red-400 font-bold flex items-center gap-2 group" href="#">
+              <Link className="text-primary hover:text-red-400 font-bold flex items-center gap-2 group" href="/about">
                 View All Consultants 
                 <span className="material-symbols-outlined transition-transform group-hover:translate-x-1">arrow_right_alt</span>
-              </a>
+              </Link>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {[
@@ -267,10 +268,10 @@ export default function ConsultationPage() {
                   <div className="p-6">
                     <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">{expert.name}</h3>
                     <p className="text-sm text-slate-500 dark:text-[#b99d9d] mb-4">{expert.role}</p>
-                    <div className="flex items-center gap-2 text-xs text-slate-400 dark:text-[#886666]">
-                      <span className="material-symbols-outlined text-base">star</span>
-                      {expert.score} ({expert.reviews} Reviews)
-                    </div>
+                    <Link href="/tours" className="w-full py-2 bg-primary/10 hover:bg-primary transition-all text-primary hover:text-white text-xs font-bold rounded-lg flex items-center justify-center gap-2 mt-4 group/btn">
+                      Explore Region
+                      <span className="material-symbols-outlined text-sm group-hover/btn:translate-x-1 transition-transform">arrow_forward</span>
+                    </Link>
                   </div>
                 </div>
               ))}

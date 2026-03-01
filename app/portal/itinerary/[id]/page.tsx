@@ -2,6 +2,7 @@
 /* eslint-disable react/no-unescaped-entities */
 /* eslint-disable @next/next/no-img-element */
 import React from 'react';
+import Link from 'next/link';
 
 export default function ItineraryDetailCustomerViewPage() {
   return (
@@ -18,10 +19,10 @@ export default function ItineraryDetailCustomerViewPage() {
 <h2 className="text-xl font-extrabold tracking-tighter uppercase">Wanderlux</h2>
 </div>
 <nav className="hidden md:flex items-center gap-10">
-<a className="text-sm font-semibold hover:text-primary transition-colors" href="#">Destinations</a>
-<a className="text-sm font-semibold hover:text-primary transition-colors" href="#">Experiences</a>
-<a className="text-sm font-semibold hover:text-primary transition-colors" href="#">Private Jet</a>
-<a className="text-sm font-semibold hover:text-primary transition-colors" href="#">Journal</a>
+<Link className="text-sm font-semibold hover:text-primary transition-colors" href="/tours">Destinations</Link>
+<Link className="text-sm font-semibold hover:text-primary transition-colors" href="/tours">Experiences</Link>
+<Link className="text-sm font-semibold hover:text-primary transition-colors" href="/contact">Private Jet</Link>
+<Link className="text-sm font-semibold hover:text-primary transition-colors" href="/about">Journal</Link>
 </nav>
 <div className="flex items-center gap-4">
 <button className="p-2 hover:bg-white/5 rounded-full transition-colors">
@@ -287,26 +288,26 @@ export default function ItineraryDetailCustomerViewPage() {
                         Curating the world's most extraordinary travel experiences for the discerning explorer.
                     </p>
 <div className="flex gap-6">
-<a className="text-white/50 hover:text-primary transition-colors" href="#">Instagram</a>
-<a className="text-white/50 hover:text-primary transition-colors" href="#">LinkedIn</a>
-<a className="text-white/50 hover:text-primary transition-colors" href="#">YouTube</a>
+<a className="text-white/50 hover:text-primary transition-colors" href="https://instagram.com" target="_blank" rel="noopener noreferrer">Instagram</a>
+<a className="text-white/50 hover:text-primary transition-colors" href="https://linkedin.com" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+<a className="text-white/50 hover:text-primary transition-colors" href="https://youtube.com" target="_blank" rel="noopener noreferrer">YouTube</a>
 </div>
 </div>
 <div>
 <h5 className="font-bold uppercase tracking-widest text-xs mb-8 text-primary">Navigation</h5>
 <ul className="space-y-4 text-white/50 font-medium">
-<li><a className="hover:text-white transition-colors" href="#">Destinations</a></li>
-<li><a className="hover:text-white transition-colors" href="#">Private Jet</a></li>
-<li><a className="hover:text-white transition-colors" href="#">Our Story</a></li>
-<li><a className="hover:text-white transition-colors" href="#">Contact</a></li>
+<li><Link className="hover:text-white transition-colors" href="/tours">Destinations</Link></li>
+<li><Link className="hover:text-white transition-colors" href="/contact">Private Jet</Link></li>
+<li><Link className="hover:text-white transition-colors" href="/about">Our Story</Link></li>
+<li><Link className="hover:text-white transition-colors" href="/contact">Contact</Link></li>
 </ul>
 </div>
 <div>
 <h5 className="font-bold uppercase tracking-widest text-xs mb-8 text-primary">Legal</h5>
 <ul className="space-y-4 text-white/50 font-medium">
-<li><a className="hover:text-white transition-colors" href="#">Terms of Service</a></li>
-<li><a className="hover:text-white transition-colors" href="#">Privacy Policy</a></li>
-<li><a className="hover:text-white transition-colors" href="#">Booking Conditions</a></li>
+<li><Link className="hover:text-white transition-colors" href="/about">Terms of Service</Link></li>
+<li><Link className="hover:text-white transition-colors" href="/about">Privacy Policy</Link></li>
+<li><Link className="hover:text-white transition-colors" href="/about">Booking Conditions</Link></li>
 </ul>
 </div>
 </div>

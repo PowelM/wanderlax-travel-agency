@@ -79,10 +79,10 @@ export default async function TravelerProfileDashboardPage() {
     loyaltyIcon = 'vpn_key';
   }
 
-  const activeBookings = dbUser?.bookings?.filter((b: any) => b.status === 'CONFIRMED' || b.status === 'PENDING') || [];
+  const activeBookings = dbUser?.bookings?.filter((b: unknown) => b.status === 'CONFIRMED' || b.status === 'PENDING') || [];
   
   // Format upcoming journeys
-  const upcomingJourneys = activeBookings.map((b: any) => {
+  const upcomingJourneys = activeBookings.map((b: unknown) => {
     let destination = 'Journey';
     let type = 'Travel';
     let image = 'https://images.unsplash.com/photo-1488646953014-85cb44e25828';
@@ -194,7 +194,7 @@ export default async function TravelerProfileDashboardPage() {
           
           <div className="flex gap-6 overflow-x-auto pb-6 no-scrollbar snap-x">
             {upcomingJourneys.length > 0 ? (
-              upcomingJourneys.map((journey: any) => (
+              upcomingJourneys.map((journey: unknown) => (
                 <div key={journey.id} className="min-w-[320px] md:min-w-[400px] snap-start glass-panel rounded-3xl overflow-hidden group border border-border-dark hover:border-primary/30 transition-all">
                   <div className="h-56 w-full relative overflow-hidden">
                     <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110" style={{ backgroundImage: `url('${journey.image}')` }}></div>
@@ -256,7 +256,7 @@ export default async function TravelerProfileDashboardPage() {
             
             <div className="space-y-4">
               {dbUser?.activityLogs && dbUser.activityLogs.length > 0 ? (
-                dbUser.activityLogs.map((log: any) => (
+                dbUser.activityLogs.map((log: unknown) => (
                   <div key={log.id} className="glass-panel flex items-center gap-6 p-5 rounded-2xl hover:border-primary/40 hover:bg-white/5 transition-colors group cursor-pointer">
                     <div className="size-12 min-w-[48px] rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all">
                       <span className="material-symbols-outlined">{log.module === 'BOOKING' ? 'receipt_long' : log.module === 'LOYALTY' ? 'loyalty' : 'event'}</span>

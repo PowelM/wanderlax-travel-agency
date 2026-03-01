@@ -78,7 +78,7 @@ export default function BookingConfirmedPage() {
             <div className="flex flex-col p-6 rounded-2xl bg-white dark:bg-slate-900/50 border border-[#ec5b13]/5 hover:border-[#ec5b13]/20 transition-all">
               <span className="material-symbols-outlined text-[#ec5b13] mb-4 text-3xl">mail</span>
               <h3 className="font-bold text-lg mb-2">Check Your Inbox</h3>
-              <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">We've sent a detailed confirmation email with your digital vouchers and travel insurance docs.</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">We&apos;ve sent a detailed confirmation email with your digital vouchers and travel insurance docs.</p>
             </div>
             <div className="flex flex-col p-6 rounded-2xl bg-white dark:bg-slate-900/50 border border-[#ec5b13]/5 hover:border-[#ec5b13]/20 transition-all">
               <span className="material-symbols-outlined text-[#ec5b13] mb-4 text-3xl">fact_check</span>

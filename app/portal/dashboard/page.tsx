@@ -159,6 +159,7 @@ export default async function TravelerProfileDashboardPage() {
 
   // Maps the database bookings to the UI format
   const userTrips = dbUser?.bookings?.map((b: { 
+    id: string;
     createdAt: Date; 
     status: string; 
     tourBooking?: { tourPackage?: { title: string; images: string[] } } | null;
@@ -187,6 +188,7 @@ export default async function TravelerProfileDashboardPage() {
     }
     
     return {
+      id: b.id,
       destination,
       dates: b.createdAt.toLocaleDateString(),
       status: b.status,
@@ -256,6 +258,7 @@ export default async function TravelerProfileDashboardPage() {
 
             {userTrips.length > 0 ? (
               userTrips.map((trip: {
+                id: string;
                 destination: string;
                 type: string;
                 image: string;
@@ -285,7 +288,7 @@ export default async function TravelerProfileDashboardPage() {
                         </div>
                       </div>
                       <div className="flex gap-3 mt-4">
-                        <Link href="/contact" className="text-sm font-medium text-primary hover:underline">View Details</Link>
+                        <Link href={`/portal/itinerary/${trip.id}`} className="text-sm font-medium text-primary hover:underline">View Details</Link>
                         <span className="text-border-dark">|</span>
                         <Link href="/contact" className="text-sm font-medium text-slate-400 hover:text-white">Contact Concierge</Link>
                       </div>

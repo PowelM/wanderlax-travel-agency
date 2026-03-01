@@ -138,7 +138,7 @@ export default function Header() {
         </Link>
 
         {/* Desktop Nav */}
-        <nav className="hidden xl:flex items-center gap-10">
+        <nav className="hidden lg:flex items-center gap-10">
           {/* Experiences Dropdown */}
           <div 
             className="relative group"
@@ -285,7 +285,7 @@ export default function Header() {
           <SignedOut>
             <Link
               href="/portal/login"
-              className="hidden lg:flex items-center gap-2 text-sm font-semibold text-slate-300 hover:text-white transition-colors bg-white/5 hover:bg-white/10 px-4 py-2 rounded-lg border border-white/10"
+              className="hidden md:flex items-center gap-2 text-sm font-semibold text-slate-300 hover:text-white transition-colors bg-white/5 hover:bg-white/10 px-4 py-2 rounded-lg border border-white/10"
             >
               <span className="material-symbols-outlined text-[20px]">login</span>
               Member Access
@@ -295,7 +295,7 @@ export default function Header() {
             {isAdmin && (
               <Link
                 href="/admin"
-                className="hidden lg:flex items-center gap-2 text-sm font-bold text-primary hover:text-white transition-all bg-primary/10 hover:bg-primary px-4 py-2 rounded-lg border border-primary/20 hover:border-primary shadow-lg shadow-primary/5"
+                className="hidden md:flex items-center gap-2 text-sm font-bold text-primary hover:text-white transition-all bg-primary/10 hover:bg-primary px-4 py-2 rounded-lg border border-primary/20 hover:border-primary shadow-lg shadow-primary/5"
               >
                 <span className="material-symbols-outlined text-[20px]">admin_panel_settings</span>
                 Admin Panel
@@ -303,12 +303,12 @@ export default function Header() {
             )}
             <Link
               href="/portal/dashboard"
-              className="hidden lg:flex items-center gap-2 text-sm font-semibold text-slate-300 hover:text-white transition-all border border-white/10 bg-white/5 rounded-lg px-4 py-2 hover:bg-white/10 shadow-sm"
+              className="hidden md:flex items-center gap-2 text-sm font-semibold text-slate-300 hover:text-white transition-all border border-white/10 bg-white/5 rounded-lg px-4 py-2 hover:bg-white/10 shadow-sm"
             >
               <span className="material-symbols-outlined text-[20px]">dashboard</span>
               Dashboard
             </Link>
-            <div className="h-8 w-px bg-white/10 mx-1 hidden lg:block"></div>
+            <div className="h-8 w-px bg-white/10 mx-1 hidden md:block"></div>
             <UserButton
               appearance={{
                 elements: {
@@ -320,7 +320,7 @@ export default function Header() {
 
             <button
               onClick={() => router.push('/portal/consultation')}
-              className="hidden xl:flex items-center justify-center rounded-lg h-10 px-6 bg-transparent hover:bg-white/5 text-white text-sm font-bold border border-white/20 transition-all hover:border-white/40"
+              className="hidden lg:flex items-center justify-center rounded-lg h-10 px-6 bg-transparent hover:bg-white/5 text-white text-sm font-bold border border-white/20 transition-all hover:border-white/40"
             >
               Consultation
             </button>
@@ -333,7 +333,7 @@ export default function Header() {
           
           {/* Mobile menu toggle */}
           <button
-            className="xl:hidden p-2 rounded-lg bg-white/5 border border-white/10 text-white transition-all hover:bg-white/10"
+            className="lg:hidden p-2 rounded-lg bg-white/5 border border-white/10 text-white transition-all hover:bg-white/10"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Toggle menu"
           >

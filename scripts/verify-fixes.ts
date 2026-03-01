@@ -1,4 +1,4 @@
-const { deleteStaff } = require('./app/actions/staffActions');
+import { deleteStaff } from '../app/actions/staffActions';
 // Mocking prisma for the purpose of testing the action logic
 // In a real environment, we'd use the actual prisma client
 // But for verification of the action's catch block:

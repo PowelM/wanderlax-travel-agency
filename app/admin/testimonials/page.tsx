@@ -4,6 +4,7 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { AdminHeader } from '@/components/admin/AdminHeader';
+import Link from 'next/link';
 
 // --- Types ---
 interface Testimonial {
@@ -668,8 +669,8 @@ export default function FeaturedTestimonialsManagerPage() {
                   <span>All changes saved automatically</span>
                 </div>
                 <div className="flex gap-6">
-                  <a className="hover:text-slate-300 transition-colors" href="#">Support</a>
-                  <a className="hover:text-slate-300 transition-colors" href="#">Documentation</a>
+                  <Link className="hover:text-slate-300 transition-colors" href="/contact">Support</Link>
+                  <Link className="hover:text-slate-300 transition-colors" href="/contact">Documentation</Link>
                   <span className="text-slate-700">|</span>
                   <span>Version 2.4.0</span>
                 </div>

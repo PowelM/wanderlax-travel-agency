@@ -1,4 +1,4 @@
-const { getStaffData } = require('./lib/staff');
+import { getStaffData } from './lib/staff';
 
 async function test() {
   try {

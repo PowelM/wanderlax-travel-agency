@@ -169,12 +169,14 @@ export async function getStaffWithPermissions(userId: string) {
   }
 }
 
-export async function updateStaffPermissions(staffProfileId: string, permissions: any) {
+export async function updateStaffPermissions(staffProfileId: string, permissions: unknown) {
   try {
-    const moduleNames = Object.keys(permissions);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const permsMap = permissions as Record<string, any>;
+    const modules = Object.keys(permsMap);
     
-    for (const modName of moduleNames) {
-      const perms = permissions[modName];
+    for (const mod of modules) {
+      const perms = permsMap[mod];
       const upsertData = {
         canView: !!perms.view,
         canCreate: !!perms.create,
@@ -183,17 +185,22 @@ export async function updateStaffPermissions(staffProfileId: string, permissions
         canExport: !!perms.export
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await (prisma.staffPermission as any).upsert({
         where: {
           staffProfileId_module: {
             staffProfileId,
-            module: modName.toUpperCase() as any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            module: mod.toUpperCase() as any
           }
         },
-        update: upsertData,
+        update: {
+          ...upsertData
+        },
         create: {
           staffProfileId,
-          module: modName.toUpperCase() as any,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          module: mod.toUpperCase() as any,
           ...upsertData
         }
       });
@@ -202,7 +209,7 @@ export async function updateStaffPermissions(staffProfileId: string, permissions
     revalidatePath('/admin/staff');
     return { success: true };
   } catch (error: unknown) {
-    const message = (error as any).message || "Unknown error";
+    const message = error instanceof Error ? error.message : "Unknown error";
     console.error("Error updating permissions:", error);
     return { success: false, error: message };
   }

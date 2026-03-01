@@ -114,7 +114,7 @@ export default function HotelsPage() {
   return (
     <div className="bg-hotel-bg text-white min-h-screen flex flex-col font-body pt-[73px]">
       {/* Main Content Layout */}
-      <div className="flex flex-1 flex-col lg:flex-row h-[calc(100vh-73px)] overflow-hidden">
+      <div className="flex flex-1 flex-col lg:flex-row overflow-hidden">
         {/* Sidebar Filters */}
         <aside className="hidden lg:flex flex-col w-80 border-r border-hotel-border bg-hotel-bg overflow-y-auto p-6 gap-6">
           <div className="flex flex-col gap-1">
@@ -228,10 +228,10 @@ export default function HotelsPage() {
         </aside>
 
         {/* Main Listing Area */}
-        <main className="flex-1 flex flex-col overflow-hidden bg-hotel-bg relative">
+        <main className="flex-1 flex flex-col bg-hotel-bg relative">
           {/* Sticky Search Bar */}
-          <div className="sticky top-0 z-40 bg-hotel-bg/95 backdrop-blur-sm border-b border-hotel-border px-6 py-4">
-            <div className="flex flex-col lg:flex-row gap-4 items-end">
+          <div className="sticky top-0 z-40 bg-hotel-bg/95 backdrop-blur-sm border-b border-hotel-border px-4 py-4 md:px-6">
+            <div className="flex flex-col gap-4">
               {/* Destination */}
               <div className="flex flex-col flex-1 w-full">
                 <label className="text-xs font-bold text-hotel-text-muted uppercase tracking-wider mb-1.5 ml-1">Destination</label>
@@ -287,10 +287,11 @@ export default function HotelsPage() {
               </div>
               {/* Search Button */}
               <button 
-                className="h-[46px] aspect-square flex items-center justify-center bg-primary hover:bg-primary-dark text-white rounded-lg transition-colors shadow-lg shadow-primary/20"
+                className="w-full lg:w-auto h-[46px] flex items-center justify-center bg-primary hover:bg-primary-dark text-white rounded-lg transition-colors shadow-lg shadow-primary/20 font-bold"
                 onClick={() => fetchHotels()}
               >
-                <span className="material-symbols-outlined">search</span>
+                <span className="material-symbols-outlined mr-2">search</span>
+                Search Hotels
               </button>
             </div>
           </div>

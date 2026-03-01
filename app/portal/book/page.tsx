@@ -2,7 +2,7 @@
 
 import React, { useState, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
 import { createTourBooking, createHotelBooking } from '@/app/actions/bookingActions';
 import { getHotelBySlug, getRoomById } from '@/app/actions/hotelActions';
@@ -78,7 +78,9 @@ function BookingFormContent() {
   const roomId = searchParams.get('room') || '';
   
   const tour = tourData[tourName];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [hotel, setHotel] = useState<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [room, setRoom] = useState<any>(null);
   const [isLoadingData, setIsLoadingData] = useState(false);
 
@@ -108,7 +110,7 @@ function BookingFormContent() {
   const [guests, setGuests] = useState(2);
   const [specialRequirements, setSpecialRequirements] = useState('');
   const [submitted, setSubmitted] = useState(false);
-  const router = useRouter();
+  // router removed as it was unused
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

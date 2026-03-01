@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { updateTour } from '@/app/actions/tourActions';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { AdminHeader } from '@/components/admin/AdminHeader';
+import { Field } from '@/components/ui/Field';
 
 type Destination = { id: string; name: string; country: string };
 
@@ -110,12 +111,7 @@ export default function EditTourClient({ tour }: { tour: Tour }) {
     }
   };
 
-  const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
-    <div>
-      <label className="block text-sm font-semibold text-text-secondary mb-1.5 uppercase tracking-wide">{label}</label>
-      {children}
-    </div>
-  );
+
 
   const inputCls = "w-full px-4 py-2.5 rounded-lg border border-border-dark bg-background-dark text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-primary text-sm";
 

@@ -34,7 +34,7 @@ export async function getPaymentsData() {
       payments: JSON.parse(JSON.stringify(payments)),
       totalRevenue: Number(totalRevenue._sum?.amount || 0)
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error fetching payment data:", error);
     return { success: false, error: error.message };
   }
@@ -58,7 +58,7 @@ export async function createManualInvoice(data: { bookingId: string, dueDate: Da
 
     revalidatePath('/admin/payments');
     return { success: true, invoice: JSON.parse(JSON.stringify(invoice)) };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error creating manual invoice:", error);
     return { success: false, error: error.message };
   }

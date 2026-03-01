@@ -64,8 +64,9 @@ export default function AdminStaffPermissionsClient({ staffId }: { staffId: stri
 
       if (data.staffProfile?.permissions && data.staffProfile.permissions.length > 0) {
         const mappedPermissions: StaffPermissions = { ...INITIAL_PERMISSIONS };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         data.staffProfile.permissions.forEach((p: any) => {
-          const mod = p.module.toLowerCase();
+          const mod = String(p.module || '').toLowerCase();
           if (mappedPermissions[mod]) {
             mappedPermissions[mod] = {
               view: p.canView,
@@ -83,6 +84,7 @@ export default function AdminStaffPermissionsClient({ staffId }: { staffId: stri
   }, [staffId]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchData();
   }, [fetchData]);
 

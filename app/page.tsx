@@ -22,34 +22,6 @@ export default function HomePage() {
   type Destination = { name: string; country: string; price: string; tag: string; tagStyle: string; img: string; slug: string; };
   const destinations: Destination[] = [];
 
-  type Hotel = { name: string; location: string; price: string; rating: string; img: string; slug: string; };
-  const featuredHotels: Hotel[] = [
-    {
-      name: "The Royal Kyoto Resort",
-      location: "Kyoto, Japan",
-      price: "$850",
-      rating: "5.0",
-      img: "https://lh3.googleusercontent.com/aida-public/AB6AXuC3LboRjFRBURcDK81YS2v0nIq8kE4O6WyivnqM816-FjZ-s97NPdp8dah9YsazAcO07rSurdssBW7jYT2QlIQi6bwiQ-o7zsUxwW3X7nkYicZ7UBZ2xx2Tkklb62hCp1xzapDUFP9iB22Jkp4UpWUTwi38_zNpWBX0-zS1FX_EAWcnEqewSvnAmuGieRkgLu3IFAU4qHWcvlaniG3KsaGV0cZFiyqxHm7f785h3hu99hyIwUfNo02YzpR0wMxF9sF7lwNuEvHj9g",
-      slug: "royal-kyoto-resort"
-    },
-    {
-      name: "Azure Bay Villa",
-      location: "Santorini, Greece",
-      price: "$1,200",
-      rating: "4.9",
-      img: "https://lh3.googleusercontent.com/aida-public/AB6AXuC3LboRjFRBURcDK81YS2v0nIq8kE4O6WyivnqM816-FjZ-s97NPdp8dah9YsazAcO07rSurdssBW7jYT2QlIQi6bwiQ-o7zsUxwW3X7nkYicZ7UBZ2xx2Tkklb62hCp1xzapDUFP9iB22Jkp4UpWUTwi38_zNpWBX0-zS1FX_EAWcnEqewSvnAmuGieRkgLu3IFAU4qHWcvlaniG3KsaGV0cZFiyqxHm7f785h3hu99hyIwUfNo02YzpR0wMxF9sF7lwNuEvHj9g",
-      slug: "azure-bay-villa"
-    },
-    {
-      name: "Serengeti Lodge",
-      location: "Tanzania",
-      price: "$950",
-      rating: "4.8",
-      img: "https://lh3.googleusercontent.com/aida-public/AB6AXuC3LboRjFRBURcDK81YS2v0nIq8kE4O6WyivnqM816-FjZ-s97NPdp8dah9YsazAcO07rSurdssBW7jYT2QlIQi6bwiQ-o7zsUxwW3X7nkYicZ7UBZ2xx2Tkklb62hCp1xzapDUFP9iB22Jkp4UpWUTwi38_zNpWBX0-zS1FX_EAWcnEqewSvnAmuGieRkgLu3IFAU4qHWcvlaniG3KsaGV0cZFiyqxHm7f785h3hu99hyIwUfNo02YzpR0wMxF9sF7lwNuEvHj9g",
-      slug: "serengeti-lodge"
-    }
-  ];
-
   const scrollCarousel = (direction: 'left' | 'right') => {
     if (!carouselRef.current) return;
     const scrollAmount = 360;
@@ -85,7 +57,7 @@ export default function HomePage() {
               <span className="text-primary font-semibold tracking-[0.25em] uppercase text-xs sm:text-sm">
                 Curated journeys for the discerning traveler
               </span>
-              <h1 className="text-white text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tighter leading-[0.9]">
+              <h1 className="text-white text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tighter leading-[0.9]">
                 Experience the <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-200 to-slate-400">
                   Extraordinary
@@ -109,10 +81,10 @@ export default function HomePage() {
       </div>
 
       {/* Booking Bar (Overlapping Hero) */}
-      <div className="relative z-20 -mt-24 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
+      <div className="relative z-20 -mt-16 md:-mt-24 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
         <div className="bg-surface-dark/80 backdrop-blur-xl border border-border-dark rounded-2xl shadow-2xl p-2 md:p-4">
           {/* Tabs */}
-          <div className="flex overflow-x-auto pb-4 md:pb-0 border-b border-border-dark/50 md:border-b-0 gap-6 md:gap-8 px-4 mb-4 md:mb-0">
+          <div className="flex overflow-x-auto pb-4 md:pb-0 border-b border-border-dark/50 md:border-b-0 gap-4 md:gap-8 px-4 mb-4 md:mb-0 no-scrollbar">
             {bookingTabs.map((tab, idx) => (
               <button
                 key={tab.label}

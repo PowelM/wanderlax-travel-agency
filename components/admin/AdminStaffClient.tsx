@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
-import { updateStaffRole, toggleStaffStatus, deleteStaff, createStaff } from '@/app/actions/staffActions';
+import { toggleStaffStatus, deleteStaff, createStaff } from '@/app/actions/staffActions';
 
 interface StaffMember {
   id: string;
@@ -79,6 +79,7 @@ export default function AdminStaffClient() {
     return filtered.slice(start, start + itemsPerPage);
   }, [filtered, currentPage]);
 
+  /* 
   const handleRoleChange = async (id: string, role: string) => {
     const prev = staff.find(s => s.id === id);
     if (!prev) return;
@@ -89,6 +90,7 @@ export default function AdminStaffClient() {
       alert('Failed to update role');
     }
   };
+  */
 
   const handleToggleStatus = async (id: string, isActive: boolean) => {
     const prev = staff.find(s => s.id === id);

@@ -86,7 +86,7 @@ export default function WanderluxToursCuratedTravelPackagesPage() {
         <div className="relative w-full h-[500px] flex items-center justify-center overflow-hidden">
           <div className="absolute inset-0 z-0 bg-cover bg-center" style={{ backgroundImage: "linear-gradient(to bottom, rgba(34, 16, 16, 0.3) 0%, rgba(34, 16, 16, 0.9) 100%), url('https://lh3.googleusercontent.com/aida-public/AB6AXuA4OtRSL0s-KrYdrWpZerF4nwGKhTN8BRXQHLjnqfTpOL4m5mcnT5gq-jevCzmrZAz0GpG07SDMXNa5bX1g25JmT7duiEsO-oW1iqYIfm4apcT_PMrJG92vV9X3PgPpVQwMGPxdoqacdlBqyRhrjzZfnD9eH_GuYCjU7htTEGNrqCOuSdICMjQSnGIB4b3RYB_iejirfcGJ59xRnSjSRJ8zdo3N9bXNrEASxkeQAEdSqeHwTwCXSqPk3_6Qvnb6WXMcCniddQLeaA')" }}></div>
           <div className="relative z-10 container mx-auto px-4 text-center max-w-4xl">
-            <h1 className="text-4xl md:text-6xl font-black text-white tracking-tight mb-4 drop-shadow-xl">
+            <h1 className="text-3xl md:text-6xl font-black text-white tracking-tight mb-4 drop-shadow-xl">
               Discover. Explore. Experience.
             </h1>
             <p className="text-lg md:text-xl text-slate-200 font-medium mb-8 max-w-2xl mx-auto drop-shadow-md">
@@ -147,7 +147,7 @@ export default function WanderluxToursCuratedTravelPackagesPage() {
                 <p className="text-slate-400 mb-6 leading-relaxed">
                   Immerse yourself in the wild heart of Africa with our exclusive 10-day safari. Experience private game drives, luxury tented camps, and intimate encounters with the Big Five.
                 </p>
-                <div className="grid grid-cols-2 gap-4 mb-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-primary"><span className="material-symbols-outlined">calendar_month</span></div>
                     <div><p className="text-xs text-slate-400 uppercase">Duration</p><p className="text-white font-medium">10 Days</p></div>
@@ -165,13 +165,13 @@ export default function WanderluxToursCuratedTravelPackagesPage() {
                     <div><p className="text-xs text-slate-400 uppercase">Difficulty</p><p className="text-white font-medium">Moderate</p></div>
                   </div>
                 </div>
-                <div className="flex gap-4">
-                  <Link href="/tours/serengeti" className="flex-1 bg-white/10 border border-white/20 text-white font-bold py-3 px-6 rounded-lg hover:bg-white/20 transition-all text-center">
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <Link href="/tours/serengeti" className="w-full sm:flex-1 bg-white/10 border border-white/20 text-white font-bold py-3 px-6 rounded-lg hover:bg-white/20 transition-all text-center">
                     View Details
                   </Link>
                   <button
                     onClick={() => handleBookNow('The Royal Serengeti Safari')}
-                    className="flex-1 bg-primary text-white font-bold py-3 px-6 rounded-lg hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 text-center flex items-center justify-center gap-2"
+                    className="w-full sm:flex-1 bg-primary text-white font-bold py-3 px-6 rounded-lg hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 text-center flex items-center justify-center gap-2"
                   >
                     <span className="material-symbols-outlined text-[18px]">bookmark_add</span>
                     Book Now

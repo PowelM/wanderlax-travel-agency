@@ -212,15 +212,15 @@ export default function ProfilePage() {
               <span className="material-symbols-outlined">person</span>
               <span className="font-semibold text-sm">Account Settings</span>
             </div>
-            <a className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-white/5 border border-transparent hover:border-white/10 transition-all group" href="#">
+            <Link className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-white/5 border border-transparent hover:border-white/10 transition-all group" href="#security">
               <span className="material-symbols-outlined group-hover:text-white">shield</span>
               <span className="text-sm group-hover:text-white">Privacy & Security</span>
-            </a>
-            <a className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-white/5 border border-transparent hover:border-white/10 transition-all group" href="#">
-              <span className="material-symbols-outlined group-hover:text-white">payments</span>
-              <span className="text-sm group-hover:text-white">Billing Details</span>
-            </a>
-            <Link className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-white/5 border border-transparent hover:border-white/10 transition-all group" href="/portal/itinerary">
+            </Link>
+            <Link className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-white/5 border border-transparent hover:border-white/10 transition-all group" href="#preferences">
+              <span className="material-symbols-outlined group-hover:text-white">settings</span>
+              <span className="text-sm group-hover:text-white">Preferences</span>
+            </Link>
+            <Link className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-white/5 border border-transparent hover:border-white/10 transition-all group" href="/portal/history">
               <span className="material-symbols-outlined group-hover:text-white">flight_takeoff</span>
               <span className="text-sm group-hover:text-white">Trip History</span>
             </Link>
@@ -376,7 +376,7 @@ export default function ProfilePage() {
             {/* Preferences & Security */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
               {/* Preferences */}
-              <section className="space-y-6">
+              <section className="space-y-6" id="preferences">
                 <h3 className="text-xl font-bold">Preferences</h3>
                 <div className="glass-card p-6 rounded-3xl space-y-5">
                   <div className="space-y-2">
@@ -407,7 +407,7 @@ export default function ProfilePage() {
               </section>
 
               {/* Security */}
-              <section className="space-y-6">
+              <section className="space-y-6" id="security">
                 <h3 className="text-xl font-bold">Security</h3>
                 <div className="glass-card p-6 rounded-3xl space-y-5">
                   <div className="flex items-center justify-between">
@@ -506,7 +506,7 @@ export default function ProfilePage() {
           <span className="material-symbols-outlined text-[20px]">favorite</span>
           <span className="text-[10px]">Saved</span>
         </Link>
-        <Link href="/portal/itinerary" className="flex flex-col items-center gap-1 text-slate-500 hover:text-primary transition-colors">
+        <Link href="/portal/history" className="flex flex-col items-center gap-1 text-slate-500 hover:text-primary transition-colors">
           <span className="material-symbols-outlined text-[20px]">receipt_long</span>
           <span className="text-[10px]">Trips</span>
         </Link>
@@ -518,4 +518,3 @@ export default function ProfilePage() {
     </div>
   );
 }
-

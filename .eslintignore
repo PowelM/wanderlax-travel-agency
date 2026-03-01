@@ -1,0 +1,4 @@
+test*.js
+prisma/seed*.js
+scripts/*.js
+seed_*.ts

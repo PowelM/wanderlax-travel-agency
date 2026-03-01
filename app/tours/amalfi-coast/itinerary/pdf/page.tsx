@@ -141,7 +141,7 @@ export default function AmalfiPrintableItineraryPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                         {/* Left Column: Inclusions */}
                         <div>
-                            <h4 className="text-sm font-black uppercase tracking-widest text-[#c51110] mb-6">What's Included</h4>
+                            <h4 className="text-sm font-black uppercase tracking-widest text-[#c51110] mb-6">What&apos;s Included</h4>
                             <ul className="space-y-4">
                                 <li className="flex items-start gap-3">
                                     <span className="material-symbols-outlined text-[#c51110] text-xl">check_circle</span>

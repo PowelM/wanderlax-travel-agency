@@ -57,7 +57,7 @@ export default function LocalExpertsPage() {
             </p>
             <p className="text-sm leading-relaxed text-[#717171] mb-6">
               A native of Ravello with a PhD in Art History, Lorenzo has spent two
-              decades uncovering the hidden stories behind the coast's most iconic
+              decades uncovering the hidden stories behind the coast&apos;s most iconic
               villas and forgotten ruins.
             </p>
             <div className="mt-auto">
@@ -84,8 +84,8 @@ export default function LocalExpertsPage() {
               Culinary Expert
             </p>
             <p className="text-sm leading-relaxed text-[#717171] mb-6">
-              Chiara's family has farmed the Sorrento lemon groves for
-              generations. She connects guests with the region's soul through
+              Chiara&apos;s family has farmed the Sorrento lemon groves for
+              generations. She connects guests with the region&apos;s soul through
               exclusive kitchen access and private tastings.
             </p>
             <div className="mt-auto">

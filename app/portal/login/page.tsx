@@ -1,6 +1,7 @@
 "use client";
 import React from 'react';
 import { SignIn } from '@clerk/nextjs';
+import Link from 'next/link';
 
 export default function WanderluxLoginPage() {
   return (
@@ -84,9 +85,9 @@ export default function WanderluxLoginPage() {
         <div className="mt-8 text-center text-xs text-slate-500">
           <p>© 2025 Wanderlux Travel. Secure Access.</p>
           <div className="mt-2 flex justify-center space-x-4">
-            <a className="hover:text-primary transition-colors" href="#">Privacy Policy</a>
+            <Link className="hover:text-primary transition-colors" href="/about">Privacy Policy</Link>
             <span className="text-slate-700">|</span>
-            <a className="hover:text-primary transition-colors" href="#">Support</a>
+            <Link className="hover:text-primary transition-colors" href="/contact">Support</Link>
           </div>
         </div>
       </div>

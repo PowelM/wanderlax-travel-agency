@@ -5,6 +5,8 @@ import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import { TripHistoryList } from './TripHistoryList';
 
+export const dynamic = 'force-dynamic';
+
 export default async function TripHistoryArchivePage() {
   const { userId } = await auth();
   

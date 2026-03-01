@@ -4,10 +4,12 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
+import { useAdminSidebar } from './AdminSidebarContext';
 
 export function AdminSidebar() {
   const { user } = useUser();
   const pathname = usePathname();
+  const { isMobileOpen, closeMobileSidebar } = useAdminSidebar();
 
   const getLinkClasses = (path: string) => {
     // Exact match for dashboard, startswith for others (like /admin/bookings/...)
@@ -20,14 +22,31 @@ export function AdminSidebar() {
   };
 
   return (
-    <aside className="flex w-64 flex-col border-r border-border-dark bg-background-dark hidden lg:flex flex-shrink-0">
-      <div className="flex items-center gap-3 px-6 py-6 border-b border-border-dark/50">
-        <div className="bg-center bg-no-repeat bg-cover rounded-full size-10 ring-2 ring-primary/50" data-alt="Company Logo Abstract" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuDxItnaRqAa0g0uhxpuiOdb5rjaRHwYCL0n7dcgj6gpBxbVgzVSpOmVpNDtlkLqEm6Ze2lhMUbFi2PsMFtMdhjHvUW_zqdcsNNAYgdvNCAWPx37jaVg5l-X5JXTcHfj1vcStnvVtqx8d5SjGu0XUlkjaqPEyozRkQfyAY8G8g8Pe-ML_RLvR-ZGxXZPqtBhApMJd6cuGxcuLGsk7ywOLEOUtj_0wy8V0aGHeasXxMKgasV-t32xtgl9phTGColXAYURYBQrnR-sNg')" }}></div>
-        <div className="flex flex-col">
-          <h1 className="text-white text-lg font-bold tracking-tight">Wanderlux</h1>
-          <p className="text-primary text-xs font-semibold uppercase tracking-wider">Admin Panel</p>
+    <>
+      {/* Mobile Overlay */}
+      {isMobileOpen && (
+        <div 
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 lg:hidden transition-opacity duration-300"
+          onClick={closeMobileSidebar}
+        />
+      )}
+
+      <aside className={`fixed inset-y-0 left-0 z-50 w-64 flex flex-col border-r border-border-dark bg-background-dark transition-transform duration-300 lg:static lg:translate-x-0 ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className="flex items-center justify-between px-6 py-6 border-b border-border-dark/50">
+          <div className="flex items-center gap-3">
+            <div className="bg-center bg-no-repeat bg-cover rounded-full size-10 ring-2 ring-primary/50" data-alt="Company Logo Abstract" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuDxItnaRqAa0g0uhxpuiOdb5rjaRHwYCL0n7dcgj6gpBxbVgzVSpOmVpNDtlkLqEm6Ze2lhMUbFi2PsMFtMdhjHvUW_zqdcsNNAYgdvNCAWPx37jaVg5l-X5JXTcHfj1vcStnvVtqx8d5SjGu0XUlkjaqPEyozRkQfyAY8G8g8Pe-ML_RLvR-ZGxXZPqtBhApMJd6cuGxcuLGsk7ywOLEOUtj_0wy8V0aGHeasXxMKgasV-t32xtgl9phTGColXAYURYBQrnR-sNg')" }}></div>
+            <div className="flex flex-col">
+              <h1 className="text-white text-lg font-bold tracking-tight">Wanderlux</h1>
+              <p className="text-primary text-xs font-semibold uppercase tracking-wider">Admin Panel</p>
+            </div>
+          </div>
+          <button 
+            onClick={closeMobileSidebar}
+            className="lg:hidden p-2 text-slate-400 hover:text-white transition-colors"
+          >
+            <span className="material-symbols-outlined">close</span>
+          </button>
         </div>
-      </div>
       
       <nav className="flex-1 overflow-y-auto px-4 py-6 space-y-2">
         <Link className={getLinkClasses("/admin")} href="/admin">
@@ -98,5 +117,6 @@ export function AdminSidebar() {
         </div>
       </div>
     </aside>
+  </>
   );
 }

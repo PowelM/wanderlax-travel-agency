@@ -138,7 +138,7 @@ export default function Header() {
         </Link>
 
         {/* Desktop Nav */}
-        <nav className="hidden lg:flex items-center gap-10">
+        <nav className="hidden xl:flex items-center gap-8 flex-1 justify-center px-4 overflow-hidden">
           {/* Experiences Dropdown */}
           <div 
             className="relative group"
@@ -266,7 +266,7 @@ export default function Header() {
           {companyLinks.map((link) => (
             <Link
               key={link.label}
-              className={`text-sm font-medium tracking-wide transition-all duration-300 relative group overflow-hidden ${
+              className={`text-sm font-medium tracking-wide transition-all duration-300 relative group overflow-hidden shrink-0 ${
                 isActive(link.href)
                   ? 'text-primary font-bold'
                   : 'text-slate-400 hover:text-white'
@@ -280,7 +280,7 @@ export default function Header() {
           
         </nav>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4 shrink-0">
           {/* Auth Buttons */}
           <SignedOut>
             <Link
@@ -292,22 +292,24 @@ export default function Header() {
             </Link>
           </SignedOut>
           <SignedIn>
-            {isAdmin && (
+            <div className="hidden md:flex items-center gap-2">
+              {isAdmin && (
+                <Link
+                  href="/admin"
+                  title="Admin Panel"
+                  className="flex items-center justify-center size-10 rounded-lg bg-primary/10 text-primary border border-primary/20 hover:bg-primary hover:text-white transition-all shadow-lg shadow-primary/5"
+                >
+                  <span className="material-symbols-outlined text-[22px]">admin_panel_settings</span>
+                </Link>
+              )}
               <Link
-                href="/admin"
-                className="hidden md:flex items-center gap-2 text-sm font-bold text-primary hover:text-white transition-all bg-primary/10 hover:bg-primary px-4 py-2 rounded-lg border border-primary/20 hover:border-primary shadow-lg shadow-primary/5"
+                href="/portal/dashboard"
+                title="User Dashboard"
+                className="flex items-center justify-center size-10 rounded-lg bg-white/5 text-slate-300 border border-white/10 hover:bg-white/10 hover:text-white transition-all shadow-sm"
               >
-                <span className="material-symbols-outlined text-[20px]">admin_panel_settings</span>
-                Admin Panel
+                <span className="material-symbols-outlined text-[22px]">dashboard</span>
               </Link>
-            )}
-            <Link
-              href="/portal/dashboard"
-              className="hidden md:flex items-center gap-2 text-sm font-semibold text-slate-300 hover:text-white transition-all border border-white/10 bg-white/5 rounded-lg px-4 py-2 hover:bg-white/10 shadow-sm"
-            >
-              <span className="material-symbols-outlined text-[20px]">dashboard</span>
-              Dashboard
-            </Link>
+            </div>
             <div className="h-8 w-px bg-white/10 mx-1 hidden md:block"></div>
             <UserButton
               appearance={{
@@ -320,15 +322,15 @@ export default function Header() {
 
             <button
               onClick={() => router.push('/portal/consultation')}
-              className="hidden lg:flex items-center justify-center rounded-lg h-10 px-6 bg-transparent hover:bg-white/5 text-white text-sm font-bold border border-white/20 transition-all hover:border-white/40"
+              className="hidden xl:flex items-center justify-center rounded-lg h-10 px-5 bg-transparent hover:bg-white/5 text-white text-sm font-bold border border-white/20 transition-all hover:border-white/40"
             >
               Consultation
             </button>
             <button
               onClick={handleBookNow}
-              className="hidden sm:flex items-center justify-center rounded-xl h-10 px-6 bg-primary hover:bg-red-700 text-white text-sm font-bold transition-all shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-0.5 active:translate-y-0"
+              className="hidden sm:flex items-center justify-center rounded-xl h-10 px-6 bg-primary hover:bg-red-700 text-white text-sm font-bold transition-all shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-0.5 active:translate-y-0 shrink-0"
             >
-              Reserve Experience
+              Reserve
             </button>
           
           {/* Mobile menu toggle */}
@@ -444,40 +446,36 @@ export default function Header() {
                       Itinerary
                     </Link>
 
-                    {!isAdmin && !isConsultant && (
-                      <>
-                        <Link
-                          href="/portal/history"
-                          className={`flex items-center gap-4 text-2xl font-black transition-colors ${
-                            isActive('/portal/history') ? 'text-primary' : 'text-slate-400 hover:text-white'
-                          }`}
-                          onClick={() => setMobileMenuOpen(false)}
-                        >
-                          <span className={`material-symbols-outlined text-[32px] ${isActive('/portal/history') ? 'text-primary' : ''}`}>history_edu</span>
-                          Trip History
-                        </Link>
-                        <Link
-                          href="/portal/loyalty"
-                          className={`flex items-center gap-4 text-2xl font-black transition-colors ${
-                            isActive('/portal/loyalty') ? 'text-primary' : 'text-slate-400 hover:text-white'
-                          }`}
-                          onClick={() => setMobileMenuOpen(false)}
-                        >
-                          <span className={`material-symbols-outlined text-[32px] ${isActive('/portal/loyalty') ? 'text-primary' : ''}`}>card_giftcard</span>
-                          Loyalty
-                        </Link>
-                        <Link
-                          href="/portal/wishlist"
-                          className={`flex items-center gap-4 text-2xl font-black transition-colors ${
-                            isActive('/portal/wishlist') ? 'text-primary' : 'text-slate-400 hover:text-white'
-                          }`}
-                          onClick={() => setMobileMenuOpen(false)}
-                        >
-                          <span className={`material-symbols-outlined text-[32px] ${isActive('/portal/wishlist') ? 'text-primary' : ''}`}>favorite</span>
-                          Wishlist
-                        </Link>
-                      </>
-                    )}
+                    <Link
+                      href="/portal/history"
+                      className={`flex items-center gap-4 text-2xl font-black transition-colors ${
+                        isActive('/portal/history') ? 'text-primary' : 'text-slate-400 hover:text-white'
+                      }`}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <span className={`material-symbols-outlined text-[32px] ${isActive('/portal/history') ? 'text-primary' : ''}`}>history_edu</span>
+                      Trip History
+                    </Link>
+                    <Link
+                      href="/portal/loyalty"
+                      className={`flex items-center gap-4 text-2xl font-black transition-colors ${
+                        isActive('/portal/loyalty') ? 'text-primary' : 'text-slate-400 hover:text-white'
+                      }`}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <span className={`material-symbols-outlined text-[32px] ${isActive('/portal/loyalty') ? 'text-primary' : ''}`}>card_giftcard</span>
+                      Loyalty
+                    </Link>
+                    <Link
+                      href="/portal/wishlist"
+                      className={`flex items-center gap-4 text-2xl font-black transition-colors ${
+                        isActive('/portal/wishlist') ? 'text-primary' : 'text-slate-400 hover:text-white'
+                      }`}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <span className={`material-symbols-outlined text-[32px] ${isActive('/portal/wishlist') ? 'text-primary' : ''}`}>favorite</span>
+                      Wishlist
+                    </Link>
                   </div>
                 </div>
               </SignedIn>

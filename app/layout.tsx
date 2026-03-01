@@ -20,7 +20,7 @@ export default function RootLayout({
       signInUrl="/portal/login"
       signUpUrl="/sign-up"
     >
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <link
           href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap"

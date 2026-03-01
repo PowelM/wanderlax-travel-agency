@@ -67,11 +67,15 @@ model StaffProfile {
 }
 
 model StaffPermission {
-  id             String          @id @default(uuid())
+  id             String       @id @default(uuid())
   staffProfileId String
-  module         ModuleType
-  level          PermissionLevel
-  staffProfile   StaffProfile    @relation(fields: [staffProfileId], references: [id], onDelete: Cascade)
+  module         String
+  canView        Boolean      @default(false)
+  canCreate      Boolean      @default(false)
+  canEdit        Boolean      @default(false)
+  canDelete      Boolean      @default(false)
+  canExport      Boolean      @default(false)
+  staffProfile   StaffProfile @relation(fields: [staffProfileId], references: [id], onDelete: Cascade)
 
   @@unique([staffProfileId, module])
 }
@@ -552,22 +556,7 @@ enum Role {
   SUPER_ADMIN
 }
 
-enum ModuleType {
-  BOOKINGS
-  PAYMENTS
-  USERS
-  FLEET
-  CATALOGUE
-  REPORTS
-  SETTINGS
-}
-
-enum PermissionLevel {
-  READ
-  WRITE
-  DELETE
-  ALL
-}
+// Enums removed: ModuleType, PermissionLevel
 
 enum BookingStatus {
   PENDING

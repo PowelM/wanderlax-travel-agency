@@ -9,12 +9,12 @@ export default function Footer() {
   if (pathname === '/portal/checkout') return null;
 
   return (
-    <footer className="bg-black border-t border-white/5 pt-20 pb-10 px-6 lg:px-10 relative overflow-hidden">
+    <footer className="bg-black border-t border-white/5 pt-12 pb-8 px-6 lg:px-10 relative overflow-hidden">
       {/* Subtle background glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent"></div>
       
       <div className="max-w-7xl mx-auto relative z-10">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 mb-20">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 mb-10">
           <div className="space-y-8">
             {/* Footer logo */}
             <Link href="/" className="flex items-center gap-3 group">
@@ -50,7 +50,7 @@ export default function Footer() {
           </div>
           
           <div className="lg:pl-8">
-            <h3 className="text-white font-bold mb-8 uppercase tracking-widest text-xs">Exclusives</h3>
+            <h3 className="text-white font-bold mb-4 uppercase tracking-widest text-xs">Exclusives</h3>
             <ul className="space-y-4">
               {['Private Jet Charters', 'Secret Islands', 'Luxury Safaris', 'Alpine Getaways'].map(item => (
                 <li key={item}><Link className="text-slate-400 hover:text-primary transition-colors text-sm font-medium" href="/tours">{item}</Link></li>
@@ -59,7 +59,7 @@ export default function Footer() {
           </div>
           
           <div className="lg:pl-8">
-            <h3 className="text-white font-bold mb-8 uppercase tracking-widest text-xs">The Agency</h3>
+            <h3 className="text-white font-bold mb-4 uppercase tracking-widest text-xs">The Agency</h3>
             <ul className="space-y-4">
               {['Our Legacy', 'Concierge Service', 'Contact Concierge', 'Privacy Standards'].map(item => (
                 <li key={item}><Link className="text-slate-400 hover:text-primary transition-colors text-sm font-medium" href={item.includes('Contact') ? '/contact' : '/about'}>{item}</Link></li>
@@ -68,8 +68,8 @@ export default function Footer() {
           </div>
 
           <div className="lg:pl-8">
-            <h3 className="text-white font-bold mb-8 uppercase tracking-widest text-xs">Contact</h3>
-            <ul className="space-y-6">
+            <h3 className="text-white font-bold mb-4 uppercase tracking-widest text-xs">Contact</h3>
+            <ul className="space-y-4">
               <li className="flex items-start gap-4 group">
                 <span className="material-symbols-outlined text-primary text-xl font-light group-hover:scale-110 transition-transform">location_on</span>
                 <span className="text-slate-400 text-sm leading-relaxed">Mayfair Luxury District,<br />London, W1J 7BR</span>
@@ -86,7 +86,7 @@ export default function Footer() {
           </div>
         </div>
         
-        <div className="border-t border-white/5 pt-10 flex flex-col md:flex-row justify-between items-center gap-6">
+        <div className="border-t border-white/5 pt-6 flex flex-col md:flex-row justify-between items-center gap-6">
           <p className="text-slate-500 text-xs tracking-wide">
             &copy; 2026 Wanderlux Bespoke Travel. All Rights Reserved. Protected by Global Concierge Standards.
           </p>

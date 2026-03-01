@@ -115,7 +115,7 @@ export default async function TripHistoryArchivePage() {
                 </div>
               </header>
               
-              <TripHistoryList initialBookings={bookings} />
+              <TripHistoryList bookings={bookings} />
               
               {/* Footer Stats (Subtle) */}
               <footer className="mt-20 py-8 border-t border-slate-200 dark:border-border-dark flex flex-col md:flex-row justify-between items-center gap-4">

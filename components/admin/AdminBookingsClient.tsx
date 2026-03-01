@@ -103,7 +103,7 @@ export function AdminBookingsClient({ initialBookings }: AdminBookingsClientProp
 
   return (
     <div className="flex min-h-screen bg-background-dark">
-      <AdminSidebar active="bookings" />
+      <AdminSidebar />
       
       <main className="flex-1">
         <AdminHeader title="Booking Management" />

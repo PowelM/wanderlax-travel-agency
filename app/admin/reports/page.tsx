@@ -401,12 +401,12 @@ export default function WanderluxAdminReportsAnalyticsPage() {
     : 'Select Range';
 
   return (
-    <div className="stitch-screen">
+    <div className="stitch-screen h-screen overflow-hidden">
       {toast && <Toast message={toast.message} type={toast.type} />}
       {filterOpen && <FilterPanel filter={filter} onChange={setFilter} onClose={() => setFilterOpen(false)} onReset={() => setFilter({ status: [], minRating: 0, minBookings: 0 })} />}
       {viewRow && <DetailsPanel row={viewRow} onClose={() => setViewRow(null)} />}
 
-      <div className="flex h-screen w-full">
+      <div className="flex h-full w-full overflow-hidden">
         <AdminSidebar />
         <main className="flex-1 flex flex-col h-full overflow-hidden bg-background-dark relative">
           <AdminHeader title="Reports & Analytics" description="Advanced performance metrics and custom reporting">

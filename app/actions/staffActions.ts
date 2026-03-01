@@ -185,13 +185,11 @@ export async function updateStaffPermissions(staffProfileId: string, permissions
         canExport: !!perms.export
       };
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (prisma.staffPermission as any).upsert({
+      await prisma.staffPermission.upsert({
         where: {
           staffProfileId_module: {
             staffProfileId,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            module: mod.toUpperCase() as any
+            module: mod.toUpperCase()
           }
         },
         update: {
@@ -199,8 +197,7 @@ export async function updateStaffPermissions(staffProfileId: string, permissions
         },
         create: {
           staffProfileId,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          module: mod.toUpperCase() as any,
+          module: mod.toUpperCase(),
           ...upsertData
         }
       });

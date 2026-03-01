@@ -67,6 +67,20 @@ export async function updateBookingStatus(id: string, newStatus: BookingStatus) 
   }
 }
 
+export async function deleteBooking(id: string) {
+  try {
+    await prisma.booking.delete({
+      where: { id }
+    });
+    
+    revalidatePath("/admin/bookings");
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting booking:", error);
+    return { success: false, error: "Failed to delete booking" };
+  }
+}
+
 export async function createManualBooking(data: {
   email: string;
   firstName: string;

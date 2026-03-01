@@ -37,8 +37,8 @@ export default function AdminMessagesPage() {
   const unreadCount = NOTIFICATIONS.filter((n) => !readIds.has(n.id)).length;
 
   return (
-    <div className="stitch-screen">
-      <div className="flex h-screen w-full">
+    <div className="stitch-screen h-screen overflow-hidden">
+      <div className="flex h-full w-full overflow-hidden">
         <AdminSidebar />
 
         <main className="flex-1 flex flex-col h-full overflow-hidden bg-[#180a0a]">
@@ -47,7 +47,7 @@ export default function AdminMessagesPage() {
             description="View your messages and latest alerts here."
           />
 
-          <div className="flex-1 overflow-y-auto p-8">
+          <div className="flex-1 overflow-y-auto p-4 sm:p-8">
             {/* Header row */}
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">

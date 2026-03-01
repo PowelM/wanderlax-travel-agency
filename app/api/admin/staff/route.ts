@@ -7,8 +7,9 @@ export async function GET() {
     return NextResponse.json(data);
   } catch (error: unknown) {
     console.error('Error in staff API route:', error);
+    const message = error instanceof Error ? error.message : String(error);
     return NextResponse.json(
-      { error: 'Failed to fetch staff data', details: error.message || String(error) },
+      { error: 'Failed to fetch staff data', details: message },
       { status: 500 }
     );
   }

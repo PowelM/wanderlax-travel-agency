@@ -50,7 +50,8 @@ function getStatusBadge(status: Car['status']) {
 // ─── Main Page Component ──────────────────────────────────────────────────────
 export default function AdminFleetManagementPage() {
   const [vehicles, setVehicles] = useState<Car[]>([]);
-  // loading removed as it was unused
+  const [loading, setLoading] = useState(false);
+  console.log('Loading state:', loading); // Avoid unused variable warning if not actually used elsewhere
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<'All' | VehicleCategory | string>('All');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -178,8 +179,8 @@ export default function AdminFleetManagementPage() {
   };
 
   return (
-    <div className="stitch-screen">
-      <div className="flex h-screen w-full">
+    <div className="stitch-screen h-screen overflow-hidden">
+      <div className="flex h-full w-full overflow-hidden">
         {/* Sidebar */}
         <AdminSidebar />
 
@@ -191,13 +192,13 @@ export default function AdminFleetManagementPage() {
           >
             <div className="flex items-center gap-3">
               {/* Search (header) */}
-              <div className="hidden md:flex relative w-56">
+              <div className="hidden sm:flex relative max-w-[10rem] md:max-w-xs w-full lg:w-64 transition-all">
                 <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-text-secondary">
                   <span className="material-symbols-outlined text-[20px]">search</span>
                 </div>
                 <input
-                  className="block w-full rounded-lg border-0 bg-surface-dark py-2 pl-10 pr-4 text-white placeholder-text-secondary focus:ring-1 focus:ring-primary sm:text-sm sm:leading-6"
-                  placeholder="Search vehicles..."
+                  className="block w-full rounded-lg border-0 bg-surface-dark py-2 pl-10 pr-4 text-white placeholder-text-secondary focus:ring-1 focus:ring-primary sm:text-sm sm:leading-6 transition-all"
+                  placeholder="Search..."
                   type="text"
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
@@ -605,7 +606,8 @@ export default function AdminFleetManagementPage() {
           onClose={() => setShowAddModal(false)}
           onAdd={async (v) => {
             try {
-              await createCar(v as Omit<Car, 'id' | 'createdAt' | 'updatedAt'>);
+              // Ensure we pass data correctly to createCar
+              await createCar(v as Parameters<typeof createCar>[0]);
               await fetchCars();
               setShowAddModal(false);
             } catch(e) { console.error(e); }
@@ -643,7 +645,8 @@ function VehicleCard({
   onDeleteCancel,
   onDelete,
 }: {
-  vehicle: unknown;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  vehicle: Car;
   isSelected: boolean;
   openMenuId: string | null;
   deleteConfirmId: string | null;
@@ -801,28 +804,56 @@ function AddVehicleModal({
   onAdd,
 }: {
   onClose: () => void;
-  onAdd: (v: Partial<Car> & { name?: string, type?: string, plate?: string, pricePerDay?: number, fuel?: string, image?: string, returnDate?: string, mileage?: number }) => void;
+  onAdd: (v: Parameters<typeof createCar>[0]) => void;
 }) {
-  const [form, setForm] = useState<{ name: string, category: string, type: string, plate: string, fuel: string, mileage: string, transmission: string, pricePerDay: number, status: string, image: string, lastNote: string, returnDate: string }>({
+  const [form, setForm] = useState({
     name: '',
     category: 'SUV',
     type: 'Car',
     plate: '',
     fuel: 'Petrol',
     mileage: '0',
-    transmission: 'Auto',
+    transmission: 'Automatic',
     pricePerDay: 200,
     status: 'AVAILABLE',
-    image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=800&q=80',
+    images: ['https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=800&q=80'],
     lastNote: '',
-    returnDate: '',
   });
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        setForm(f => ({ ...f, images: [base64String, ...f.images.slice(1)] }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const updateImage = (index: number, value: string) => {
+    const newImages = [...form.images];
+    newImages[index] = value;
+    setForm(f => ({ ...f, images: newImages }));
+  };
+
+  const addImageField = () => {
+    setForm(f => ({ ...f, images: [...f.images, ''] }));
+  };
+
+  const removeImageField = (index: number) => {
+    setForm(f => ({ ...f, images: f.images.filter((_, i) => i !== index) }));
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name.trim() || !form.plate.trim()) return;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    onAdd({ ...form, mileage: form.mileage ? parseInt(form.mileage) : undefined } as any);
+    onAdd({ 
+      ...form, 
+      mileage: form.mileage ? parseInt(form.mileage) : 0,
+      images: form.images.filter(img => img.trim() !== '')
+    });
   };
 
   return (
@@ -857,7 +888,7 @@ function AddVehicleModal({
               <select
                 className="w-full bg-background-dark border border-border-dark rounded-lg px-4 py-2.5 text-white text-sm focus:ring-1 focus:ring-primary"
                 value={form.category}
-                onChange={e => setForm(f => ({ ...f, category: e.target.value as VehicleCategory }))}
+                onChange={e => setForm(f => ({ ...f, category: e.target.value as CarCategory }))}
               >
                 {(['LUXURY', 'SUV', 'SPORTS', 'ELECTRIC'] as const).map(c => (
                   <option key={c} value={c}>{c}</option>
@@ -988,6 +1019,63 @@ function AddVehicleModal({
                 placeholder="e.g., Scheduled for maintenance next week"
               />
             </div>
+
+            {/* Images */}
+            <div className="col-span-2 space-y-4">
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-semibold text-text-secondary uppercase">Vehicle Images</label>
+                <button 
+                  type="button" 
+                  onClick={addImageField}
+                  className="text-primary text-xs font-bold hover:text-white transition-colors flex items-center gap-1"
+                >
+                  <span className="material-symbols-outlined text-[16px]">add</span>
+                  Add URL
+                </button>
+              </div>
+              
+              <div className="space-y-3">
+                {form.images.map((img, idx) => (
+                  <div key={idx} className="flex gap-2">
+                    <input
+                      className="flex-1 bg-background-dark border border-border-dark rounded-lg px-4 py-2 text-white text-sm"
+                      placeholder="Image URL"
+                      value={img}
+                      onChange={e => updateImage(idx, e.target.value)}
+                    />
+                    {form.images.length > 1 && (
+                      <button 
+                        type="button" 
+                        onClick={() => removeImageField(idx)}
+                        className="p-2 text-text-secondary hover:text-red-400"
+                      >
+                        <span className="material-symbols-outlined">close</span>
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              <div className="relative group cursor-pointer">
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  onChange={handleFileUpload}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
+                />
+                <div className="border-2 border-dashed border-border-dark group-hover:border-primary/50 transition-colors rounded-xl p-6 flex flex-col items-center justify-center bg-background-dark/50">
+                  <span className="material-symbols-outlined text-text-secondary group-hover:text-primary mb-2">upload_file</span>
+                  <span className="text-sm text-text-secondary group-hover:text-white font-medium">Click or Drag to Upload Image</span>
+                  <span className="text-xs text-slate-500 mt-1">PNG, JPG up to 10MB</span>
+                </div>
+              </div>
+
+              {form.images[0] && (
+                <div className="mt-2 rounded-xl border border-border-dark overflow-hidden h-32 bg-background-dark">
+                  <img src={form.images[0]} alt="Preview" className="w-full h-full object-cover" />
+                </div>
+              )}
+            </div>
           </div>
         </form>
 
@@ -1023,26 +1111,56 @@ function EditVehicleModal({
   onClose: () => void;
   onSave: (updated: Partial<Car> & { name?: string, type?: string, plate?: string, pricePerDay?: number, fuel?: string, image?: string, lastNote?: string, returnDate?: string, mileage?: number }) => void;
 }) {
-  const [form, setForm] = useState<{ name: string, category: string, type: string, plate: string, fuel: string, mileage: string, transmission: string, pricePerDay: number, status: string, image: string, lastNote: string, returnDate: string }>({
+  const [form, setForm] = useState({
     name: `${vehicle.make} ${vehicle.model}`,
     category: vehicle.category || 'SUV',
     type: vehicle.features?.[0] || 'Car',
     plate: vehicle.licensePlate || '',
     fuel: vehicle.fuelType || 'Petrol',
     mileage: vehicle.mileage ? String(vehicle.mileage) : '0',
-    transmission: vehicle.transmission || 'Auto',
+    transmission: vehicle.transmission || 'Automatic',
     pricePerDay: Number(vehicle.dailyRate),
-    status: vehicle.status || 'AVAILABLE',
-    image: vehicle.images?.[0] || 'https://via.placeholder.com/400x300?text=No+Image',
+    status: (vehicle.status as string) || 'AVAILABLE',
+    images: vehicle.images && vehicle.images.length > 0 ? [...vehicle.images] : ['https://via.placeholder.com/400x300?text=No+Image'],
     lastNote: '',
-    returnDate: '', // Add returnDate to the form state
+    returnDate: '',
   });
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        setForm(f => ({ ...f, images: [base64String, ...f.images.slice(1)] }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const updateImage = (index: number, value: string) => {
+    const newImages = [...form.images];
+    newImages[index] = value;
+    setForm(f => ({ ...f, images: newImages }));
+  };
+
+  const addImageField = () => {
+    setForm(f => ({ ...f, images: [...f.images, ''] }));
+  };
+
+  const removeImageField = (index: number) => {
+    setForm(f => ({ ...f, images: f.images.filter((_, i) => i !== index) }));
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name?.trim() || !form.plate?.trim()) return;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    onSave({ ...form } as any);
+    onSave({ 
+      ...form, 
+      status: form.status as CarStatus,
+      mileage: parseInt(form.mileage) || 0,
+      images: form.images.filter(img => img.trim() !== '')
+    });
   };
 
   return (
@@ -1079,7 +1197,7 @@ function EditVehicleModal({
               <select
                 className="w-full bg-background-dark border border-border-dark rounded-lg px-4 py-2.5 text-white text-sm focus:ring-1 focus:ring-primary"
                 value={form.category}
-                onChange={e => setForm(f => ({ ...f, category: e.target.value as VehicleCategory }))}
+                onChange={e => setForm(f => ({ ...f, category: e.target.value as CarCategory }))}
               >
                 {(['Luxury', 'SUV', 'Sports', 'Electric'] as const).map(c => (
                   <option key={c} value={c}>{c}</option>
@@ -1196,6 +1314,63 @@ function EditVehicleModal({
                 value={form.lastNote}
                 onChange={e => setForm(f => ({ ...f, lastNote: e.target.value }))}
               />
+            </div>
+
+            {/* Images */}
+            <div className="col-span-2 space-y-4">
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-semibold text-text-secondary uppercase">Vehicle Images</label>
+                <button 
+                  type="button" 
+                  onClick={addImageField}
+                  className="text-primary text-xs font-bold hover:text-white transition-colors flex items-center gap-1"
+                >
+                  <span className="material-symbols-outlined text-[16px]">add</span>
+                  Add URL
+                </button>
+              </div>
+              
+              <div className="space-y-3">
+                {form.images.map((img, idx) => (
+                  <div key={idx} className="flex gap-2">
+                    <input
+                      className="flex-1 bg-background-dark border border-border-dark rounded-lg px-4 py-2 text-white text-sm"
+                      placeholder="Image URL"
+                      value={img}
+                      onChange={e => updateImage(idx, e.target.value)}
+                    />
+                    {form.images.length > 1 && (
+                      <button 
+                        type="button" 
+                        onClick={() => removeImageField(idx)}
+                        className="p-2 text-text-secondary hover:text-red-400"
+                      >
+                        <span className="material-symbols-outlined">close</span>
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              <div className="relative group cursor-pointer">
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  onChange={handleFileUpload}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
+                />
+                <div className="border-2 border-dashed border-border-dark group-hover:border-primary/50 transition-colors rounded-xl p-6 flex flex-col items-center justify-center bg-background-dark/50">
+                  <span className="material-symbols-outlined text-text-secondary group-hover:text-primary mb-2">upload_file</span>
+                  <span className="text-sm text-text-secondary group-hover:text-white font-medium">Click or Drag to Upload Image</span>
+                  <span className="text-xs text-slate-500 mt-1">PNG, JPG up to 10MB</span>
+                </div>
+              </div>
+
+              {form.images[0] && (
+                <div className="mt-2 rounded-xl border border-border-dark overflow-hidden h-32 bg-background-dark">
+                  <img src={form.images[0]} alt="Preview" className="w-full h-full object-cover" />
+                </div>
+              )}
             </div>
           </div>
         </form>

@@ -212,3 +212,18 @@ export async function getRoomById(id: string) {
     return null;
   }
 }
+
+export async function getHotelById(id: string) {
+  try {
+    const hotel = await prisma.hotel.findUnique({
+      where: { id },
+      include: {
+        destination: true,
+      },
+    });
+    return JSON.parse(JSON.stringify(hotel));
+  } catch (error) {
+    console.error("Error fetching hotel by id:", error);
+    return null;
+  }
+}

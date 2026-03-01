@@ -4,10 +4,11 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { TripHistoryCard } from './TripHistoryCard';
 
-export default function TripHistoryList({ initialBookings }: { initialBookings: unknown[] }) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function TripHistoryList({ bookings }: { bookings: any[] }) {
   const [filter, setFilter] = useState<'ALL' | 'COMPLETED' | 'UPCOMING'>('ALL');
 
-  const filteredBookings = initialBookings.filter((booking) => {
+  const filteredBookings = bookings.filter((booking) => {
     if (filter === 'ALL') return true;
     
     // Calculate if it's actually completed based on end dates (mimicking logic in Card)

@@ -1,6 +1,7 @@
 import { currentUser, auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
+import { AdminSidebarProvider } from '@/components/admin/AdminSidebarContext';
 
 export default async function AdminLayout({
   children,
@@ -29,8 +30,13 @@ export default async function AdminLayout({
   let dbUser: { role: string } | null = null;
   try {
     if (userId) {
-      dbUser = await prisma.user.findUnique({
-        where: { clerkId: userId },
+      dbUser = await prisma.user.findFirst({
+        where: { 
+          OR: [
+            { clerkId: userId },
+            { email: primaryEmail || '' }
+          ]
+        },
         select: { role: true },
       });
     }
@@ -46,5 +52,9 @@ export default async function AdminLayout({
     redirect('/portal/dashboard');
   }
 
-  return <>{children}</>;
+  return (
+    <AdminSidebarProvider>
+      {children}
+    </AdminSidebarProvider>
+  );
 }

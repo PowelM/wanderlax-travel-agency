@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, TourCategory } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -85,7 +85,7 @@ async function main() {
           destinationId: dest.id,
           title: tour.title,
           slug: slug,
-          category: tour.category,
+          category: tour.category as TourCategory,
           overview: tour.description,
           durationDays: tour.durationDays,
           durationNights: tour.durationDays - 1,

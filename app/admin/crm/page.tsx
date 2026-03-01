@@ -446,8 +446,8 @@ export default function WanderluxAdminCustomerCrmPage() {
   };
 
   return (
-    <div className="stitch-screen">
-      <div className="flex h-screen w-full overflow-hidden">
+    <div className="stitch-screen h-screen overflow-hidden">
+      <div className="flex h-full w-full overflow-hidden">
         {/* Sidebar */}
         <AdminSidebar />
 
@@ -460,7 +460,7 @@ export default function WanderluxAdminCustomerCrmPage() {
               className="flex items-center gap-2 px-4 h-10 rounded-lg bg-primary hover:bg-primary-dark text-white text-sm font-bold transition-colors shadow-lg shadow-primary/20"
             >
               <span className="material-symbols-outlined text-[20px]">add</span>
-              <span>Add Customer</span>
+              <span className="hidden sm:inline">Add Customer</span>
             </button>
           </AdminHeader>
 

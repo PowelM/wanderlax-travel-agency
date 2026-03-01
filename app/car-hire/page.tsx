@@ -86,20 +86,20 @@ export default function CarHirePage() {
                       <p className="text-slate-500 text-sm">{car.year} • {car.transmission}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-2xl font-black text-white">${car.pricePerDay}</p>
+                      <p className="text-2xl font-black text-white">${car.dailyRate.toString()}</p>
                       <p className="text-[10px] text-slate-500 uppercase font-bold tracking-tighter">per day</p>
                     </div>
                   </div>
 
                   <p className="text-slate-400 text-sm line-clamp-2 mb-6 min-h-[40px]">
-                    {car.description || "Experience uncompromising luxury and power with this exceptional vehicle from our elite collection."}
+                    Experience uncompromising luxury and power with this exceptional vehicle from our elite collection.
                   </p>
 
                   <div className="flex items-center justify-between pt-6 border-t border-border-dark">
                     <div className="flex gap-4">
                       <div className="flex items-center gap-1.5 text-slate-400">
                         <span className="material-symbols-outlined text-sm">local_gas_station</span>
-                        <span className="text-[11px] font-medium uppercase">{car.fuel}</span>
+                        <span className="text-[11px] font-medium uppercase">{car.fuelType}</span>
                       </div>
                       <div className="flex items-center gap-1.5 text-slate-400">
                         <span className="material-symbols-outlined text-sm">speed</span>

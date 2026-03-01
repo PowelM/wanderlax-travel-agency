@@ -36,7 +36,7 @@ export async function getPaymentsData() {
     };
   } catch (error: unknown) {
     console.error("Error fetching payment data:", error);
-    return { success: false, error: error.message };
+    return { success: false, error: error instanceof Error ? error.message : "An unknown error occurred" };
   }
 }
 
@@ -60,6 +60,6 @@ export async function createManualInvoice(data: { bookingId: string, dueDate: Da
     return { success: true, invoice: JSON.parse(JSON.stringify(invoice)) };
   } catch (error: unknown) {
     console.error("Error creating manual invoice:", error);
-    return { success: false, error: error.message };
+    return { success: false, error: error instanceof Error ? error.message : "An unknown error occurred" };
   }
 }

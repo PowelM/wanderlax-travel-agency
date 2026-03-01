@@ -79,44 +79,39 @@ export default async function TravelerProfileDashboardPage() {
     loyaltyIcon = 'vpn_key';
   }
 
-  const activeBookings = dbUser?.bookings?.filter((b: unknown) => b.status === 'CONFIRMED' || b.status === 'PENDING') || [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const activeBookings = dbUser?.bookings?.filter((b: any) => b.status === 'CONFIRMED' || b.status === 'PENDING') || [];
   
-  // Format upcoming journeys
-  const upcomingJourneys = activeBookings.map((b: unknown) => {
-    let destination = 'Journey';
-    let type = 'Travel';
-    let image = 'https://images.unsplash.com/photo-1488646953014-85cb44e25828';
-    let duration = '';
-    
-    if (b.tourBooking) {
-      destination = b.tourBooking.tourPackage?.title || 'Tour';
-      type = 'Tour';
-      duration = `${b.tourBooking.tourPackage?.durationDays || 7} Days`;
-      const images = b.tourBooking.tourPackage?.images;
-      if (images && images.length > 0) image = images[0];
-    } else if (b.hotelBooking) {
-      destination = b.hotelBooking.hotel?.name || 'Hotel';
-      type = 'Hotel';
-      duration = 'Stay';
-      const images = b.hotelBooking.hotel?.images;
-      if (images && images.length > 0) image = images[0];
-    } else if (b.carHireBooking) {
-      destination = b.carHireBooking.car ? `${b.carHireBooking.car.make} ${b.carHireBooking.car.model}` : 'Car Hire';
-      type = 'Car Hire';
-      duration = 'Rental';
-      const images = b.carHireBooking.car?.images;
-      if (images && images.length > 0) image = images[0];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const upcomingJourneys = activeBookings.map((b: any) => {
+    let serviceName = 'Travel Service';
+    let destination = 'Global Destination';
+    let date = 'TBD';
+    let image = 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&q=80&w=800';
+    let link = '#';
+
+    if (b.tourBooking?.tourPackage) {
+      serviceName = b.tourBooking.tourPackage.title;
+      destination = `${b.tourBooking.tourPackage.destination.name}, ${b.tourBooking.tourPackage.destination.country}`;
+      date = new Date(b.tourBooking.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      image = b.tourBooking.tourPackage.images?.[0] || image;
+      link = `/tours/${b.tourBooking.tourPackage.slug}`;
+    } else if (b.hotelBooking?.hotel) {
+      serviceName = b.hotelBooking.hotel.name;
+      destination = `${b.hotelBooking.hotel.destination.name}, ${b.hotelBooking.hotel.destination.country}`;
+      date = new Date(b.hotelBooking.checkIn).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      image = b.hotelBooking.hotel.images?.[0] || image;
+      link = `/hotels/${b.hotelBooking.hotel.slug}`;
+    } else if (b.carHireBooking?.car) {
+      serviceName = `${b.carHireBooking.car.make} ${b.carHireBooking.car.model}`;
+      destination = b.carHireBooking.pickupLocation;
+      date = new Date(b.carHireBooking.pickupDateTime).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      image = b.carHireBooking.car.images?.[0] || image;
+      link = `/car-hire`;
     }
-    
-    return {
-      id: b.id,
-      destination,
-      duration,
-      status: b.status,
-      image,
-      type
-    };
-  });
+
+    return { id: b.id, serviceName, destination, date, image, link };
+  }).slice(0, 3);
 
   return (
     <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden pt-[72px]" style={{
@@ -194,46 +189,25 @@ export default async function TravelerProfileDashboardPage() {
           
           <div className="flex gap-6 overflow-x-auto pb-6 no-scrollbar snap-x">
             {upcomingJourneys.length > 0 ? (
-              upcomingJourneys.map((journey: unknown) => (
-                <div key={journey.id} className="min-w-[320px] md:min-w-[400px] snap-start glass-panel rounded-3xl overflow-hidden group border border-border-dark hover:border-primary/30 transition-all">
-                  <div className="h-56 w-full relative overflow-hidden">
-                    <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110" style={{ backgroundImage: `url('${journey.image}')` }}></div>
-                    <div className="absolute inset-0 bg-gradient-to-t from-background-dark to-transparent"></div>
-                    <div className="absolute top-4 right-4 bg-background-dark/80 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 z-10">
-                      <p className={`text-[10px] font-bold ${journey.status === 'CONFIRMED' ? 'text-green-400' : 'text-primary'} uppercase tracking-widest flex items-center gap-1`}>
-                        {journey.status === 'CONFIRMED' ? (
-                          <>
-                            <span className="material-symbols-outlined text-xs">check_circle</span> {journey.status}
-                          </>
-                        ) : (
-                          <>
-                            <span className="material-symbols-outlined text-xs">timer</span> {journey.status}
-                          </>
-                        )}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="p-8">
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <h4 className="text-2xl font-bold text-slate-100 tracking-tight">{journey.destination}</h4>
-                        <p className="text-primary font-medium text-sm">{journey.type} • {journey.duration}</p>
+                  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+                  upcomingJourneys.map((journey: any) => (
+                    <div key={journey.id} className="group relative rounded-2xl overflow-hidden border border-border-dark flex items-end h-48 sm:h-64 min-w-[320px] md:min-w-[400px] snap-start">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={journey.image} alt={journey.serviceName} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-background-dark via-background-dark/50 to-transparent"></div>
+                      <div className="relative p-6 w-full">
+                        <p className="text-primary text-xs font-bold uppercase tracking-widest mb-1 shadow-black drop-shadow-md">{journey.date}</p>
+                        <h4 className="text-xl font-bold text-white mb-1 shadow-black drop-shadow-md">{journey.serviceName}</h4>
+                        <p className="text-slate-300 text-sm flex items-center gap-1 shadow-black drop-shadow-md">
+                          <span className="material-symbols-outlined text-sm">location_on</span>
+                          {journey.destination}
+                        </p>
                       </div>
-                      <span className="material-symbols-outlined text-slate-500">more_vert</span>
-                    </div>
-                    <p className="text-slate-400 text-sm mb-8 line-clamp-2 leading-relaxed italic">&quot;A bespoke curated experience designed for Wanderlux elite travelers.&quot;</p>
-                    <div className="flex items-center justify-between gap-4">
-                      <div className="flex -space-x-3">
-                        <div className="size-8 rounded-full border-2 border-background-dark bg-cover bg-center" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuAMX0WKh8H9dwnm3yLSc7tkFlOSeFaWmXs51Y84C6IvaxJBzmczx5HY-oBdHS8ZEP0Xge4rMiyu4EfjXmZ_jEVxRbWPdrbqMyDEz8fnxyG2IkGJ99fSoFrJfx6CU1SjZpGomt5iT-yk4k0xdpdILQWLKTln4UDPjRFEObnMzIyoJzkH3ZD2hgeNGImWA7UkF-VoRe7LWgDwYkfJ_GKOxe_NqGlhi5GqpTApMDzd4sDpAd_sjP5_mlbbxJ8IBIcsYihTIQfycPdwug')" }}></div>
-                        <div className="size-8 rounded-full border-2 border-background-dark bg-primary flex items-center justify-center text-[10px] font-black text-white">+1</div>
-                      </div>
-                      <Link href="/portal/itinerary" className="bg-primary hover:bg-red-700 text-white px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-colors flex items-center justify-center">
-                        View Itinerary
+                      <Link href={journey.link} className="absolute inset-0 z-10">
+                        <span className="sr-only">View {journey.serviceName}</span>
                       </Link>
                     </div>
-                  </div>
-                </div>
-              ))
+                  ))
             ) : (
               <div className="w-full glass-panel border border-dashed border-border-dark rounded-xl p-12 text-center">
                 <span className="material-symbols-outlined text-4xl text-slate-600 mb-4">explore</span>
@@ -256,20 +230,18 @@ export default async function TravelerProfileDashboardPage() {
             
             <div className="space-y-4">
               {dbUser?.activityLogs && dbUser.activityLogs.length > 0 ? (
-                dbUser.activityLogs.map((log: unknown) => (
-                  <div key={log.id} className="glass-panel flex items-center gap-6 p-5 rounded-2xl hover:border-primary/40 hover:bg-white/5 transition-colors group cursor-pointer">
-                    <div className="size-12 min-w-[48px] rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all">
-                      <span className="material-symbols-outlined">{log.module === 'BOOKING' ? 'receipt_long' : log.module === 'LOYALTY' ? 'loyalty' : 'event'}</span>
+                  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+                  dbUser?.activityLogs?.slice(0, 5).map((log: any) => (
+                    <div key={log.id} className="flex gap-4 p-4 rounded-xl hover:bg-surface-dark transition-colors border border-transparent hover:border-border-dark group">
+                      <div className="h-10 w-10 shrink-0 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 group-hover:text-primary transition-colors">
+                        <span className="material-symbols-outlined text-[20px]">{log.module === 'BOOKINGS' ? 'flight_takeoff' : log.module === 'AUTH' ? 'login' : 'history'}</span>
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm text-slate-300"><span className="font-semibold text-white">{log.action}</span> - {log.module}</p>
+                        <p className="text-xs text-slate-500 mt-1">{new Date(log.createdAt).toLocaleString()}</p>
+                      </div>
                     </div>
-                    <div className="flex-1">
-                      <p className="text-slate-100 font-bold">{log.action}</p>
-                      <p className="text-xs text-slate-500">{new Date(log.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-[10px] uppercase tracking-widest text-emerald-500 font-bold">Logged</p>
-                    </div>
-                  </div>
-                ))
+                  ))
               ) : (
                 <div className="glass-panel flex items-center gap-6 p-5 rounded-2xl hover:border-primary/40 hover:bg-white/5 transition-colors group cursor-pointer">
                   <div className="size-12 min-w-[48px] rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all">

@@ -1,17 +1,46 @@
 "use client";
  
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { AdminHeader } from '@/components/admin/AdminHeader';
 import { NOTIFICATIONS } from '@/lib/notifications';
+import { getAdminBookings } from '@/app/actions/bookingActions';
+
+import { Booking, User, TourBooking, HotelBooking, CarHireBooking } from '@prisma/client';
+
+type AdminBooking = Booking & {
+  user: Pick<User, 'id' | 'firstName' | 'lastName' | 'email' | 'avatarUrl' | 'role'> | null;
+  tourBooking: (TourBooking & { tourPackage: { title: string; destination: { name: string } } }) | null;
+  hotelBooking: (HotelBooking & { hotel: { name: string }; room: { name: string } }) | null;
+  carHireBooking: (CarHireBooking & { car: { model: string } }) | null;
+};
 
 export default function WanderluxAdminDashboardOverviewPage() {
   const [revenuePeriod, setRevenuePeriod] = useState<'monthly' | 'weekly'>('monthly');
   const [showNotifications, setShowNotifications] = useState(false);
   const [openDropdownId, setOpenDropdownId] = useState<number | null>(null);
+  const [bookings, setBookings] = useState<AdminBooking[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Close dropdown when clicking outside could be added here later
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const data = await getAdminBookings();
+        setBookings(data || []);
+      } catch (error) {
+        console.error("Failed to fetch dashboard stats:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStats();
+  }, []);
+
+  const totalBookings = bookings.length;
+  const totalRevenue = bookings.reduce((sum, b) => sum + (Number(b.totalAmount) || 0), 0);
+  const pendingBookings = bookings.filter(b => b.status === 'PENDING').length;
+  const confirmedBookings = bookings.filter(b => b.status === 'CONFIRMED' || b.status === 'SUCCESS').length;
 
   const toggleDropdown = (id: number) => {
     if (openDropdownId === id) {
@@ -21,8 +50,8 @@ export default function WanderluxAdminDashboardOverviewPage() {
     }
   };
   return (
-    <div className="stitch-screen">
-      <div className="flex h-screen w-full">
+    <div className="stitch-screen h-screen overflow-hidden">
+      <div className="flex h-full w-full overflow-hidden">
 {/* Sidebar */}
 <AdminSidebar />
 {/* Main Content */}
@@ -36,7 +65,7 @@ export default function WanderluxAdminDashboardOverviewPage() {
     <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
       <span className="material-symbols-outlined text-[20px]">search</span>
     </span>
-    <input className="w-64 py-2 pl-10 pr-4 bg-surface-dark border border-border-dark rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Search anything..." type="text"/>
+    <input className="w-full max-w-[10rem] sm:max-w-xs py-2 pl-10 pr-4 bg-surface-dark border border-border-dark rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all" placeholder="Search..." type="text"/>
   </div>
   <div className="relative">
     <button 
@@ -87,7 +116,7 @@ export default function WanderluxAdminDashboardOverviewPage() {
   </div>
 </AdminHeader>
 {/* Scrollable Area */}
-<div className="flex-1 overflow-y-auto p-8 space-y-8">
+<div className="flex-1 overflow-y-auto p-4 sm:p-8 space-y-6 sm:space-y-8">
 {/* KPI Cards */}
 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
 {/* Card 1 */}
@@ -95,7 +124,7 @@ export default function WanderluxAdminDashboardOverviewPage() {
 <div className="flex justify-between items-start mb-4">
 <div>
 <p className="text-slate-400 text-sm font-medium">Total Bookings</p>
-<h3 className="text-white text-2xl font-bold mt-1">1,245</h3>
+<h3 className="text-white text-2xl font-bold mt-1">{totalBookings}</h3>
 </div>
 <div className="p-2 bg-primary/10 rounded-lg text-primary">
 <span className="material-symbols-outlined">confirmation_number</span>
@@ -104,7 +133,7 @@ export default function WanderluxAdminDashboardOverviewPage() {
 <div className="flex items-center gap-2 text-sm">
 <span className="text-green-500 flex items-center font-medium">
 <span className="material-symbols-outlined text-[16px]">trending_up</span>
-                                12.5%
+                                {loading ? '...' : '12.5%'}
                             </span>
 <span className="text-slate-500">vs last month</span>
 </div>
@@ -114,7 +143,7 @@ export default function WanderluxAdminDashboardOverviewPage() {
 <div className="flex justify-between items-start mb-4">
 <div>
 <p className="text-slate-400 text-sm font-medium">Total Revenue</p>
-<h3 className="text-white text-2xl font-bold mt-1">$482k</h3>
+<h3 className="text-white text-2xl font-bold mt-1">${totalRevenue >= 1000 ? (totalRevenue/1000).toFixed(1) + 'k' : totalRevenue}</h3>
 </div>
 <div className="p-2 bg-primary/10 rounded-lg text-primary">
 <span className="material-symbols-outlined">payments</span>
@@ -123,7 +152,7 @@ export default function WanderluxAdminDashboardOverviewPage() {
 <div className="flex items-center gap-2 text-sm">
 <span className="text-green-500 flex items-center font-medium">
 <span className="material-symbols-outlined text-[16px]">trending_up</span>
-                                8.2%
+                                {loading ? '...' : '8.2%'}
                             </span>
 <span className="text-slate-500">vs last month</span>
 </div>
@@ -132,38 +161,30 @@ export default function WanderluxAdminDashboardOverviewPage() {
 <div className="bg-surface-dark rounded-lg p-6 border-l-4 border-primary border-y border-r border-y-border-dark border-r-border-dark shadow-lg shadow-black/20">
 <div className="flex justify-between items-start mb-4">
 <div>
-<p className="text-slate-400 text-sm font-medium">Active Rentals</p>
-<h3 className="text-white text-2xl font-bold mt-1">42</h3>
+<p className="text-slate-400 text-sm font-medium">Confirmed</p>
+<h3 className="text-white text-2xl font-bold mt-1">{confirmedBookings}</h3>
 </div>
 <div className="p-2 bg-primary/10 rounded-lg text-primary">
-<span className="material-symbols-outlined">directions_car</span>
+<span className="material-symbols-outlined">check_circle</span>
 </div>
 </div>
 <div className="flex items-center gap-2 text-sm">
-<span className="text-red-500 flex items-center font-medium">
-<span className="material-symbols-outlined text-[16px]">trending_down</span>
-                                2.1%
-                            </span>
-<span className="text-slate-500">vs last month</span>
+<span className="text-slate-400">Past & Upcoming</span>
 </div>
 </div>
 {/* Card 4 */}
 <div className="bg-surface-dark rounded-lg p-6 border-l-4 border-primary border-y border-r border-y-border-dark border-r-border-dark shadow-lg shadow-black/20">
 <div className="flex justify-between items-start mb-4">
 <div>
-<p className="text-slate-400 text-sm font-medium">Pending Apps.</p>
-<h3 className="text-white text-2xl font-bold mt-1">18</h3>
+<p className="text-slate-400 text-sm font-medium">Pending</p>
+<h3 className="text-white text-2xl font-bold mt-1">{pendingBookings}</h3>
 </div>
 <div className="p-2 bg-primary/10 rounded-lg text-primary">
 <span className="material-symbols-outlined">pending_actions</span>
 </div>
 </div>
 <div className="flex items-center gap-2 text-sm">
-<span className="text-green-500 flex items-center font-medium">
-<span className="material-symbols-outlined text-[16px]">trending_up</span>
-                                5.0%
-                            </span>
-<span className="text-slate-500">vs last month</span>
+<span className="text-yellow-500 font-medium">Needs Attention</span>
 </div>
 </div>
 </div>
@@ -324,162 +345,66 @@ export default function WanderluxAdminDashboardOverviewPage() {
 </tr>
 </thead>
 <tbody className="text-sm divide-y divide-border-dark">
-<tr className="hover:bg-white/5 transition-colors group">
-<td className="p-4">
-<div className="flex items-center gap-3">
-<div className="size-8 rounded-full bg-cover bg-center" data-alt="User Avatar Small" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuAOMTYLE5p9Du_HQl-CJGnxvMZGJmlYezZaialwDa4tgW8fS8x2RsdTG1FsbC7IVIEaRzOgrObiMPvq3C6VnOJpqLQ9cV5qedtHXcq3a1tBD76k_c_0VFHNpb5N0XaJH1S0TvaQ06cef-nY1HMehUrVlidvZlJnF4s05OwILWwYehQxSlm_tjcvouqIbzJ4tSszFw9NgTkWkaW9Z_o4nkHc89KiXjpzibUmzAJ7RvjJfWksmIhJLFtglmKcKPaub57QjWOoQX6-Eg')" }}></div>
-<span className="font-medium text-white">Alice Johnson</span>
-</div>
-</td>
-<td className="p-4 text-slate-300">Santorini Luxury Villa</td>
-<td className="p-4 text-slate-400">Oct 24, 2023</td>
-<td className="p-4 text-white font-medium">$2,450</td>
-<td className="p-4">
-<span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-500/10 text-green-500 border border-green-500/20">
-                                            Confirmed
-                                        </span>
-</td>
-<td className="p-4 text-right">
-<div className="relative">
-<button 
-  onClick={() => toggleDropdown(1)}
-  className="text-slate-400 hover:text-white p-1 rounded hover:bg-background-dark">
-<span className="material-symbols-outlined text-[18px]">more_vert</span>
-</button>
-{openDropdownId === 1 && (
-  <div className="absolute right-0 mt-2 w-48 bg-surface-dark border border-border-dark rounded-xl shadow-2xl z-50 py-1">
-    <Link href="/admin/bookings" className="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors flex items-center gap-2">
-      <span className="material-symbols-outlined text-[16px]">visibility</span> View Details
-    </Link>
-    <Link href="/admin/bookings" className="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors flex items-center gap-2">
-      <span className="material-symbols-outlined text-[16px]">edit</span> Edit Booking
-    </Link>
-    <div className="border-t border-border-dark my-1"></div>
-    <button onClick={() => alert('Booking cancelled successfully')} className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 transition-colors flex items-center gap-2">
-      <span className="material-symbols-outlined text-[16px]">cancel</span> Cancel Booking
-    </button>
-  </div>
-)}
-</div>
-</td>
-</tr>
-<tr className="hover:bg-white/5 transition-colors group">
-<td className="p-4">
-<div className="flex items-center gap-3">
-<div className="size-8 rounded-full bg-cover bg-center" data-alt="User Avatar Small" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuC0Z_SP2n5ceIxmVgsEa9GuCFalU6Lmr-Y4c_Q1-CTJbdgLXnjHME2j4sflXYoFy8MT-OePFHSNo3DG7RAUQAl_SVNbYA3dAHhL1xdaNy5J41-MNPq2ipJ6OY0Mczds194eID5LebpVX5YOnlkuo6AwvksgbTJapObxYGbYS39-CSGAgVjvyNeU6HPlXSX8RKfX9vIsXhO_pwurkfFTmLxExO_j1XGfcV8CzILchJUi2ZRS99NK5_4GLimv01URWgs9Ea_-LuykvQ')" }}></div>
-<span className="font-medium text-white">Robert Fox</span>
-</div>
-</td>
-<td className="p-4 text-slate-300">Kyoto Temple Tour</td>
-<td className="p-4 text-slate-400">Oct 22, 2023</td>
-<td className="p-4 text-white font-medium">$850</td>
-<td className="p-4">
-<span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-500/10 text-yellow-500 border border-yellow-500/20">
-                                            Pending
-                                        </span>
-</td>
-<td className="p-4 text-right">
-<div className="relative">
-<button 
-  onClick={() => toggleDropdown(2)}
-  className="text-slate-400 hover:text-white p-1 rounded hover:bg-background-dark">
-<span className="material-symbols-outlined text-[18px]">more_vert</span>
-</button>
-{openDropdownId === 2 && (
-  <div className="absolute right-0 mt-2 w-48 bg-surface-dark border border-border-dark rounded-xl shadow-2xl z-50 py-1">
-    <Link href="/admin/bookings" className="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors flex items-center gap-2">
-      <span className="material-symbols-outlined text-[16px]">visibility</span> View Details
-    </Link>
-    <Link href="/admin/bookings" className="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors flex items-center gap-2">
-      <span className="material-symbols-outlined text-[16px]">edit</span> Edit Booking
-    </Link>
-    <div className="border-t border-border-dark my-1"></div>
-    <button onClick={() => alert('Booking cancelled successfully')} className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 transition-colors flex items-center gap-2">
-      <span className="material-symbols-outlined text-[16px]">cancel</span> Cancel Booking
-    </button>
-  </div>
-)}
-</div>
-</td>
-</tr>
-<tr className="hover:bg-white/5 transition-colors group">
-<td className="p-4">
-<div className="flex items-center gap-3">
-<div className="size-8 rounded-full bg-cover bg-center" data-alt="User Avatar Small" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuBlM67bC6KJODO2DQpcxLg84dm0bb8m8WB26fUzh2S0Dhd7TrvQ_XxsFBmt6x5yb81xTvgFu4-mZ3ubdmaKEo-BdycBmD1i_TulG4eUwLnm7SDsr9knez9ooYMoCXyTGR3WpBTfMwyV8V3aVyGam298JkB689qeuMxXOJa3CBAfkC85bxoSXu6MbJGcnivpVE4xXR1NDMUowKjG-T5oM-yOxKnfoTi8cCt9fcsHJ6YaDP-hE8joTG0jS162rGiQ32hD-mrRSnRw5w')" }}></div>
-<span className="font-medium text-white">Eleanor Pena</span>
-</div>
-</td>
-<td className="p-4 text-slate-300">Swiss Alps Ski Trip</td>
-<td className="p-4 text-slate-400">Oct 20, 2023</td>
-<td className="p-4 text-white font-medium">$4,120</td>
-<td className="p-4">
-<span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-500/10 text-red-500 border border-red-500/20">
-                                            Cancelled
-                                        </span>
-</td>
-<td className="p-4 text-right">
-<div className="relative">
-<button 
-  onClick={() => toggleDropdown(3)}
-  className="text-slate-400 hover:text-white p-1 rounded hover:bg-background-dark">
-<span className="material-symbols-outlined text-[18px]">more_vert</span>
-</button>
-{openDropdownId === 3 && (
-  <div className="absolute right-0 mt-2 w-48 bg-surface-dark border border-border-dark rounded-xl shadow-2xl z-50 py-1">
-    <Link href="/admin/bookings" className="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors flex items-center gap-2">
-      <span className="material-symbols-outlined text-[16px]">visibility</span> View Details
-    </Link>
-    <Link href="/admin/bookings" className="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors flex items-center gap-2">
-      <span className="material-symbols-outlined text-[16px]">edit</span> Edit Booking
-    </Link>
-    <div className="border-t border-border-dark my-1"></div>
-    <button onClick={() => alert('Booking cancelled successfully')} className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 transition-colors flex items-center gap-2">
-      <span className="material-symbols-outlined text-[16px]">cancel</span> Cancel Booking
-    </button>
-  </div>
-)}
-</div>
-</td>
-</tr>
-<tr className="hover:bg-white/5 transition-colors group">
-<td className="p-4">
-<div className="flex items-center gap-3">
-<div className="size-8 rounded-full bg-cover bg-center" data-alt="User Avatar Small" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuD2nF1ZOsypD6sSIcO2S63NBEuz-8R4CcgRTikij-1udACP9WrDwjVXAOlsMrxkTb9uZ7z4zS5LBpSlG669e99TrtnobXnjOVOKuE4jHJj5TK_CjwLwGdJb5412MJfLUVeqXFvHXcxOl8ILxWNc8zHTUGsvCNI1iDmZoge3B5gn3KlzhMNyDW4pk-5LBxgUwPrrCr8BxEOBgEqZq88QhYUr6bsZiLRK-OXW1smXch7LS7GggJoRvz525ghlX8gsTNXN7UmKv1iWFA')" }}></div>
-<span className="font-medium text-white">Cody Fisher</span>
-</div>
-</td>
-<td className="p-4 text-slate-300">Dubai Desert Safari</td>
-<td className="p-4 text-slate-400">Oct 19, 2023</td>
-<td className="p-4 text-white font-medium">$1,200</td>
-<td className="p-4">
-<span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-500/10 text-green-500 border border-green-500/20">
-                                            Confirmed
-                                        </span>
-</td>
-<td className="p-4 text-right">
-<div className="relative">
-<button 
-  onClick={() => toggleDropdown(4)}
-  className="text-slate-400 hover:text-white p-1 rounded hover:bg-background-dark">
-<span className="material-symbols-outlined text-[18px]">more_vert</span>
-</button>
-{openDropdownId === 4 && (
-  <div className="absolute right-0 mt-2 w-48 bg-surface-dark border border-border-dark rounded-xl shadow-2xl z-50 py-1">
-    <Link href="/admin/bookings" className="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors flex items-center gap-2">
-      <span className="material-symbols-outlined text-[16px]">visibility</span> View Details
-    </Link>
-    <Link href="/admin/bookings" className="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors flex items-center gap-2">
-      <span className="material-symbols-outlined text-[16px]">edit</span> Edit Booking
-    </Link>
-    <div className="border-t border-border-dark my-1"></div>
-    <button onClick={() => alert('Booking cancelled successfully')} className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 transition-colors flex items-center gap-2">
-      <span className="material-symbols-outlined text-[16px]">cancel</span> Cancel Booking
-    </button>
-  </div>
-)}
-</div>
-</td>
-</tr>
+          {bookings.length === 0 ? (
+            <tr>
+              <td colSpan={6} className="p-8 text-center text-slate-500">
+                {loading ? 'Loading bookings...' : 'No recent bookings found.'}
+              </td>
+            </tr>
+          ) : (
+            bookings.slice(0, 5).map((booking, index) => {
+              const customerName = booking.user ? `${booking.user.firstName} ${booking.user.lastName}` : 'Guest User';
+              const avatar = booking.user?.avatarUrl || 'https://via.placeholder.com/32';
+              const serviceName = booking.tourBooking?.tourPackage?.title || 
+                                 booking.hotelBooking?.hotel?.name || 
+                                 booking.carHireBooking?.car?.model || 
+                                 booking.serviceType.replace('_', ' ');
+              const date = new Date(booking.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+              
+              const statusColors: Record<string, string> = {
+                'CONFIRMED': 'bg-green-500/10 text-green-500 border-green-500/20',
+                'SUCCESS': 'bg-green-500/10 text-green-500 border-green-500/20',
+                'PENDING': 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20',
+                'CANCELLED': 'bg-red-500/10 text-red-500 border-red-500/20',
+                'FAILED': 'bg-red-500/10 text-red-500 border-red-500/20',
+              };
+
+              return (
+                <tr key={booking.id} className="hover:bg-white/5 transition-colors group">
+                  <td className="p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="size-8 rounded-full bg-cover bg-center" style={{ backgroundImage: `url('${avatar}')` }}></div>
+                      <span className="font-medium text-white">{customerName}</span>
+                    </div>
+                  </td>
+                  <td className="p-4 text-slate-300">{serviceName}</td>
+                  <td className="p-4 text-slate-400">{date}</td>
+                  <td className="p-4 text-white font-medium">${Number(booking.totalAmount).toLocaleString()}</td>
+                  <td className="p-4">
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${statusColors[booking.status] || 'bg-slate-500/10 text-slate-500 border-slate-500/20'}`}>
+                      {booking.status}
+                    </span>
+                  </td>
+                  <td className="p-4 text-right">
+                    <div className="relative">
+                      <button 
+                        onClick={() => toggleDropdown(index)}
+                        className="text-slate-400 hover:text-white p-1 rounded hover:bg-background-dark">
+                        <span className="material-symbols-outlined text-[18px]">more_vert</span>
+                      </button>
+                      {openDropdownId === index && (
+                        <div className="absolute right-0 mt-2 w-48 bg-surface-dark border border-border-dark rounded-xl shadow-2xl z-50 py-1">
+                          <Link href="/admin/bookings" className="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors flex items-center gap-2">
+                            <span className="material-symbols-outlined text-[16px]">visibility</span> View Details
+                          </Link>
+                        </div>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })
+          )}
 </tbody>
 </table>
 </div>

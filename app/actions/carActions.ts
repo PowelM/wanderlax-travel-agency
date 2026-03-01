@@ -69,10 +69,10 @@ export async function createCar(data: Omit<Car, "id" | "createdAt" | "updatedAt"
         transmission: data.transmission,
         fuelType: data.fuel || data.fuelType,
         dailyRate: data.pricePerDay || data.dailyRate,
-        images: data.image ? [data.image] : data.images,
+        images: data.images && data.images.length > 0 ? data.images : (data.image ? [data.image] : []),
         status: data.status,
         mileage: data.mileage ? parseInt(data.mileage as unknown as string) : null,
-        features: data.type ? [data.type] : data.features,
+        features: data.features && data.features.length > 0 ? data.features : (data.type ? [data.type] : []),
       },
     });
     return JSON.parse(JSON.stringify(car));
@@ -96,8 +96,8 @@ export async function updateCar(id: string, data: Partial<Car> & { name?: string
         dailyRate: data.pricePerDay || data.dailyRate,
         status: data.status,
         mileage: data.mileage ? parseInt(data.mileage as unknown as string) : undefined,
-        images: data.image ? [data.image] : data.images,
-        features: data.type ? [data.type] : data.features,
+        images: data.images && data.images.length > 0 ? data.images : (data.image ? [data.image] : undefined),
+        features: data.features && data.features.length > 0 ? data.features : (data.type ? [data.type] : undefined),
       },
     });
     return JSON.parse(JSON.stringify(car));

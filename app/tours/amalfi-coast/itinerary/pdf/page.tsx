@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect } from 'react';
+import Image from 'next/image';
 
 export default function AmalfiPrintableItineraryPage() {
     
@@ -221,10 +222,9 @@ export default function AmalfiPrintableItineraryPage() {
                         <div className="flex flex-col items-center md:items-end">
                             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Digital Viewing</span>
                             <div className="bg-white p-2 rounded-lg">
-                                <img alt="QR Code for digital itinerary" className="w-12 h-12" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDgUT1ZXQ1WPSGzTbSoXKRaePxboXYzi05Q1T1zTO164yDrCKttba3VnvWYtHtvORq4q_YETTnIfJgk5GzsgLPh3UTapXn2goVTFNujWm1UKi5vVfHe_EHVDdy7nu4-6gAHlogkdv_R37jVroQP9kCphA6KRPGQ_XEctCtOlW6dkhUm7ConGYVZcQFRcE9mG9GSGjEgdqzIGZBg40OtGA-TOOLge7fR_OqFti6QDJPSb1h7NApWYHzsO6KBbw-kkMY8oma4P1k96w"/>
+                                <Image alt="QR Code for digital itinerary" className="w-12 h-12" width={48} height={48} src="https://lh3.googleusercontent.com/aida-public/AB6AXuDgUT1ZXQ1WPSGzTbSoXKRaePxboXYzi05Q1T1zTO164yDrCKttba3VnvWYtHtvORq4q_YETTnIfJgk5GzsgLPh3UTapXn2goVTFNujWm1UKi5vVfHe_EHVDdy7nu4-6gAHlogkdv_R37jVroQP9kCphA6KRPGQ_XEctCtOlW6dkhUm7ConGYVZcQFRcE9mG9GSGjEgdqzIGZBg40OtGA-TOOLge7fR_OqFti6QDJPSb1h7NApWYHzsO6KBbw-kkMY8oma4P1k96w" />
                             </div>
                         </div>
-                    </div>
                     </div>
                     
                     <div className="mt-8 text-center">

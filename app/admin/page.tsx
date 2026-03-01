@@ -40,7 +40,7 @@ export default function WanderluxAdminDashboardOverviewPage() {
   const totalBookings = bookings.length;
   const totalRevenue = bookings.reduce((sum, b) => sum + (Number(b.totalAmount) || 0), 0);
   const pendingBookings = bookings.filter(b => b.status === 'PENDING').length;
-  const confirmedBookings = bookings.filter(b => b.status === 'CONFIRMED' || b.status === 'SUCCESS').length;
+  const confirmedBookings = bookings.filter(b => b.status === 'CONFIRMED' || (b.status as string) === 'COMPLETED').length;
 
   const toggleDropdown = (id: number) => {
     if (openDropdownId === id) {
@@ -363,10 +363,9 @@ export default function WanderluxAdminDashboardOverviewPage() {
               
               const statusColors: Record<string, string> = {
                 'CONFIRMED': 'bg-green-500/10 text-green-500 border-green-500/20',
-                'SUCCESS': 'bg-green-500/10 text-green-500 border-green-500/20',
+                'COMPLETED': 'bg-green-500/10 text-green-500 border-green-500/20',
                 'PENDING': 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20',
                 'CANCELLED': 'bg-red-500/10 text-red-500 border-red-500/20',
-                'FAILED': 'bg-red-500/10 text-red-500 border-red-500/20',
               };
 
               return (

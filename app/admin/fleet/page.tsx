@@ -5,12 +5,12 @@ import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { AdminHeader } from '@/components/admin/AdminHeader';
 
-import { Car } from '@prisma/client';
+import { Car, CarCategory, CarStatus } from '@prisma/client';
 import { getCars, createCar, updateCar, deleteCar, updateCarStatus } from '@/app/actions/carActions';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
-export type VehicleStatus = 'AVAILABLE' | 'RENTED' | 'MAINTENANCE' | 'DECOMMISSIONED';
-export type VehicleCategory = 'LUXURY' | 'SUV' | 'SPORTS' | 'ELECTRIC';
+export type VehicleStatus = CarStatus;
+export type VehicleCategory = CarCategory;
 
 // ─── Seed data ────────────────────────────────────────────────────────────────
 // INITIAL_VEHICLES removed as it was unused
@@ -808,14 +808,14 @@ function AddVehicleModal({
 }) {
   const [form, setForm] = useState({
     name: '',
-    category: 'SUV',
+    category: 'SUV' as CarCategory,
     type: 'Car',
     plate: '',
     fuel: 'Petrol',
     mileage: '0',
     transmission: 'Automatic',
     pricePerDay: 200,
-    status: 'AVAILABLE',
+    status: 'AVAILABLE' as CarStatus,
     images: ['https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=800&q=80'],
     lastNote: '',
   });
@@ -851,6 +851,8 @@ function AddVehicleModal({
     if (!form.name.trim() || !form.plate.trim()) return;
     onAdd({ 
       ...form, 
+      category: form.category as CarCategory,
+      status: form.status as CarStatus,
       mileage: form.mileage ? parseInt(form.mileage) : 0,
       images: form.images.filter(img => img.trim() !== '')
     });
@@ -890,7 +892,7 @@ function AddVehicleModal({
                 value={form.category}
                 onChange={e => setForm(f => ({ ...f, category: e.target.value as CarCategory }))}
               >
-                {(['LUXURY', 'SUV', 'SPORTS', 'ELECTRIC'] as const).map(c => (
+                {(['SUV', 'LUXURY', 'ECONOMY', 'COMPACT', 'VAN', 'BUS'] as CarCategory[]).map(c => (
                   <option key={c} value={c}>{c}</option>
                 ))}
               </select>
@@ -1199,7 +1201,7 @@ function EditVehicleModal({
                 value={form.category}
                 onChange={e => setForm(f => ({ ...f, category: e.target.value as CarCategory }))}
               >
-                {(['Luxury', 'SUV', 'Sports', 'Electric'] as const).map(c => (
+                {(['SUV', 'LUXURY', 'ECONOMY', 'COMPACT', 'VAN', 'BUS'] as CarCategory[]).map(c => (
                   <option key={c} value={c}>{c}</option>
                 ))}
               </select>
@@ -1284,9 +1286,9 @@ function EditVehicleModal({
               <select
                 className="w-full bg-background-dark border border-border-dark rounded-lg px-4 py-2.5 text-white text-sm focus:ring-1 focus:ring-primary"
                 value={form.status}
-                onChange={e => setForm(f => ({ ...f, status: e.target.value as VehicleStatus }))}
+                onChange={e => setForm(f => ({ ...f, status: e.target.value as CarStatus }))}
               >
-                {(['AVAILABLE', 'RENTED', 'MAINTENANCE'] as const).map(s => (
+                {(['AVAILABLE', 'RENTED', 'MAINTENANCE', 'DECOMMISSIONED'] as CarStatus[]).map(s => (
                   <option key={s} value={s}>{s}</option>
                 ))}
               </select>

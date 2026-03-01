@@ -56,21 +56,21 @@ export async function getCars(filters?: CarFilters) {
   }
 }
 
-export async function createCar(data: Omit<Car, "id" | "createdAt" | "updatedAt"> & { name?: string, type?: string, plate?: string, pricePerDay?: number, fuel?: string, image?: string }) {
+export async function createCar(data: Partial<Omit<Car, "id" | "createdAt" | "updatedAt">> & { name?: string, type?: string, plate?: string, pricePerDay?: number, fuel?: string, image?: string }) {
   try {
     const car = await prisma.car.create({
       data: {
-        make: data.name ? data.name.split(" ")[0] || "Unknown" : data.make,
-        model: data.name ? data.name.split(" ").slice(1).join(" ") || data.name : data.model,
+        make: data.name ? data.name.split(" ")[0] || "Unknown" : (data.make || "Unknown"),
+        model: data.name ? data.name.split(" ").slice(1).join(" ") || data.name : (data.model || "Car"),
         year: data.year || new Date().getFullYear(),
-        licensePlate: data.plate || data.licensePlate,
-        category: data.category,
+        licensePlate: data.plate || data.licensePlate || `TEMP-${Date.now()}`,
+        category: data.category || "SUV",
         capacity: data.capacity || 4, // Default
-        transmission: data.transmission,
-        fuelType: data.fuel || data.fuelType,
-        dailyRate: data.pricePerDay || data.dailyRate,
+        transmission: data.transmission || "Automatic",
+        fuelType: data.fuel || data.fuelType || "Petrol",
+        dailyRate: data.pricePerDay || data.dailyRate || 200,
         images: data.images && data.images.length > 0 ? data.images : (data.image ? [data.image] : []),
-        status: data.status,
+        status: data.status || "AVAILABLE",
         mileage: data.mileage ? parseInt(data.mileage as unknown as string) : null,
         features: data.features && data.features.length > 0 ? data.features : (data.type ? [data.type] : []),
       },

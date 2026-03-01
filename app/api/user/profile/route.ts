@@ -46,12 +46,22 @@ export async function PUT(request: Request) {
     const body = await request.json();
     const { firstName, lastName, phone } = body;
 
-    const updatedUser = await prisma.user.update({
+    const email = user.emailAddresses?.[0]?.emailAddress || '';
+
+    const updatedUser = await prisma.user.upsert({
       where: { clerkId: userId },
-      data: {
+      update: {
         ...(firstName !== undefined && { firstName }),
         ...(lastName !== undefined && { lastName }),
         ...(phone !== undefined && { phone }),
+      },
+      create: {
+        clerkId: userId,
+        email,
+        firstName: firstName || user.firstName || null,
+        lastName: lastName || user.lastName || null,
+        phone: phone || null,
+        avatarUrl: user.imageUrl || null,
       },
       select: {
         id: true,

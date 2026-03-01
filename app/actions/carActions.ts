@@ -57,6 +57,19 @@ export async function getCars(filters?: CarFilters) {
   }
 }
 
+/** Admin-only: fetches ALL cars regardless of status */
+export async function getAllCars() {
+  try {
+    const cars = await prisma.car.findMany({
+      orderBy: { createdAt: "desc" },
+    });
+    return JSON.parse(JSON.stringify(cars));
+  } catch (error) {
+    console.error("Error fetching all cars:", error);
+    return [];
+  }
+}
+
 export async function createCar(data: Partial<Omit<Car, "id" | "createdAt" | "updatedAt">> & { name?: string, type?: string, plate?: string, pricePerDay?: number, fuel?: string, image?: string }) {
   try {
     const car = await prisma.car.create({

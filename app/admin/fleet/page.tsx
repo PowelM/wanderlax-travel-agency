@@ -6,7 +6,7 @@ import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { AdminHeader } from '@/components/admin/AdminHeader';
 
 import { Car, CarCategory, CarStatus } from '@prisma/client';
-import { getCars, createCar, updateCar, deleteCar, updateCarStatus } from '@/app/actions/carActions';
+import { getAllCars, createCar, updateCar, deleteCar, updateCarStatus } from '@/app/actions/carActions';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 export type VehicleStatus = CarStatus;
@@ -77,11 +77,7 @@ export default function AdminFleetManagementPage() {
   const fetchCars = async () => {
     setLoading(true);
     try {
-      // NOTE: Using a custom action to skip the "AVAILABLE" default status filter if needed, 
-      // but for now, we'll just refetch passing no filters to get all available ones or modify carActions.ts to allow skipping.
-      // Since it's admin, they should see ALL cars. The `getCars` action currently forces `AVAILABLE`.
-      // Let's modify the action later if needed, but we'll fetch them here first.
-      const data = await getCars(); 
+      const data = await getAllCars();
       setVehicles(data);
     } catch (e) {
       console.error(e);

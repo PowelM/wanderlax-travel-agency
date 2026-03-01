@@ -87,29 +87,36 @@ export default function WanderluxAdminDashboardOverviewPage() {
           <Link href="/admin/messages" className="text-xs text-primary hover:text-white transition-colors" onClick={() => setShowNotifications(false)}>View all</Link>
         </div>
         <div className="max-h-96 overflow-y-auto">
-          {NOTIFICATIONS.map((n, index) => (
-            <Link
-              key={n.id}
-              href="/admin/messages"
-              onClick={() => setShowNotifications(false)}
-              className={`block p-4 ${index < NOTIFICATIONS.length - 1 ? 'border-b border-border-dark' : ''} hover:bg-white/5 transition-colors cursor-pointer text-left relative z-10`}
-            >
-              <div className="flex gap-3">
-                <div className={`h-8 w-8 rounded-full ${n.iconBg} ${n.iconColor} flex items-center justify-center shrink-0`}>
-                  <span className="material-symbols-outlined text-[16px]">{n.icon}</span>
+          {NOTIFICATIONS.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-10 text-slate-400 gap-2">
+              <span className="material-symbols-outlined text-4xl opacity-30">notifications_off</span>
+              <p className="text-sm">No new notifications</p>
+            </div>
+          ) : (
+            NOTIFICATIONS.map((n, index) => (
+              <Link
+                key={n.id}
+                href="/admin/messages"
+                onClick={() => setShowNotifications(false)}
+                className={`block p-4 ${index < NOTIFICATIONS.length - 1 ? 'border-b border-border-dark' : ''} hover:bg-white/5 transition-colors cursor-pointer text-left relative z-10`}
+              >
+                <div className="flex gap-3">
+                  <div className={`h-8 w-8 rounded-full ${n.iconBg} ${n.iconColor} flex items-center justify-center shrink-0`}>
+                    <span className="material-symbols-outlined text-[16px]">{n.icon}</span>
+                  </div>
+                  <div>
+                    <p className="text-sm text-white">
+                      {n.message}
+                      <strong className={`font-semibold ${n.highlightColor}`}>{n.highlight}</strong>
+                      {n.id === 2 && ' received'}
+                      {n.id === 3 && ' returned'}
+                    </p>
+                    <p className="text-xs text-slate-400 mt-1">{n.time}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm text-white">
-                    {n.message}
-                    <strong className={`font-semibold ${n.highlightColor}`}>{n.highlight}</strong>
-                    {n.id === 2 && ' received'}
-                    {n.id === 3 && ' returned'}
-                  </p>
-                  <p className="text-xs text-slate-400 mt-1">{n.time}</p>
-                </div>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            ))
+          )}
         </div>
       </div>
     )}

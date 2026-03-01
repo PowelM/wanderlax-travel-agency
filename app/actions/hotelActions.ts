@@ -198,15 +198,59 @@ export async function updateHotel(id: string, data: Prisma.HotelUncheckedUpdateI
 
 export async function deleteHotel(id: string) {
   try {
-    await prisma.hotel.delete({
-      where: { id },
+    await prisma.$transaction(async (tx) => {
+      // Find all hotel bookings for this hotel
+      const hotelBookings = await tx.hotelBooking.findMany({
+        where: { hotelId: id },
+        select: { id: true },
+      });
+      const hotelBookingIds = hotelBookings.map((b) => b.id);
+
+      if (hotelBookingIds.length > 0) {
+        // Find the Booking wrapper IDs that reference these HotelBookings
+        const bookings = await tx.booking.findMany({
+          where: { hotelBookingId: { in: hotelBookingIds } },
+          select: { id: true },
+        });
+        const bookingIds = bookings.map((b) => b.id);
+
+        if (bookingIds.length > 0) {
+          // Payment → Booking has no onDelete: Cascade, must delete first
+          await tx.payment.deleteMany({
+            where: { bookingId: { in: bookingIds } },
+          });
+          // Invoice has onDelete: Cascade on Booking, but delete explicitly to be safe
+          await tx.invoice.deleteMany({
+            where: { bookingId: { in: bookingIds } },
+          });
+          // Now delete the Booking wrappers
+          await tx.booking.deleteMany({
+            where: { id: { in: bookingIds } },
+          });
+        }
+
+        // Now delete the HotelBookings themselves
+        await tx.hotelBooking.deleteMany({
+          where: { hotelId: id },
+        });
+      }
+
+      // Delete reviews linked to this hotel
+      await tx.review.deleteMany({
+        where: { hotelId: id },
+      });
+
+      // HotelRoom already has onDelete: Cascade so rooms are handled automatically.
+      // Delete the hotel itself
+      await tx.hotel.delete({ where: { id } });
     });
+
     revalidatePath('/hotels');
     revalidatePath('/admin/hotels');
     return { success: true };
   } catch (error) {
     console.error("Error deleting hotel:", error);
-    return { success: false };
+    return { success: false, error: String(error) };
   }
 }
 export async function getRoomById(id: string) {

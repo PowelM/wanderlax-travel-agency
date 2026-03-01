@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { SignedIn, SignedOut, UserButton, useAuth } from '@clerk/nextjs';
@@ -41,6 +41,18 @@ const portalLinks = [
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
+  const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleMouseEnter = (menu: string) => {
+    if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
+    setDropdownOpen(menu);
+  };
+
+  const handleMouseLeave = () => {
+    closeTimeoutRef.current = setTimeout(() => {
+      setDropdownOpen(null);
+    }, 400);
+  };
   const [userRole, setUserRole] = useState<string | null>(null);
   const pathname = usePathname();
   const { isSignedIn } = useAuth();
@@ -138,12 +150,12 @@ export default function Header() {
         </Link>
 
         {/* Desktop Nav */}
-        <nav className="hidden xl:flex items-center gap-8 flex-1 justify-center px-4 overflow-hidden">
+        <nav className="hidden xl:flex items-center gap-8 flex-1 justify-center px-4">
           {/* Experiences Dropdown */}
           <div 
             className="relative group"
-            onMouseEnter={() => setDropdownOpen('experiences')}
-            onMouseLeave={() => setDropdownOpen(null)}
+            onMouseEnter={() => handleMouseEnter('experiences')}
+            onMouseLeave={handleMouseLeave}
           >
             <button
               className={`flex items-center gap-1 text-sm font-medium tracking-wide transition-all duration-300 py-2 ${
@@ -158,9 +170,10 @@ export default function Header() {
             <span className={`absolute bottom-0 left-0 w-full h-[2px] bg-primary transition-transform duration-300 origin-left ${isExperiencesActive ? 'scale-x-100' : 'scale-x-0'}`}></span>
 
             {/* Dropdown Menu */}
-            <div className={`absolute top-full left-1/2 -translate-x-1/2 mt-2 w-72 rounded-2xl bg-black border border-white/10 shadow-2xl overflow-hidden transition-all duration-300 ${
+            <div className={`absolute top-full left-1/2 -translate-x-1/2 pt-2 w-72 transition-all duration-300 ${
               dropdownOpen === 'experiences' ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
             }`}>
+              <div className="rounded-2xl bg-black border border-white/10 shadow-2xl overflow-hidden">
               <div className="p-4 bg-gradient-to-br from-white/[0.03] to-transparent">
                 <div className="space-y-1">
                   {experiencesLinks.map((link) => (
@@ -182,13 +195,14 @@ export default function Header() {
               </div>
             </div>
           </div>
+        </div>
 
           {/* Member Portal Dropdown */}
           <SignedIn>
             <div 
               className="relative group"
-              onMouseEnter={() => setDropdownOpen('portal')}
-              onMouseLeave={() => setDropdownOpen(null)}
+              onMouseEnter={() => handleMouseEnter('portal')}
+              onMouseLeave={handleMouseLeave}
             >
               <button
                 className={`flex items-center gap-1 text-sm font-medium tracking-wide transition-all duration-300 py-2 ${
@@ -202,9 +216,10 @@ export default function Header() {
               </button>
               <span className={`absolute bottom-0 left-0 w-full h-[2px] bg-primary transition-transform duration-300 origin-left ${isPortalActive ? 'scale-x-100' : 'scale-x-0'}`}></span>
 
-              <div className={`absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 rounded-2xl bg-black border border-white/10 shadow-2xl overflow-hidden transition-all duration-300 ${
+              <div className={`absolute top-full left-1/2 -translate-x-1/2 pt-2 w-64 transition-all duration-300 ${
                 dropdownOpen === 'portal' ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
               }`}>
+                <div className="rounded-2xl bg-black border border-white/10 shadow-2xl overflow-hidden">
                 <div className="p-4 bg-gradient-to-br from-white/[0.03] to-transparent">
                   <div className="space-y-1">
                     {portalLinks.map((link) => (
@@ -221,14 +236,15 @@ export default function Header() {
                 </div>
               </div>
             </div>
+          </div>
           </SignedIn>
 
           {/* Admin/Management Dropdown */}
           {(isAdmin || isConsultant) && (
             <div 
               className="relative group"
-              onMouseEnter={() => setDropdownOpen('management')}
-              onMouseLeave={() => setDropdownOpen(null)}
+              onMouseEnter={() => handleMouseEnter('management')}
+              onMouseLeave={handleMouseLeave}
             >
               <button
                 className={`flex items-center gap-1 text-sm font-medium tracking-wide transition-all duration-300 py-2 ${
@@ -242,9 +258,10 @@ export default function Header() {
               </button>
               <span className={`absolute bottom-0 left-0 w-full h-[2px] bg-primary transition-transform duration-300 origin-left ${isManagementActive ? 'scale-x-100' : 'scale-x-0'}`}></span>
 
-              <div className={`absolute top-full left-0 mt-2 w-64 rounded-2xl bg-black border border-white/10 shadow-2xl overflow-hidden transition-all duration-300 ${
+              <div className={`absolute top-full left-0 pt-2 w-64 transition-all duration-300 ${
                 dropdownOpen === 'management' ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
               }`}>
+                <div className="rounded-2xl bg-black border border-white/10 shadow-2xl overflow-hidden">
                 <div className="p-4 bg-gradient-to-br from-white/[0.03] to-transparent">
                   <div className="space-y-1">
                     {(isAdmin ? adminLinks : consultantLinks).map((link) => (
@@ -261,6 +278,7 @@ export default function Header() {
                 </div>
               </div>
             </div>
+          </div>
           )}
 
           {companyLinks.map((link) => (

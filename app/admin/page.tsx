@@ -231,6 +231,7 @@ export default function WanderluxAdminDashboardOverviewPage() {
 <h3 className="text-white text-lg font-bold">Revenue Trends</h3>
 <p className="text-slate-400 text-sm">Monthly revenue analytics</p>
 </div>
+{bookings.length > 0 && (
 <div className="flex items-center gap-2 bg-background-dark p-1 rounded-lg border border-border-dark">
 <button 
   onClick={() => setRevenuePeriod('monthly')}
@@ -243,7 +244,15 @@ export default function WanderluxAdminDashboardOverviewPage() {
   Weekly
 </button>
 </div>
+)}
 </div>
+{bookings.length === 0 ? (
+<div className="flex flex-col items-center justify-center h-64 text-slate-500">
+  <span className="material-symbols-outlined text-4xl mb-2 opacity-50">bar_chart</span>
+  <p className="text-sm">No revenue data yet.</p>
+</div>
+) : (
+<>
 <div className="relative h-64 w-full">
 {/* Simulated Chart Area */}
 <div className="absolute inset-0 flex items-end justify-between px-2 gap-2">
@@ -286,6 +295,8 @@ export default function WanderluxAdminDashboardOverviewPage() {
   <><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></>
 )}
 </div>
+</>
+)}
 </div>
 {/* Quick Actions & Mini List */}
 <div className="flex flex-col gap-6">

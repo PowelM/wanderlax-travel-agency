@@ -11,8 +11,8 @@ import { Booking, User, TourBooking, HotelBooking, CarHireBooking } from '@prism
 
 type AdminBooking = Booking & {
   user: Pick<User, 'id' | 'firstName' | 'lastName' | 'email' | 'avatarUrl' | 'role'> | null;
-  tourBooking: (TourBooking & { tourPackage: { title: string; destination: { name: string } } }) | null;
-  hotelBooking: (HotelBooking & { hotel: { name: string }; room: { name: string } }) | null;
+  tourBooking: (TourBooking & { tourPackage: { title: string; destination: { name: string; country: string; images: string[] } } }) | null;
+  hotelBooking: (HotelBooking & { hotel: { name: string; destination: { name: string; country: string; images: string[] } }; room: { name: string } }) | null;
   carHireBooking: (CarHireBooking & { car: { model: string } }) | null;
 };
 
@@ -49,6 +49,33 @@ export default function WanderluxAdminDashboardOverviewPage() {
       setOpenDropdownId(id);
     }
   };
+  const destinationCounts: Record<string, { count: number; image: string; name: string }> = {};
+
+  bookings.forEach(booking => {
+     let destName = '';
+     let destImage = '';
+     if (booking.tourBooking?.tourPackage?.destination) {
+       destName = `${booking.tourBooking.tourPackage.destination.name}, ${booking.tourBooking.tourPackage.destination.country}`;
+       destImage = booking.tourBooking.tourPackage.destination.images?.[0] || 'https://via.placeholder.com/150';
+     } else if (booking.hotelBooking?.hotel?.destination) {
+       destName = `${booking.hotelBooking.hotel.destination.name}, ${booking.hotelBooking.hotel.destination.country}`;
+       destImage = booking.hotelBooking.hotel.destination.images?.[0] || 'https://via.placeholder.com/150';
+     }
+     
+     if (destName) {
+        if (!destinationCounts[destName]) {
+           destinationCounts[destName] = { count: 0, image: destImage, name: destName };
+        }
+        destinationCounts[destName].count += 1;
+     }
+  });
+
+  const topDestinations = Object.values(destinationCounts)
+     .sort((a, b) => b.count - a.count)
+     .slice(0, 3);
+  
+  const totalDestBookings = Object.values(destinationCounts).reduce((sum, dest) => sum + dest.count, 0);
+
   return (
     <div className="stitch-screen h-screen overflow-hidden">
       <div className="flex h-full w-full overflow-hidden">
@@ -298,38 +325,30 @@ export default function WanderluxAdminDashboardOverviewPage() {
 {/* Mini Stats: Top Destinations */}
 <div className="bg-surface-dark rounded-xl border border-border-dark p-6 shadow-lg shadow-black/20 flex-1">
 <h3 className="text-white text-lg font-bold mb-4">Top Destinations</h3>
-<div className="space-y-4">
-<div className="flex items-center gap-3">
-<div className="size-10 rounded-lg bg-cover bg-center" data-alt="Bali Landscape Thumbnail" data-location="Bali" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuBSaj6h2jY3EiTlVULNwaaPdJGmQYZbdHk4QGghFTeMCVI431IvWQdwJXpuePa_mGx9moE1Yqp0e6TpHp3NrYidkaxeoI3OjHK-uJs_gw__pkKZmC4gHMuVLiZOUuwgd1mWYj5HIh7eHU9lyUFwBZ9T-wnUPimK_I_HxwKOUbefZYapdzduqxHbox51BMPISKpRS7CjO97gOm8n6q3NX-hPxlO7k-q598NLk9h69TyI9K02Hc5h7RucIGtgot792jTjvMNeL4HISg')" }}></div>
-<div className="flex-1">
-<h4 className="text-white text-sm font-medium">Bali, Indonesia</h4>
-<div className="w-full bg-background-dark rounded-full h-1.5 mt-2">
-<div className="bg-primary h-1.5 rounded-full" style={{ width: "85%" }}></div>
-</div>
-</div>
-<span className="text-xs font-bold text-white">85%</span>
-</div>
-<div className="flex items-center gap-3">
-<div className="size-10 rounded-lg bg-cover bg-center" data-alt="Paris Landscape Thumbnail" data-location="Paris" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuAx48um9kPtux1-ffmE_fvtWjTx959Spt-P27lKHgcpLysuArbGo6qiePQxKfqDHNQyfp3t1lSXzZDk20-sbouUtRDncVxZO9OuhgUfumiBm-IlFHl4UMW2igpOZrYKGwyBaA7AWC1KAju8_KiZ16pJ0_Lr6m-bHGEjf6jLD9NUR-qrqc81Q38FvMLdv13PyANKnGM0ZHtfJJSPTx8E9Xpf9WOTUzjmVvBjETHL4ES6qWR0AzW6Kn1K62VBKCz9Jci_B_Wd70bL6Q')" }}></div>
-<div className="flex-1">
-<h4 className="text-white text-sm font-medium">Paris, France</h4>
-<div className="w-full bg-background-dark rounded-full h-1.5 mt-2">
-<div className="bg-primary h-1.5 rounded-full" style={{ width: "65%" }}></div>
-</div>
-</div>
-<span className="text-xs font-bold text-white">65%</span>
-</div>
-<div className="flex items-center gap-3">
-<div className="size-10 rounded-lg bg-cover bg-center" data-alt="Kyoto Landscape Thumbnail" data-location="Kyoto" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuD3boOYVrR1n0H6uoqOD2LfJwHLRQEgSY3MhagWxxKofUfsAEY8jJsuwea18cx3q5UE2utYGNY1W6oxgh7DBDwyWkR_2vBOHqpWTedgQYAhUDiECdNEtDUgwKHcF9CqyBCcCj7CANLtAcDBEnKDEAuJKgj_1bs4lrHEMR9LTrcA16nL3jN64GEnNKUagaEoZjDM1yzxCk1-_78gHplYBNoiSM8tI7rhifX1ee_PDlKhfOYad3yismWuZ8QrZpNr7YVejzRiShx8Mw')" }}></div>
-<div className="flex-1">
-<h4 className="text-white text-sm font-medium">Kyoto, Japan</h4>
-<div className="w-full bg-background-dark rounded-full h-1.5 mt-2">
-<div className="bg-primary h-1.5 rounded-full" style={{ width: "40%" }}></div>
-</div>
-</div>
-<span className="text-xs font-bold text-white">40%</span>
-</div>
-</div>
+{topDestinations.length === 0 ? (
+  <div className="flex flex-col items-center justify-center py-8 text-slate-500">
+    <span className="material-symbols-outlined text-4xl mb-2 opacity-50">map</span>
+    <p className="text-sm">No destinations booked yet.</p>
+  </div>
+) : (
+  <div className="space-y-4">
+    {topDestinations.map((dest, i) => {
+       const percentage = totalDestBookings > 0 ? Math.round((dest.count / totalDestBookings) * 100) : 0;
+       return (
+         <div key={i} className="flex items-center gap-3">
+           <div className="size-10 rounded-lg bg-cover bg-center" data-alt={`${dest.name} Thumbnail`} data-location={dest.name.split(',')[0]} style={{ backgroundImage: `url('${dest.image}')` }}></div>
+           <div className="flex-1">
+             <h4 className="text-white text-sm font-medium">{dest.name}</h4>
+             <div className="w-full bg-background-dark rounded-full h-1.5 mt-2">
+               <div className="bg-primary h-1.5 rounded-full" style={{ width: `${percentage}%` }}></div>
+             </div>
+           </div>
+           <span className="text-xs font-bold text-white">{percentage}%</span>
+         </div>
+       );
+    })}
+  </div>
+)}
 </div>
 </div>
 </div>

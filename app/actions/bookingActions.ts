@@ -25,7 +25,11 @@ export async function getAdminBookings() {
         },
         hotelBooking: {
           include: {
-            hotel: true,
+            hotel: {
+              include: {
+                destination: true
+              }
+            },
             room: true,
           }
         },

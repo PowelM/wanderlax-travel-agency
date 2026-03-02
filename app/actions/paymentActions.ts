@@ -29,10 +29,27 @@ export async function getPaymentsData() {
       }
     });
 
+    // Revenue breakdown by service type from payments (consistent with totalRevenue)
+    const paymentsWithBookings = await prisma.payment.findMany({
+      where: { status: PaymentStatus.PAID },
+      include: { booking: { select: { serviceType: true } } }
+    });
+
+    const revenueByServiceMap = paymentsWithBookings.reduce((acc, payment) => {
+      const serviceType = payment.booking?.serviceType ?? 'UNKNOWN';
+      acc[serviceType] = (acc[serviceType] || 0) + Number(payment.amount);
+      return acc;
+    }, {} as Record<string, number>);
+
+    const revenueBreakdown = Object.entries(revenueByServiceMap).map(
+      ([serviceType, total]) => ({ serviceType, total })
+    );
+
     return {
       success: true,
       payments: JSON.parse(JSON.stringify(payments)),
-      totalRevenue: Number(totalRevenue._sum?.amount || 0)
+      totalRevenue: Number(totalRevenue._sum?.amount || 0),
+      revenueBreakdown,
     };
   } catch (error: unknown) {
     console.error("Error fetching payment data:", error);

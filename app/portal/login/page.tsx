@@ -65,7 +65,7 @@ export default function WanderluxLoginPage() {
                 },
               }}
               routing="hash"
-              afterSignInUrl="/portal/dashboard"
+              afterSignInUrl="/auth-redirect"
             />
           </div>
 

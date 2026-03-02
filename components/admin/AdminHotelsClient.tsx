@@ -72,7 +72,7 @@ export function AdminHotelsClient({ initialHotels }: { initialHotels: Hotel[] })
         setHotels(current => current.filter(h => h.id !== id));
         if (selectedHotelId === id) setSelectedHotelId(null);
       } else {
-        alert("Failed to delete hotel. Please try again.");
+        alert(result.error || "Failed to delete hotel. Please try again.");
       }
     } catch {
       alert("An error occurred while deleting the hotel. Please try again.");
@@ -145,9 +145,9 @@ export function AdminHotelsClient({ initialHotels }: { initialHotels: Hotel[] })
             {filteredHotels.map(hotel => (
               <div 
                 key={hotel.id}
-                className="bg-surface-dark border border-border-dark rounded-2xl overflow-hidden group hover:border-primary/50 transition-all flex flex-col shadow-xl"
+                className="bg-surface-dark border border-border-dark rounded-2xl group hover:border-primary/50 transition-all flex flex-col shadow-xl relative"
               >
-                <div className="relative h-48 w-full overflow-hidden">
+                <div className="relative h-48 w-full overflow-hidden rounded-t-2xl">
                   <div className="w-full h-full relative">
                     <Image 
                       src={hotel.images[0] || 'https://via.placeholder.com/400x300?text=No+Hotel+Image'} 
@@ -159,50 +159,51 @@ export function AdminHotelsClient({ initialHotels }: { initialHotels: Hotel[] })
                   <div className="absolute top-4 left-4">
                     {getStatusBadge(hotel.isActive)}
                   </div>
-                  <div className="absolute top-4 right-4" ref={openMenuId === hotel.id ? menuRef : null}>
-                    <button 
-                      onClick={() => setOpenMenuId(openMenuId === hotel.id ? null : hotel.id)}
-                      className="size-10 flex items-center justify-center rounded-full bg-black/60 backdrop-blur-md text-white hover:bg-primary transition-colors"
-                    >
-                      <span className="material-symbols-outlined">more_horiz</span>
-                    </button>
-                    {openMenuId === hotel.id && (
-                      <div className="absolute right-0 mt-2 w-48 rounded-xl shadow-2xl bg-surface-dark border border-border-dark z-50 overflow-hidden animate-in fade-in zoom-in duration-200">
-                        <button
-                          onClick={() => router.push(`/admin/hotels/edit/${hotel.id}`)}
-                          className="w-full flex items-center gap-3 px-4 py-3 text-sm text-white hover:bg-primary transition-colors text-left font-medium"
-                        >
-                          <span className="material-symbols-outlined text-[18px]">edit</span>
-                          Edit Property
-                        </button>
-                        <button
-                          onClick={() => handleStatusToggle(hotel.id, hotel.isActive)}
-                          disabled={isUpdating}
-                          className="w-full flex items-center gap-3 px-4 py-3 text-sm text-white hover:bg-white/5 transition-colors text-left"
-                        >
-                          <span className="material-symbols-outlined text-[18px]">
-                            {hotel.isActive ? 'visibility_off' : 'visibility'}
-                          </span>
-                          {hotel.isActive ? 'Deactivate' : 'Activate'}
-                        </button>
-                        <button
-                          onClick={() => router.push(`/hotels/${hotel.slug}`)}
-                          className="w-full flex items-center gap-3 px-4 py-3 text-sm text-white hover:bg-white/5 transition-colors text-left"
-                        >
-                          <span className="material-symbols-outlined text-[18px]">visibility</span>
-                          View Public Page
-                        </button>
-                        <div className="border-t border-border-dark"></div>
-                        <button
-                          onClick={() => handleDelete(hotel.id)}
-                          className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 transition-colors text-left font-medium"
-                        >
-                          <span className="material-symbols-outlined text-[18px]">delete</span>
-                          Delete Property
-                        </button>
-                      </div>
-                    )}
-                  </div>
+                </div>
+                {/* Actions menu - outside overflow-hidden so dropdown isn't clipped */}
+                <div className="absolute top-4 right-4 z-50" ref={openMenuId === hotel.id ? menuRef : null}>
+                  <button 
+                    onClick={() => setOpenMenuId(openMenuId === hotel.id ? null : hotel.id)}
+                    className="size-10 flex items-center justify-center rounded-full bg-black/60 backdrop-blur-md text-white hover:bg-primary transition-colors"
+                  >
+                    <span className="material-symbols-outlined">more_horiz</span>
+                  </button>
+                  {openMenuId === hotel.id && (
+                    <div className="absolute right-0 mt-2 w-48 rounded-xl shadow-2xl bg-surface-dark border border-border-dark z-50 overflow-hidden animate-in fade-in zoom-in duration-200">
+                      <button
+                        onClick={() => router.push(`/admin/hotels/edit/${hotel.id}`)}
+                        className="w-full flex items-center gap-3 px-4 py-3 text-sm text-white hover:bg-primary transition-colors text-left font-medium"
+                      >
+                        <span className="material-symbols-outlined text-[18px]">edit</span>
+                        Edit Property
+                      </button>
+                      <button
+                        onClick={() => handleStatusToggle(hotel.id, hotel.isActive)}
+                        disabled={isUpdating}
+                        className="w-full flex items-center gap-3 px-4 py-3 text-sm text-white hover:bg-white/5 transition-colors text-left"
+                      >
+                        <span className="material-symbols-outlined text-[18px]">
+                          {hotel.isActive ? 'visibility_off' : 'visibility'}
+                        </span>
+                        {hotel.isActive ? 'Deactivate' : 'Activate'}
+                      </button>
+                      <button
+                        onClick={() => router.push(`/hotels/${hotel.slug}`)}
+                        className="w-full flex items-center gap-3 px-4 py-3 text-sm text-white hover:bg-white/5 transition-colors text-left"
+                      >
+                        <span className="material-symbols-outlined text-[18px]">visibility</span>
+                        View Public Page
+                      </button>
+                      <div className="border-t border-border-dark"></div>
+                      <button
+                        onClick={() => handleDelete(hotel.id)}
+                        className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 transition-colors text-left font-medium"
+                      >
+                        <span className="material-symbols-outlined text-[18px]">delete</span>
+                        Delete Property
+                      </button>
+                    </div>
+                  )}
                 </div>
                 
                 <div className="p-6 flex flex-col flex-1">

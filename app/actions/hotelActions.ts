@@ -240,6 +240,11 @@ export async function deleteHotel(id: string) {
         where: { hotelId: id },
       });
 
+      // Delete wishlist items referencing this hotel
+      await tx.wishlistItem.deleteMany({
+        where: { itemType: 'hotel', itemId: id },
+      });
+
       // HotelRoom already has onDelete: Cascade so rooms are handled automatically.
       // Delete the hotel itself
       await tx.hotel.delete({ where: { id } });
@@ -248,9 +253,10 @@ export async function deleteHotel(id: string) {
     revalidatePath('/hotels');
     revalidatePath('/admin/hotels');
     return { success: true };
-  } catch (error) {
-    console.error("Error deleting hotel:", error);
-    return { success: false, error: "Failed to delete hotel. Please try again or contact support." };
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error("Error deleting hotel:", message);
+    return { success: false, error: message };
   }
 }
 export async function getRoomById(id: string) {

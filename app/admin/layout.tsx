@@ -1,4 +1,4 @@
-import { currentUser, auth } from '@clerk/nextjs/server';
+import { auth, clerkClient } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { AdminSidebarProvider } from '@/components/admin/AdminSidebarContext';
@@ -13,9 +13,12 @@ export default async function AdminLayout({
   
   let user = null;
   try {
-    user = await currentUser();
+    if (userId) {
+      const client = await clerkClient();
+      user = await client.users.getUser(userId);
+    }
   } catch (err) {
-    console.error("Clerk currentUser() Error in AdminLayout:", err);
+    console.error("Clerk getUser() Error in AdminLayout:", err);
   }
 
   // If not authenticated, redirect to login

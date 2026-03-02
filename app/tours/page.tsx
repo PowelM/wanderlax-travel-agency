@@ -28,6 +28,7 @@ interface DBTour {
   groupSizeMax: number;
   images: string[];
   status: string;
+  featured: boolean;
   destination: TourDestination;
   reviews: { rating: number }[];
 }
@@ -133,7 +134,7 @@ export default function ToursPage() {
     return matchesCategory && matchesSearch;
   });
 
-  const featuredTour = tours[0] ?? null;
+  const featuredTour = tours.find(t => t.featured) ?? tours[0] ?? null;
 
   if (loading) {
     return (

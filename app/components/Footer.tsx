@@ -5,8 +5,8 @@ import { usePathname } from 'next/navigation';
 export default function Footer() {
   const pathname = usePathname();
   
-  // Hide global footer on checkout page
-  if (pathname === '/portal/checkout') return null;
+  // Hide global footer on admin and checkout pages
+  if (pathname?.startsWith('/admin') || pathname === '/portal/checkout') return null;
 
   return (
     <footer className="bg-black border-t border-white/5 pt-12 pb-8 px-6 lg:px-10 relative overflow-hidden">

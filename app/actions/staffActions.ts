@@ -69,21 +69,53 @@ export async function toggleStaffStatus(id: string, isActive: boolean) {
 
 export async function deleteStaff(id: string) {
   try {
-    await prisma.user.delete({
-      where: { id }
-    });
+    // 1. Find bookings to delete their invoices/payments first
+    const bookings = await prisma.booking.findMany({ where: { userId: id }, select: { id: true } });
+    const bookingIds = bookings.map(b => b.id);
+    if (bookingIds.length > 0) {
+      await prisma.invoice.deleteMany({ where: { bookingId: { in: bookingIds } } });
+      await prisma.payment.deleteMany({ where: { bookingId: { in: bookingIds } } });
+      await prisma.booking.deleteMany({ where: { id: { in: bookingIds } } });
+    }
+
+    // 2. Delete sub-bookings (they have their own userId field)
+    const tourBookings = await prisma.tourBooking.findMany({ where: { userId: id }, select: { id: true } });
+    if (tourBookings.length > 0) {
+      await prisma.tourTraveler.deleteMany({ where: { tourBookingId: { in: tourBookings.map(t => t.id) } } });
+    }
+    await prisma.tourBooking.deleteMany({ where: { userId: id } });
+    await prisma.hotelBooking.deleteMany({ where: { userId: id } });
+    await prisma.carHireBooking.deleteMany({ where: { userId: id } });
+
+    // 3. Delete other user-owned records
+    await prisma.payment.deleteMany({ where: { userId: id } });
+    await prisma.review.deleteMany({ where: { userId: id } });
+    await prisma.notification.deleteMany({ where: { userId: id } });
+    await prisma.session.deleteMany({ where: { userId: id } });
+    await prisma.wishlistItem.deleteMany({ where: { userId: id } });
+    await prisma.activityLog.deleteMany({ where: { userId: id } });
+
+    // 4. Delete inquiry messages (uses senderId), then inquiries
+    await prisma.inquiryMessage.deleteMany({ where: { senderId: id } });
+    const inquiries = await prisma.inquiry.findMany({ where: { userId: id }, select: { id: true } });
+    if (inquiries.length > 0) {
+      await prisma.inquiryMessage.deleteMany({ where: { inquiryId: { in: inquiries.map(i => i.id) } } });
+    }
+    await prisma.inquiry.deleteMany({ where: { userId: id } });
+
+    // 5. Delete appointments (as client or consultant)
+    await prisma.appointment.deleteMany({ where: { OR: [{ clientId: id }, { consultantId: id }] } });
+
+    // 6. Delete staff profile (permissions cascade via schema onDelete)
+    await prisma.staffProfile.deleteMany({ where: { userId: id } });
+
+    // 7. Finally delete the user
+    await prisma.user.delete({ where: { id } });
+
+    revalidatePath("/admin/staff");
     return { success: true };
   } catch (error: unknown) {
     console.error("Error deleting staff:", error);
-    
-    // P2003 is Prisma's error code for foreign key constraint violation
-    if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'P2003') {
-      return { 
-        success: false, 
-        error: "Cannot delete this staff member because they have associated records (bookings, payments, etc.). Try deactivating them instead." 
-      };
-    }
-    
     const message = error instanceof Error ? error.message : "Unknown error";
     return { success: false, error: message };
   }

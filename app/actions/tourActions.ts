@@ -150,3 +150,19 @@ export async function deleteTour(id: string) {
     return { success: false, error: "Failed to delete tour" };
   }
 }
+
+export async function toggleTourFeatured(id: string, featured: boolean) {
+  try {
+    const updated = await prisma.tourPackage.update({
+      where: { id },
+      data: { featured },
+    });
+
+    revalidatePath("/admin/tours");
+    revalidatePath("/tours");
+    return { success: true, tour: JSON.parse(JSON.stringify(updated)) };
+  } catch (error) {
+    console.error("Error toggling tour featured:", error);
+    return { success: false, error: "Failed to update featured status" };
+  }
+}

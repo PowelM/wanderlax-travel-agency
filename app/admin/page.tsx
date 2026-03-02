@@ -6,6 +6,7 @@ import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { AdminHeader } from '@/components/admin/AdminHeader';
 import { NOTIFICATIONS } from '@/lib/notifications';
 import { getAdminBookings } from '@/app/actions/bookingActions';
+import { getAdminTours } from '@/app/actions/tourActions';
 
 import { Booking, User, TourBooking, HotelBooking, CarHireBooking } from '@prisma/client';
 
@@ -21,13 +22,19 @@ export default function WanderluxAdminDashboardOverviewPage() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [openDropdownId, setOpenDropdownId] = useState<number | null>(null);
   const [bookings, setBookings] = useState<AdminBooking[]>([]);
+  const [featuredTours, setFeaturedTours] = useState<{ id: string; title: string; images: string[]; destination: { name: string; country: string } }[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const data = await getAdminBookings();
-        setBookings(data || []);
+        const [bookingsData, toursData] = await Promise.all([
+          getAdminBookings(),
+          getAdminTours(),
+        ]);
+        setBookings(bookingsData || []);
+        const featured = (toursData || []).filter((t: { featured?: boolean }) => t.featured);
+        setFeaturedTours(featured);
       } catch (error) {
         console.error("Failed to fetch dashboard stats:", error);
       } finally {
@@ -165,11 +172,17 @@ export default function WanderluxAdminDashboardOverviewPage() {
 </div>
 </div>
 <div className="flex items-center gap-2 text-sm">
-<span className="text-green-500 flex items-center font-medium">
-<span className="material-symbols-outlined text-[16px]">trending_up</span>
-                                {loading ? '...' : '12.5%'}
-                            </span>
-<span className="text-slate-500">vs last month</span>
+{totalBookings > 0 ? (
+  <>
+    <span className="text-green-500 flex items-center gap-1 font-medium">
+      <span className="material-symbols-outlined text-[16px]">trending_up</span>
+      --% {/* TODO: Calculate actual MoM change */}
+    </span>
+    <span className="text-slate-500">vs last month (placeholder)</span>
+  </>
+) : (
+  <span className="text-slate-500">No data yet</span>
+)}
 </div>
 </div>
 {/* Card 2 */}
@@ -184,11 +197,17 @@ export default function WanderluxAdminDashboardOverviewPage() {
 </div>
 </div>
 <div className="flex items-center gap-2 text-sm">
-<span className="text-green-500 flex items-center font-medium">
-<span className="material-symbols-outlined text-[16px]">trending_up</span>
-                                {loading ? '...' : '8.2%'}
-                            </span>
-<span className="text-slate-500">vs last month</span>
+{totalRevenue > 0 ? (
+  <>
+    <span className="text-green-500 flex items-center gap-1 font-medium">
+      <span className="material-symbols-outlined text-[16px]">trending_up</span>
+      {loading ? '...' : '8.2%'}
+    </span>
+    <span className="text-slate-500">vs last month</span>
+  </>
+) : (
+  <span className="text-slate-500">No data yet</span>
+)}
 </div>
 </div>
 {/* Card 3 */}
@@ -358,6 +377,33 @@ export default function WanderluxAdminDashboardOverviewPage() {
          </div>
        );
     })}
+  </div>
+)}
+</div>
+{/* Featured Tours */}
+<div className="bg-surface-dark rounded-xl border border-border-dark p-6 shadow-lg shadow-black/20">
+<div className="flex justify-between items-center mb-4">
+  <h3 className="text-white text-lg font-bold">Featured Tours</h3>
+  <Link href="/admin/tours" className="text-primary text-xs font-medium hover:text-white transition-colors">Manage</Link>
+</div>
+{featuredTours.length === 0 ? (
+  <div className="flex flex-col items-center justify-center py-8 text-slate-500">
+    <span className="material-symbols-outlined text-4xl mb-2 opacity-50">star</span>
+    <p className="text-sm">No featured tours yet.</p>
+    <Link href="/admin/tours" className="text-primary text-xs mt-2 hover:text-white transition-colors">Go to Tours to feature one</Link>
+  </div>
+) : (
+  <div className="space-y-3">
+    {featuredTours.slice(0, 4).map((tour) => (
+      <Link key={tour.id} href={`/admin/tours`} className="flex items-center gap-3 p-2 rounded-lg hover:bg-background-dark transition-colors group">
+        <div className="size-10 rounded-lg bg-cover bg-center shrink-0" style={{ backgroundImage: `url('${tour.images?.[0] || 'https://via.placeholder.com/80'}')` }}></div>
+        <div className="flex-1 min-w-0">
+          <h4 className="text-white text-sm font-medium truncate group-hover:text-primary transition-colors">{tour.title}</h4>
+          <p className="text-xs text-slate-500">{tour.destination?.name}, {tour.destination?.country}</p>
+        </div>
+        <span className="material-symbols-outlined text-yellow-500 text-[16px] filled shrink-0">star</span>
+      </Link>
+    ))}
   </div>
 )}
 </div>

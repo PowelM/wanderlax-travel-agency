@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { updateTourStatus, deleteTour } from '@/app/actions/tourActions';
+import { updateTourStatus, deleteTour, toggleTourFeatured } from '@/app/actions/tourActions';
 import { useRouter } from 'next/navigation';
 import { AdminHeader } from '@/components/admin/AdminHeader';
 
@@ -21,6 +21,7 @@ type TourPackage = {
   included: string[];
   excluded: string[];
   images: string[];
+  featured: boolean;
   status: string;
   createdAt: string;
   updatedAt: string;
@@ -64,7 +65,7 @@ export function AdminToursClient({ initialTours }: { initialTours: TourPackage[]
       total: tours.length,
       published: tours.filter(t => t.status.toUpperCase() === 'PUBLISHED' || t.status.toUpperCase() === 'ACTIVE').length,
       drafts: tours.filter(t => t.status.toUpperCase() === 'DRAFT').length,
-      featured: tours.filter(t => t.destination?.featured).length,
+      featured: tours.filter(t => t.featured).length,
     };
   }, [tours]);
 
@@ -132,6 +133,18 @@ export function AdminToursClient({ initialTours }: { initialTours: TourPackage[]
       setTours(current => current.map(t => t.id === target.id ? { ...t, status: result.tour.status } : t));
     }
     
+    setIsUpdating(false);
+    setOpenMenuId(null);
+  };
+
+  const handleFeaturedToggle = async (tourId: string) => {
+    const target = tours.find(t => t.id === tourId);
+    if (!target || isUpdating) return;
+    setIsUpdating(true);
+    const result = await toggleTourFeatured(tourId, !target.featured);
+    if (result.success) {
+      setTours(current => current.map(t => t.id === tourId ? { ...t, featured: !t.featured } : t));
+    }
     setIsUpdating(false);
     setOpenMenuId(null);
   };
@@ -268,10 +281,9 @@ export function AdminToursClient({ initialTours }: { initialTours: TourPackage[]
             </div>
           </div>
 
-          {/* Data Table */}
           <div className="flex-1 overflow-auto px-6 pb-6 pt-0">
-            <div className="min-w-full inline-block align-middle">
-              <div className="border rounded-xl border-border-dark overflow-hidden bg-surface-dark">
+            <div className="min-w-full inline-block align-middle pb-48">
+              <div className="border rounded-xl border-border-dark overflow-visible bg-surface-dark">
                 <table className="min-w-full divide-y divide-border-dark">
                   <thead className="bg-background-dark">
                     <tr>
@@ -312,7 +324,12 @@ export function AdminToursClient({ initialTours }: { initialTours: TourPackage[]
                                 style={{ backgroundImage: `url('${tour.images?.[0] || 'https://images.unsplash.com/photo-1542051812871-75f56cc4cf7b?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80'}')` }}
                               ></div>
                               <div>
-                                <div className="text-sm font-medium text-white">{tour.title}</div>
+                                <div className="text-sm font-medium text-white flex items-center gap-1.5">
+                                  {tour.title}
+                                  {tour.featured && (
+                                    <span className="material-symbols-outlined text-yellow-500 text-[16px] filled" title="Featured">star</span>
+                                  )}
+                                </div>
                                 <div className="text-xs text-text-secondary capitalize">{tour.category.charAt(0) + tour.category.slice(1).toLowerCase()}</div>
                               </div>
                             </div>
@@ -355,6 +372,15 @@ export function AdminToursClient({ initialTours }: { initialTours: TourPackage[]
                                       {tour.status.toUpperCase() === 'ACTIVE' || tour.status.toUpperCase() === 'PUBLISHED' ? 'unpublished' : 'publish'}
                                     </span>
                                     {tour.status.toUpperCase() === 'ACTIVE' || tour.status.toUpperCase() === 'PUBLISHED' ? 'Set to Draft' : 'Publish'}
+                                  </button>
+                                  <button
+                                    onClick={() => handleFeaturedToggle(tour.id)}
+                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-white hover:bg-background-dark transition-colors text-left"
+                                  >
+                                    <span className={`material-symbols-outlined text-[18px] ${tour.featured ? 'text-yellow-500 filled' : 'text-text-secondary'}`}>
+                                      star
+                                    </span>
+                                    {tour.featured ? 'Remove Featured' : 'Set as Featured'}
                                   </button>
                                   <div className="border-t border-border-dark"></div>
                                   <button

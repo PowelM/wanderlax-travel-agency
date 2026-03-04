@@ -193,7 +193,7 @@ export default function ContactWanderluxGetInTouchPage() {
             <div className="pt-8">
               <p className="text-xs text-text-muted/60 font-sans">
                 © 2025 Wanderlux Travel. All rights reserved. <br/>
-                <Link className="hover:text-primary transition-colors" href="/about">Privacy Policy</Link> • <Link className="hover:text-primary transition-colors" href="/about">Terms of Service</Link>
+                <Link className="hover:text-primary transition-colors" href="/about">Privacy Policy</Link> • <Link className="hover:text-primary transition-colors" href="/terms">Terms of Service</Link>
               </p>
             </div>
           </div>

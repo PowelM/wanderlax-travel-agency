@@ -92,7 +92,7 @@ export default function Footer() {
           </p>
           <div className="flex gap-8">
             <Link className="text-slate-500 hover:text-white text-[10px] font-bold uppercase tracking-widest transition-colors" href="/about">Privacy</Link>
-            <Link className="text-slate-500 hover:text-white text-[10px] font-bold uppercase tracking-widest transition-colors" href="/about">Terms</Link>
+            <Link className="text-slate-500 hover:text-white text-[10px] font-bold uppercase tracking-widest transition-colors" href="/terms">Terms</Link>
             <Link className="text-slate-500 hover:text-white text-[10px] font-bold uppercase tracking-widest transition-colors" href="/tours">Sitemap</Link>
           </div>
         </div>

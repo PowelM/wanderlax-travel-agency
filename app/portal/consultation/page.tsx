@@ -158,7 +158,7 @@ export default function ConsultationPage() {
                     {!isSubmitting && <span className="material-symbols-outlined text-sm">arrow_forward</span>}
                   </button>
                   <p className="text-xs text-center text-slate-400 dark:text-[#b99d9d] mt-2">
-                    By booking, you agree to our <Link className="underline hover:text-primary" href="/about">Terms of Service</Link>.
+                    By booking, you agree to our <Link className="underline hover:text-primary" href="/terms">Terms of Service</Link>.
                   </p>
                 </form>
               </div>

@@ -85,7 +85,7 @@ export default function WanderluxLoginPage() {
         <div className="mt-8 text-center text-xs text-slate-500">
           <p>© 2025 Wanderlux Travel. Secure Access.</p>
           <div className="mt-2 flex justify-center space-x-4">
-            <Link className="hover:text-primary transition-colors" href="/about">Privacy Policy</Link>
+            <Link className="hover:text-primary transition-colors" href="/privacy">Privacy Policy</Link>
             <span className="text-slate-700">|</span>
             <Link className="hover:text-primary transition-colors" href="/contact">Support</Link>
           </div>

@@ -91,7 +91,7 @@ export default function Footer() {
             &copy; 2026 Wanderlux Bespoke Travel. All Rights Reserved. Protected by Global Concierge Standards.
           </p>
           <div className="flex gap-8">
-            <Link className="text-slate-500 hover:text-white text-[10px] font-bold uppercase tracking-widest transition-colors" href="/about">Privacy</Link>
+            <Link className="text-slate-500 hover:text-white text-[10px] font-bold uppercase tracking-widest transition-colors" href="/privacy">Privacy</Link>
             <Link className="text-slate-500 hover:text-white text-[10px] font-bold uppercase tracking-widest transition-colors" href="/terms">Terms</Link>
             <Link className="text-slate-500 hover:text-white text-[10px] font-bold uppercase tracking-widest transition-colors" href="/tours">Sitemap</Link>
           </div>

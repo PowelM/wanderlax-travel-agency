@@ -306,7 +306,7 @@ export default function ItineraryDetailCustomerViewPage() {
 <h5 className="font-bold uppercase tracking-widest text-xs mb-8 text-primary">Legal</h5>
 <ul className="space-y-4 text-white/50 font-medium">
 <li><Link className="hover:text-white transition-colors" href="/terms">Terms of Service</Link></li>
-<li><Link className="hover:text-white transition-colors" href="/about">Privacy Policy</Link></li>
+<li><Link className="hover:text-white transition-colors" href="/privacy">Privacy Policy</Link></li>
 <li><Link className="hover:text-white transition-colors" href="/about">Booking Conditions</Link></li>
 </ul>
 </div>

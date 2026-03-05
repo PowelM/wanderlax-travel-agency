@@ -34,6 +34,8 @@ model User {
   staffProfile           StaffProfile?
   tourBookings           TourBooking[]
   wishlistItems          WishlistItem[]
+  tickets                Ticket[]
+  eventWaitlistEntries   EventWaitlist[]
 
   @@index([email])
   @@index([role])
@@ -355,10 +357,13 @@ model Booking {
   appointment      Appointment?    @relation("AppointmentBooking", fields: [appointmentId], references: [id])
   carHireBooking   CarHireBooking? @relation("CarBooking", fields: [carHireBookingId], references: [id])
   hotelBooking     HotelBooking?   @relation("HotelBooking", fields: [hotelBookingId], references: [id])
-  tourBooking      TourBooking?    @relation("TourBooking", fields: [tourBookingId], references: [id])
-  user             User            @relation(fields: [userId], references: [id])
-  invoice          Invoice?
-  payments         Payment[]
+  tourBooking       TourBooking?    @relation("TourBooking", fields: [tourBookingId], references: [id])
+  user              User            @relation(fields: [userId], references: [id])
+  invoice           Invoice?
+  payments          Payment[]
+  eventId           String?         
+  ticketQuantity    Int?
+  bundledTourBookingId String?       
 
   @@index([userId])
   @@index([serviceType])
@@ -550,6 +555,125 @@ model SiteSetting {
   updatedAt   DateTime @updatedAt
 }
 
+model Event {
+  id              String          @id @default(uuid())
+  title           String
+  slug            String          @unique
+  description     String
+  destination     String
+  startDate       DateTime
+  endDate         DateTime
+  totalCapacity   Int
+  category        EventCategory   @default(OTHER)
+  status          EventStatus     @default(DRAFT)
+  organizer       String?
+  images          String[]
+  highlights      String[]
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  ticketTypes     EventTicketType[]
+  seatingZones    EventSeating[]
+  tickets         Ticket[]
+  waitlist        EventWaitlist[]
+  refundPolicy    EventRefundPolicy?
+
+  @@index([slug])
+  @@index([status])
+  @@index([startDate])
+  @@index([category])
+}
+
+model EventTicketType {
+  id                    String        @id @default(uuid())
+  eventId               String
+  name                  String
+  basePrice             Decimal       @db.Decimal(10, 2)
+  maxQuantity           Int
+  earlyBirdEndDate      DateTime?
+  earlyBirdPrice        Decimal?      @db.Decimal(10, 2)
+  surgeThreshold        Int?
+  surgeMultiplier       Decimal?      @db.Decimal(5, 2)
+  quantitySold          Int           @default(0)
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+  event                 Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  tickets               Ticket[]
+
+  @@index([eventId])
+}
+
+model EventSeating {
+  id            String        @id @default(uuid())
+  eventId       String
+  sectionName   String
+  capacity      Int
+  bookedCount   Int           @default(0)
+  priceModifier Decimal       @default(1.0) @db.Decimal(5, 2)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  event         Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  tickets       Ticket[]
+
+  @@index([eventId])
+}
+
+model Ticket {
+  id              String        @id @default(uuid())
+  eventId         String
+  userId          String
+  ticketTypeId    String
+  seatSectionId   String?
+  attendeeName    String
+  attendeeEmail   String
+  pricePaid       Decimal       @db.Decimal(10, 2)
+  status          TicketStatus  @default(AVAILABLE)
+  qrCode          String?
+  createdAt       DateTime      @default(now())
+  issuedAt        DateTime?
+  refundedAt      DateTime?
+  event           Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ticketType      EventTicketType @relation(fields: [ticketTypeId], references: [id], onDelete: Cascade)
+  seatSection     EventSeating? @relation(fields: [seatSectionId], references: [id], onDelete: SetNull)
+
+  @@index([eventId])
+  @@index([userId])
+  @@index([status])
+  @@index([ticketTypeId])
+}
+
+model EventWaitlist {
+  id            String          @id @default(uuid())
+  eventId       String
+  userId        String
+  ticketTypeId  String
+  quantity      Int             @default(1)
+  position      Int
+  status        WaitlistStatus  @default(WAITING)
+  dateAdded     DateTime        @default(now())
+  promotedAt    DateTime?
+  expiredAt     DateTime?
+  event         Event           @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId, ticketTypeId])
+  @@index([eventId])
+  @@index([userId])
+  @@index([status])
+}
+
+model EventRefundPolicy {
+  id                          String   @id @default(uuid())
+  eventId                     String   @unique
+  cancellationDeadlineDays    Int      @default(7)
+  refundPercentageBeforeDeadline Int   @default(100)
+  refundPercentageAfterDeadline Int    @default(50)
+  refundPercentageAfterEvent  Int      @default(0)
+  createdAt                   DateTime @default(now())
+  updatedAt                   DateTime @updatedAt
+  event                       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+}
+
 enum Role {
   CUSTOMER
   CONSULTANT
@@ -586,6 +710,7 @@ enum ServiceType {
   TOUR_PACKAGE
   FLIGHT
   CUSTOM
+  EVENT
 }
 
 enum CarStatus {
@@ -648,5 +773,33 @@ enum InquiryStatus {
   NEW
   IN_PROGRESS
   RESOLVED
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  CANCELLED
+}
+
+enum EventCategory {
+  CONFERENCE
+  CONCERT
+  EXPERIENCE
+  WORKSHOP
+  OTHER
+}
+
+enum TicketStatus {
+  AVAILABLE
+  RESERVED
+  ISSUED
+  REFUNDED
+  CANCELLED
+}
+
+enum WaitlistStatus {
+  WAITING
+  PROMOTED
+  EXPIRED
   CLOSED
 }

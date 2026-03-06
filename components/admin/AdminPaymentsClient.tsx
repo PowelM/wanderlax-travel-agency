@@ -120,7 +120,7 @@ export default function AdminPaymentsClient() {
         setTransactions(prev => prev.map(t => 
           t.originalId === originalId ? { 
             ...t, 
-            status: newStatus === 'PAID' || newStatus === 'COMPLETED' ? 'Completed' : newStatus === 'PENDING' ? 'Pending' : 'Failed' 
+            status: newStatus === 'PAID' ? 'Completed' : newStatus === 'PENDING' ? 'Pending' : 'Failed' 
           } : t
         ));
       } else {

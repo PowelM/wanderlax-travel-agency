@@ -126,6 +126,17 @@ export async function createManualBooking(data: {
       }
     });
 
+    await prisma.payment.create({
+      data: {
+        bookingId: newBooking.id,
+        userId: user.id,
+        amount: data.totalAmount,
+        currency: "USD",
+        method: "CREDIT_CARD",
+        status: "PENDING",
+      }
+    });
+
     revalidatePath("/admin/bookings");
     return { success: true, booking: JSON.parse(JSON.stringify(newBooking)) };
   } catch (error) {
@@ -255,6 +266,17 @@ export async function createTourBooking(data: {
       }
     });
 
+    await prisma.payment.create({
+      data: {
+        bookingId: mainBooking.id,
+        userId: user.id,
+        amount: data.totalAmount,
+        currency: "USD",
+        method: "CREDIT_CARD",
+        status: "PENDING",
+      }
+    });
+
     // 5. Log Activity
     await prisma.activityLog.create({
       data: {
@@ -352,13 +374,24 @@ export async function createHotelBooking(data: {
       data: {
         bookingRef,
         userId: user.id,
-        serviceType: "HOTEL_STAY" as import("@prisma/client").ServiceType,
+        serviceType: "HOTEL",
         hotelBookingId: hotelBooking.id,
         status: "PENDING",
         paymentStatus: "PENDING",
         totalAmount: data.totalAmount,
         finalAmount: data.totalAmount,
         currency: "USD",
+      }
+    });
+
+    await prisma.payment.create({
+      data: {
+        bookingId: mainBooking.id,
+        userId: user.id,
+        amount: data.totalAmount,
+        currency: "USD",
+        method: "CREDIT_CARD",
+        status: "PENDING",
       }
     });
 
@@ -379,5 +412,121 @@ export async function createHotelBooking(data: {
   } catch (error) {
     console.error("Error creating hotel booking:", error);
     return { success: false, error: error instanceof Error ? error.message : "Failed to create booking" };
+  }
+}
+
+export async function createCarHireBooking(data: {
+  carId: string;
+  pickupLocation: string;
+  dropoffLocation: string;
+  pickupDateTime: string;
+  returnDateTime: string;
+  notes?: string;
+  clerkId: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  avatarUrl?: string;
+}) {
+  try {
+    // 1. Identify or Create User
+    let user = await prisma.user.findUnique({ where: { clerkId: data.clerkId } });
+
+    if (!user) {
+      user = await prisma.user.findUnique({ where: { email: data.email } });
+      if (user) {
+        user = await prisma.user.update({
+          where: { id: user.id },
+          data: { clerkId: data.clerkId }
+        });
+      } else {
+        user = await prisma.user.create({
+          data: {
+            clerkId: data.clerkId,
+            email: data.email,
+            firstName: data.firstName,
+            lastName: data.lastName,
+            avatarUrl: data.avatarUrl,
+            role: "CUSTOMER",
+          }
+        });
+      }
+    }
+
+    // 2. Fetch Car to get daily rate
+    const car = await prisma.car.findUnique({
+      where: { id: data.carId }
+    });
+    if (!car) throw new Error("Car not found");
+
+    const pickupDate = new Date(data.pickupDateTime);
+    const returnDate = new Date(data.returnDateTime);
+    const totalDays = Math.max(1, Math.ceil((returnDate.getTime() - pickupDate.getTime()) / (1000 * 60 * 60 * 24)));
+    const dailyRate = Number(car.dailyRate);
+    const totalAmount = dailyRate * totalDays;
+
+    // 3. Create CarHireBooking
+    const carHireBooking = await prisma.carHireBooking.create({
+      data: {
+        userId: user.id,
+        carId: car.id,
+        pickupLocation: data.pickupLocation,
+        dropoffLocation: data.dropoffLocation,
+        pickupDateTime: pickupDate,
+        returnDateTime: returnDate,
+        totalDays,
+        dailyRate: car.dailyRate,
+        totalAmount,
+        status: "PENDING",
+        notes: data.notes,
+      }
+    });
+
+    // 4. Create Main Booking record
+    const bookingRef = `WL-C-${Math.floor(1000 + Math.random() * 9000)}`;
+    const mainBooking = await prisma.booking.create({
+      data: {
+        bookingRef,
+        userId: user.id,
+        serviceType: "CAR_HIRE",
+        carHireBookingId: carHireBooking.id,
+        status: "PENDING",
+        paymentStatus: "PENDING",
+        totalAmount,
+        finalAmount: totalAmount,
+        currency: "USD",
+      }
+    });
+
+    await prisma.payment.create({
+      data: {
+        bookingId: mainBooking.id,
+        userId: user.id,
+        amount: totalAmount,
+        currency: "USD",
+        method: "CREDIT_CARD",
+        status: "PENDING",
+      }
+    });
+
+    // 5. Log Activity
+    await prisma.activityLog.create({
+      data: {
+        userId: user.id,
+        module: "BOOKINGS",
+        action: "CREATE",
+        details: { bookingRef, carMake: car.make, carModel: car.model }
+      }
+    });
+
+    revalidatePath("/portal/dashboard");
+    revalidatePath("/admin/bookings");
+    revalidatePath("/admin");
+    revalidatePath("/car-hire");
+
+    return { success: true, booking: JSON.parse(JSON.stringify(mainBooking)) };
+  } catch (error) {
+    console.error("Error creating car hire booking:", error);
+    return { success: false, error: error instanceof Error ? error.message : "Failed to create car hire booking" };
   }
 }

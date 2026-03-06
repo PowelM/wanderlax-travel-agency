@@ -80,3 +80,29 @@ export async function createManualInvoice(data: { bookingId: string, dueDate: Da
     return { success: false, error: error instanceof Error ? error.message : "An unknown error occurred" };
   }
 }
+
+export async function updatePaymentStatus(paymentId: string, status: PaymentStatus) {
+  try {
+    const payment = await prisma.payment.update({
+      where: { id: paymentId },
+      data: { status },
+      include: { booking: true }
+    });
+
+    if (payment.bookingId) {
+       await prisma.booking.update({
+         where: { id: payment.bookingId },
+         data: { paymentStatus: status }
+       });
+    }
+
+    revalidatePath('/admin/payments');
+    revalidatePath('/admin/bookings');
+    revalidatePath('/admin');
+    
+    return { success: true, payment: JSON.parse(JSON.stringify(payment)) };
+  } catch (error: unknown) {
+    console.error("Error updating payment status:", error);
+    return { success: false, error: error instanceof Error ? error.message : "Failed to update payment status" };
+  }
+}

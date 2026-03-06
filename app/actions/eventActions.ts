@@ -158,13 +158,13 @@ export async function updateEvent(
     const user = await currentUser();
     if (!user) throw new Error("Unauthorized");
 
-    const dbUser = await prisma.user.findUnique({
+    const dbUser = await (prisma as any).user.findUnique({
       where: { clerkId: user.id },
     });
 
     if (!dbUser) throw new Error("User not found in database");
 
-    const event = await prisma.event.update({
+    const event = await (prisma as any).event.update({
       where: { id: eventId },
       data: {
         ...(data.title && { title: data.title }),
@@ -311,7 +311,7 @@ export async function cancelEvent(eventId: string, reason?: string) {
 
 export async function getAdminEvents() {
   try {
-    const events = await prisma.event.findMany({
+    const events = await (prisma as any).event.findMany({
       include: {
         ticketTypes: true,
         seatingZones: true,
@@ -325,15 +325,15 @@ export async function getAdminEvents() {
 
     return {
       success: true,
-      events: events.map((e) => ({
+      events: events.map((e: any) => ({
         ...e,
-        ticketTypes: e.ticketTypes.map((t) => ({
+        ticketTypes: e.ticketTypes.map((t: any) => ({
           ...t,
           basePrice: typeof t.basePrice === 'object' && t.basePrice !== null ? Number(t.basePrice) : t.basePrice,
           earlyBirdPrice: t.earlyBirdPrice ? Number(t.earlyBirdPrice) : null,
           surgeMultiplier: t.surgeMultiplier ? Number(t.surgeMultiplier) : null,
         })),
-        seatingZones: e.seatingZones.map((z) => ({
+        seatingZones: e.seatingZones.map((z: any) => ({
           ...z,
           priceModifier: typeof z.priceModifier === 'object' && z.priceModifier !== null ? Number(z.priceModifier) : z.priceModifier,
         })),
@@ -350,7 +350,7 @@ export async function getAdminEvents() {
 
 export async function getPublicEvents() {
   try {
-    const events = await prisma.event.findMany({
+    const events = await (prisma as any).event.findMany({
       where: { status: "PUBLISHED" },
       include: {
         ticketTypes: true,
@@ -389,7 +389,7 @@ export async function getPublicEvents() {
 
 export async function getEventBySlug(slug: string) {
   try {
-    const event = await prisma.event.findUnique({
+    const event = await (prisma as any).event.findUnique({
       where: { slug },
       include: {
         ticketTypes: true,
@@ -405,14 +405,14 @@ export async function getEventBySlug(slug: string) {
 
     return {
       ...event,
-      ticketTypes: event.ticketTypes.map((t) => ({
+      ticketTypes: event.ticketTypes.map((t: any) => ({
         ...t,
         basePrice: typeof t.basePrice === 'object' && t.basePrice !== null ? Number(t.basePrice) : t.basePrice,
         earlyBirdPrice: t.earlyBirdPrice ? Number(t.earlyBirdPrice) : null,
         surgeMultiplier: t.surgeMultiplier ? Number(t.surgeMultiplier) : null,
-        quantitySold: event.tickets.filter((tick) => tick.ticketTypeId === t.id && tick.status !== 'CANCELLED').length,
+        quantitySold: event.tickets.filter((tick: any) => tick.ticketTypeId === t.id && tick.status !== 'CANCELLED').length,
       })),
-      seatingZones: event.seatingZones.map((z) => ({
+      seatingZones: event.seatingZones.map((z: any) => ({
         ...z,
         priceModifier: typeof z.priceModifier === 'object' && z.priceModifier !== null ? Number(z.priceModifier) : z.priceModifier,
       })),
@@ -428,7 +428,7 @@ export async function getEventBySlug(slug: string) {
 
 export async function getEventById(eventId: string) {
   try {
-    const event = await prisma.event.findUnique({
+    const event = await (prisma as any).event.findUnique({
       where: { id: eventId },
       include: {
         ticketTypes: true,
@@ -447,13 +447,13 @@ export async function getEventById(eventId: string) {
       success: true,
       event: {
         ...event,
-        ticketTypes: event.ticketTypes.map((t) => ({
+        ticketTypes: event.ticketTypes.map((t: any) => ({
           ...t,
           basePrice: Number(t.basePrice),
           earlyBirdPrice: t.earlyBirdPrice ? Number(t.earlyBirdPrice) : null,
           surgeMultiplier: t.surgeMultiplier ? Number(t.surgeMultiplier) : null,
         })),
-        seatingZones: event.seatingZones.map((z) => ({
+        seatingZones: event.seatingZones.map((z: any) => ({
           ...z,
           priceModifier: Number(z.priceModifier),
         })),
@@ -474,7 +474,7 @@ export async function deleteEvent(eventId: string) {
     if (!user) throw new Error("Unauthorized");
 
     // Check if there are any active tickets before deleting
-    const ticketsCount = await prisma.ticket.count({
+    const ticketsCount = await (prisma as any).ticket.count({
       where: {
         eventId,
         status: { in: ["RESERVED", "ISSUED"] }
@@ -541,7 +541,7 @@ async function applyDynamicPricing(
   bookingDate: Date = new Date()
 ): Promise<number> {
   try {
-    const ticketType = await prisma.eventTicketType.findUnique({
+    const ticketType = await (prisma as any).eventTicketType.findUnique({
       where: { id: ticketTypeId },
       include: { event: true },
     });
@@ -611,7 +611,7 @@ export async function createTicketBooking(data: {
     }
 
     // Get event
-    const event = await prisma.event.findUnique({
+    const event = await (prisma as any).event.findUnique({
       where: { slug: data.eventSlug },
       include: {
         ticketTypes: true,
@@ -625,7 +625,7 @@ export async function createTicketBooking(data: {
       throw new Error("Event is not available for booking");
 
     // Get ticket type
-    const ticketType = await prisma.eventTicketType.findUnique({
+    const ticketType = await (prisma as any).eventTicketType.findUnique({
       where: { id: data.ticketTypeId },
     });
 
@@ -681,7 +681,7 @@ export async function createTicketBooking(data: {
       data: {
         bookingRef,
         userId: user.id,
-        serviceType: "EVENT",
+        serviceType: "EVENT" as any,
         status: "PENDING",
         paymentStatus: "PENDING",
         totalAmount: new Decimal(totalAmount),
@@ -712,14 +712,14 @@ export async function createTicketBooking(data: {
     );
 
     // Update ticket type sold count
-    await prisma.eventTicketType.update({
+    await (prisma as any).eventTicketType.update({
       where: { id: data.ticketTypeId },
       data: { quantitySold: { increment: data.quantity } },
     });
 
     // Update seating if applicable
     if (data.seatSectionId) {
-      await prisma.eventSeating.update({
+      await (prisma as any).eventSeating.update({
         where: { id: data.seatSectionId },
         data: { bookedCount: { increment: data.quantity } },
       });
@@ -787,7 +787,7 @@ export async function addToWaitlist(data: {
     }
 
     // Get event
-    const event = await prisma.event.findUnique({
+    const event = await (prisma as any).event.findUnique({
       where: { slug: data.eventSlug },
     });
 
@@ -805,7 +805,7 @@ export async function addToWaitlist(data: {
     const position = (lastWaitlist?.position || 0) + 1;
 
     // Create waitlist entry
-    const waitlistEntry = await prisma.eventWaitlist.create({
+    const waitlistEntry = await (prisma as any).eventWaitlist.create({
       data: {
         eventId: event.id,
         userId: user.id,
@@ -844,7 +844,7 @@ export async function addToWaitlist(data: {
 
 export async function getEventWaitlist(eventId: string) {
   try {
-    const waitlist = await prisma.eventWaitlist.findMany({
+    const waitlist = await (prisma as any).eventWaitlist.findMany({
       where: { eventId },
       include: { user: true },
       orderBy: { position: "asc" },
@@ -874,7 +874,7 @@ export async function promoteFromWaitlist(
     });
 
     for (const entry of waitlistEntries) {
-      await prisma.eventWaitlist.update({
+      await (prisma as any).eventWaitlist.update({
         where: { id: entry.id },
         data: {
           status: "PROMOTED",
@@ -902,18 +902,18 @@ export async function processRefund(
   reason?: string
 ) {
   try {
-    const booking = await prisma.booking.findUnique({
+    const booking = await (prisma as any).booking.findUnique({
       where: { id: bookingId },
       include: {
         user: true,
       },
     });
 
-    if (!booking || !booking.eventId)
-      throw new Error("Booking not found");
+    if (!booking || !(booking as any).eventId)
+      throw new Error("Invalid booking or no event associated");
 
-    const event = await prisma.event.findUnique({
-      where: { id: booking.eventId },
+    const event = await (prisma as any).event.findUnique({
+      where: { id: (booking as any).eventId },
       include: { refundPolicy: true },
     });
 
@@ -952,7 +952,7 @@ export async function processRefund(
     });
 
     // Update ticket statuses and free up capacity
-    const tickets = await prisma.ticket.findMany({
+    const tickets = await (prisma as any).ticket.findMany({
       where: {
         eventId: booking.eventId,
         userId: booking.userId,
@@ -961,7 +961,7 @@ export async function processRefund(
     });
 
     for (const ticket of tickets) {
-      await prisma.ticket.update({
+      await (prisma as any).ticket.update({
         where: { id: ticket.id },
         data: {
           status: "REFUNDED",
@@ -971,7 +971,7 @@ export async function processRefund(
 
       // Free up seating
       if (ticket.seatSectionId) {
-        await prisma.eventSeating.update({
+        await (prisma as any).eventSeating.update({
           where: { id: ticket.seatSectionId },
           data: { bookedCount: { decrement: 1 } },
         });
@@ -980,7 +980,7 @@ export async function processRefund(
 
     // Decrement ticket type sold count
     if (booking.ticketQuantity) {
-      await prisma.eventTicketType.updateMany({
+      await (prisma as any).eventTicketType.updateMany({
         where: {
           eventId: booking.eventId,
         },
@@ -1069,7 +1069,8 @@ export async function createBundledEventTourBooking(data: {
     }
 
     // Import and call tour booking (avoid circular dependency)
-    const { createTourBooking } = require('./tourActions');
+    const bookingActions = await import('./bookingActions');
+    const { createTourBooking } = bookingActions;
 
     const tourResult = await createTourBooking({
       tourSlug: data.tourSlug,
@@ -1099,7 +1100,7 @@ export async function createBundledEventTourBooking(data: {
       });
 
       if (eventBooking) {
-        await prisma.booking.update({
+        await (prisma as any).booking.update({
           where: { id: eventBooking.id },
           data: {
             bundledTourBookingId: (tourResult as any).booking.id,

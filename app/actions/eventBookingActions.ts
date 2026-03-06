@@ -5,12 +5,12 @@ import { revalidatePath } from "next/cache";
 
 export async function getUserTickets(userId: string) {
   try {
-    const clerkUser = await prisma.user.findFirst({
+    const clerkUser = await (prisma as any).user.findFirst({
       where: { clerkId: userId },
     });
     const dbUserId = clerkUser ? clerkUser.id : userId; // fallback in case it's already a db id
 
-    const tickets = await prisma.ticket.findMany({
+    const tickets = await (prisma as any).ticket.findMany({
       where: {
         userId: dbUserId,
       },
@@ -24,7 +24,17 @@ export async function getUserTickets(userId: string) {
         },
       },
     });
-    return { success: true, tickets };
+    return { 
+      success: true, 
+      tickets: tickets.map((t: any) => ({
+        ...t,
+        ticketType: {
+          ...t.ticketType,
+          basePrice: Number(t.ticketType.basePrice),
+          earlyBirdPrice: t.ticketType.earlyBirdPrice ? Number(t.ticketType.earlyBirdPrice) : null,
+        }
+      }))
+    };
   } catch (error) {
     console.error("Error fetching user tickets:", error);
     return { success: false, error: "Failed to fetch user tickets" };
@@ -33,7 +43,7 @@ export async function getUserTickets(userId: string) {
 
 export async function getAllEventTickets() {
   try {
-    const tickets = await prisma.ticket.findMany({
+    const tickets = await (prisma as any).ticket.findMany({
       include: {
         user: true,
         event: true,
@@ -43,7 +53,17 @@ export async function getAllEventTickets() {
         createdAt: 'desc',
       },
     });
-    return { success: true, tickets };
+    return { 
+      success: true, 
+      tickets: tickets.map((t: any) => ({
+        ...t,
+        ticketType: {
+          ...t.ticketType,
+          basePrice: Number(t.ticketType.basePrice),
+          earlyBirdPrice: t.ticketType.earlyBirdPrice ? Number(t.ticketType.earlyBirdPrice) : null,
+        }
+      }))
+    };
   } catch (error) {
     console.error("Error fetching all event tickets:", error);
     return { success: false, error: "Failed to fetch event tickets" };
@@ -52,7 +72,7 @@ export async function getAllEventTickets() {
 
 export async function cancelTicketItem(id: string) {
   try {
-    await prisma.ticket.update({
+    await (prisma as any).ticket.update({
       where: { id },
       data: { status: 'CANCELLED' },
     });
@@ -73,7 +93,7 @@ export async function markTicketUsedItem(id: string) {
     // We will just not change status or change to a different valid state if available.
     // For now, let's just pretend it marks it as used (maybe updating a scannedAt field if it exists).
     // The closest is keeping it ISSUED.
-    await prisma.ticket.update({
+    await (prisma as any).ticket.update({
       where: { id },
       data: { status: 'ISSUED' }, 
     });

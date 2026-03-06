@@ -65,6 +65,14 @@ export function AdminSidebar() {
           <span className="material-symbols-outlined text-[24px]">map</span>
           <span className="text-sm font-medium">Tours</span>
         </Link>
+        <Link className={getLinkClasses("/admin/events")} href="/admin/events">
+          <span className="material-symbols-outlined text-[24px]">local_activity</span>
+          <span className="text-sm font-medium">Events</span>
+        </Link>
+        <Link className={getLinkClasses("/admin/tickets")} href="/admin/tickets">
+           <span className="material-symbols-outlined text-[24px]">confirmation_number</span>
+           <span className="text-sm font-medium">Tickets</span>
+        </Link>
         <Link className={getLinkClasses("/admin/fleet")} href="/admin/fleet">
           <span className="material-symbols-outlined text-[24px]">directions_car</span>
           <span className="text-sm font-medium">Rentals</span>

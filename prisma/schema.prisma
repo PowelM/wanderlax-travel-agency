@@ -34,6 +34,7 @@ model User {
   staffProfile           StaffProfile?
   tourBookings           TourBooking[]
   wishlistItems          WishlistItem[]
+  EventBooking           EventBooking[]
 
   @@index([email])
   @@index([role])
@@ -352,10 +353,12 @@ model Booking {
   hotelBookingId   String?         @unique
   tourBookingId    String?         @unique
   appointmentId    String?         @unique
+  eventBookingId   String?         @unique
   appointment      Appointment?    @relation("AppointmentBooking", fields: [appointmentId], references: [id])
   carHireBooking   CarHireBooking? @relation("CarBooking", fields: [carHireBookingId], references: [id])
   hotelBooking     HotelBooking?   @relation("HotelBooking", fields: [hotelBookingId], references: [id])
   tourBooking      TourBooking?    @relation("TourBooking", fields: [tourBookingId], references: [id])
+  eventBooking     EventBooking?   @relation("EventBooking", fields: [eventBookingId], references: [id])
   user             User            @relation(fields: [userId], references: [id])
   invoice          Invoice?
   payments         Payment[]
@@ -557,6 +560,66 @@ enum Role {
   SUPER_ADMIN
 }
 
+model Event {
+  id          String         @id @default(uuid())
+  title       String
+  slug        String         @unique
+  description String
+  category    EventCategory  @default(GENERAL)
+  status      EventStatus    @default(UPCOMING)
+  startDate   DateTime
+  endDate     DateTime
+  location    String
+  price       Decimal        @db.Decimal(10, 2)
+  capacity    Int
+  soldTickets Int            @default(0)
+  images      String[]
+  featured    Boolean        @default(false)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  bookings    EventBooking[]
+
+  @@index([slug])
+  @@index([status])
+  @@index([startDate])
+  @@index([category])
+}
+
+model EventBooking {
+  id          String        @id @default(uuid())
+  userId      String
+  eventId     String
+  ticketCount Int
+  totalAmount Decimal       @db.Decimal(10, 2)
+  status      BookingStatus @default(PENDING)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  booking     Booking?      @relation("EventBooking")
+  event       Event         @relation(fields: [eventId], references: [id])
+  user        User          @relation(fields: [userId], references: [id])
+  tickets     Ticket[]
+
+  @@index([userId])
+  @@index([eventId])
+  @@index([status])
+}
+
+model Ticket {
+  id             String       @id @default(uuid())
+  eventBookingId String
+  ticketNumber   String       @unique
+  attendeeName   String?
+  attendeeEmail  String?
+  status         TicketStatus @default(VALID)
+  qrCodeUrl      String?
+  scannedAt      DateTime?
+  eventBooking   EventBooking @relation(fields: [eventBookingId], references: [id], onDelete: Cascade)
+
+  @@index([ticketNumber])
+  @@index([status])
+  @@index([eventBookingId])
+}
+
 // Enums removed: ModuleType, PermissionLevel
 
 enum BookingStatus {
@@ -586,6 +649,7 @@ enum ServiceType {
   TOUR_PACKAGE
   FLIGHT
   CUSTOM
+  EVENT
 }
 
 enum CarStatus {
@@ -649,4 +713,26 @@ enum InquiryStatus {
   IN_PROGRESS
   RESOLVED
   CLOSED
+}
+
+enum EventStatus {
+  UPCOMING
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
+enum EventCategory {
+  CONCERT
+  WORKSHOP
+  FESTIVAL
+  CONFERENCE
+  EXHIBITION
+  GENERAL
+}
+
+enum TicketStatus {
+  VALID
+  USED
+  CANCELLED
 }

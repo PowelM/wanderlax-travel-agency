@@ -6,6 +6,7 @@ import { SignedIn, SignedOut, UserButton, useAuth } from '@clerk/nextjs';
 
 const experiencesLinks = [
   { label: 'Destinations', href: '/tours', icon: 'explore', desc: 'World-class bespoke journeys' },
+  { label: 'Exclusive Events', href: '/events', icon: 'local_activity', desc: 'Curated global experiences' },
   { label: 'Luxury Hotels', href: '/hotels', icon: 'hotel', desc: 'Handpicked five-star stays' },
   { label: 'Elite Fleet', href: '/car-hire', icon: 'directions_car', desc: 'Premium private transport' },
 ];
@@ -19,6 +20,7 @@ const companyLinks = [
 
 const adminLinks = [
   { label: 'Tours', href: '/admin/tours', icon: 'tour' },
+  { label: 'Events', href: '/admin/events', icon: 'event' },
   { label: 'Fleet', href: '/admin/fleet', icon: 'directions_car' },
   { label: 'Bookings', href: '/admin/bookings', icon: 'confirmation_number' },
   { label: 'Reports', href: '/admin/reports', icon: 'bar_chart' },

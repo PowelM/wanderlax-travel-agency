@@ -107,7 +107,7 @@ export default function CarHirePage() {
                       </div>
                     </div>
                     <Link
-                      href={`/app/car-hire/book?carId=${car.id}`}
+                      href={`/portal/book?carId=${car.id}`}
                       className="inline-flex h-10 px-6 items-center justify-center rounded-full bg-primary hover:bg-red-700 text-white text-xs font-bold transition-all shadow-lg shadow-primary/20"
                     >
                       Reserve Now

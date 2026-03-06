@@ -2,10 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
-import { getPaymentsData, createManualInvoice } from '@/app/actions/paymentActions';
+import { getPaymentsData, createManualInvoice, updatePaymentStatus } from '@/app/actions/paymentActions';
 
 interface Transaction {
   id: string;
+  originalId: string;
   bookingId: string;
   customer: string;
   email: string;
@@ -40,6 +41,7 @@ export default function AdminPaymentsClient() {
   const [filterStatus, setFilterStatus] = useState<string>('All');
   const [visibleCount, setVisibleCount] = useState(10);
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   // Modals state
   const [isAnalyticsModalOpen, setIsAnalyticsModalOpen] = useState(false);
@@ -64,6 +66,7 @@ export default function AdminPaymentsClient() {
           const item = p as any;
           return {
             id: item.id.slice(0, 8).toUpperCase(),
+            originalId: item.id,
             bookingId: item.bookingId || '',
             customer: item.booking?.user ? `${item.booking.user.firstName} ${item.booking.user.lastName}` : 'Guest Customer',
             email: item.booking?.user?.email || 'N/A',
@@ -108,6 +111,28 @@ export default function AdminPaymentsClient() {
   const filteredTransactions = transactions.filter(t => filterStatus === 'All' || t.status === filterStatus);
   const displayedTransactions = filteredTransactions.slice(0, visibleCount);
   const hasMore = visibleCount < filteredTransactions.length;
+
+  const handleStatusChange = async (originalId: string, newStatus: 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED') => {
+    setUpdatingId(originalId);
+    try {
+      const res = await updatePaymentStatus(originalId, newStatus);
+      if (res.success) {
+        setTransactions(prev => prev.map(t => 
+          t.originalId === originalId ? { 
+            ...t, 
+            status: newStatus === 'PAID' || newStatus === 'COMPLETED' ? 'Completed' : newStatus === 'PENDING' ? 'Pending' : 'Failed' 
+          } : t
+        ));
+      } else {
+        alert(res.error || "Failed to update status");
+      }
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : "An error occurred");
+    } finally {
+      setUpdatingId(null);
+      setOpenDropdownId(null);
+    }
+  };
 
   // Escape CSV values to prevent injection and handle special characters
   const escapeCSV = (value: string | number): string => {
@@ -374,13 +399,19 @@ export default function AdminPaymentsClient() {
                             <div className="text-[10px] text-slate-400 font-medium">{t.method}</div>
                           </td>
                           <td className="p-4">
-                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
-                              t.status === 'Completed' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20' :
-                              t.status === 'Pending' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20' :
-                              'bg-primary/10 text-primary border-primary/20'
-                            }`}>
-                              {t.status}
-                            </span>
+                            {updatingId === t.originalId ? (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border bg-slate-100 dark:bg-white/10 text-slate-500 border-slate-200 dark:border-white/20">
+                                <span className="material-symbols-outlined text-[14px] animate-spin">progress_activity</span> Updating...
+                              </span>
+                            ) : (
+                              <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
+                                t.status === 'Completed' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20' :
+                                t.status === 'Pending' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20' :
+                                'bg-primary/10 text-primary border-primary/20'
+                              }`}>
+                                {t.status}
+                              </span>
+                            )}
                           </td>
                           <td className="p-4 text-right">
                             <div className="relative inline-block text-left">
@@ -406,9 +437,25 @@ export default function AdminPaymentsClient() {
                                           <span className="material-symbols-outlined text-[16px]">mail</span> Resend Invoice
                                         </button>
                                         <div className="h-px bg-border-light dark:bg-white/5 my-1" />
+                                        <div className="px-4 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Update Status</div>
                                         <button 
-                                          onClick={() => { alert(`Processing refund for ${t.id}`); setOpenDropdownId(null); }}
+                                          onClick={() => handleStatusChange(t.originalId, 'PAID')}
+                                          className="w-full text-left px-4 py-2.5 text-xs text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 flex items-center gap-2 font-bold transition-colors">
+                                          <span className="material-symbols-outlined text-[16px]">check_circle</span> Mark as Paid
+                                        </button>
+                                        <button 
+                                          onClick={() => handleStatusChange(t.originalId, 'PENDING')}
+                                          className="w-full text-left px-4 py-2.5 text-xs text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-500/10 flex items-center gap-2 font-bold transition-colors">
+                                          <span className="material-symbols-outlined text-[16px]">schedule</span> Mark as Pending
+                                        </button>
+                                        <button 
+                                          onClick={() => handleStatusChange(t.originalId, 'FAILED')}
                                           className="w-full text-left px-4 py-2.5 text-xs text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 flex items-center gap-2 font-bold transition-colors">
+                                          <span className="material-symbols-outlined text-[16px]">cancel</span> Mark as Failed
+                                        </button>
+                                        <button 
+                                          onClick={() => handleStatusChange(t.originalId, 'REFUNDED')}
+                                          className="w-full text-left px-4 py-2.5 text-xs text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-500/10 flex items-center gap-2 font-bold transition-colors">
                                           <span className="material-symbols-outlined text-[16px]">undo</span> Process Refund
                                         </button>
                                      </div>

@@ -12,6 +12,16 @@ export interface CarFilters {
   fuelType?: string;
 }
 
+export async function getCarById(id: string) {
+  try {
+    const car = await prisma.car.findUnique({ where: { id } });
+    return car ? JSON.parse(JSON.stringify(car)) : null;
+  } catch (error) {
+    console.error("Error fetching car by id:", error);
+    return null;
+  }
+}
+
 export async function getCars(filters?: CarFilters) {
   try {
     const whereClause: Prisma.CarWhereInput = {

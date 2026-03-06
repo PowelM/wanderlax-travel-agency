@@ -18,7 +18,7 @@ interface EventDetail {
   capacityRemaining: number;
   category: string;
   status: string;
-  organizer?: string;
+  organizer?: string | null;
   images: string[];
   highlights: string[];
   isSoldOut: boolean;
@@ -28,8 +28,8 @@ interface EventDetail {
     basePrice: number;
     maxQuantity: number;
     quantitySold: number;
-    earlyBirdEndDate?: Date;
-    earlyBirdPrice?: number;
+    earlyBirdEndDate?: Date | null;
+    earlyBirdPrice?: number | null;
   }>;
   seatingZones?: Array<{
     id: string;
@@ -165,7 +165,7 @@ export default function EventDetailPage() {
       if (result.success) {
         setBookingSuccess(true);
         setTimeout(() => {
-          router.push(`/portal/book?bookingRef=${result.booking.bookingRef}`);
+          router.push(`/portal/book?bookingRef=${result.booking?.bookingRef}`);
         }, 2000);
       } else if (result.error === 'SOLD_OUT') {
         setShowBookingForm(false);

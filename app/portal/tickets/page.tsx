@@ -22,8 +22,8 @@ export default async function TicketsPage() {
     );
   }
 
-  const validTickets = tickets?.filter(t => t.status === 'VALID') || [];
-  const pastTickets = tickets?.filter(t => t.status !== 'VALID') || [];
+  const validTickets = tickets?.filter(t => t.status === 'ISSUED' || t.status === 'RESERVED') || [];
+  const pastTickets = tickets?.filter(t => t.status !== 'ISSUED' && t.status !== 'RESERVED') || [];
 
   return (
     <div className="max-w-[1200px] mx-auto p-6 lg:p-10 animate-fade-in-up">

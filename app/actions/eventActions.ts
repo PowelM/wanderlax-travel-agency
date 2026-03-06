@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { currentUser } from "@clerk/nextjs";
+import { currentUser } from "@clerk/nextjs/server";
 import { Decimal } from "@prisma/client/runtime/library";
 
 // ============ ADMIN ACTIONS ============
@@ -41,14 +41,37 @@ export async function createEvent(data: {
   };
 }) {
   try {
-    const user = await currentUser();
-    if (!user) throw new Error("Unauthorized");
+    const clerkUser = await currentUser();
+    if (!clerkUser) throw new Error("Unauthorized");
+
+    let dbUser = await prisma.user.findUnique({
+      where: { clerkId: clerkUser.id },
+    });
+
+    if (!dbUser) {
+      dbUser = await prisma.user.create({
+        data: {
+          clerkId: clerkUser.id,
+          email: clerkUser.emailAddresses[0]?.emailAddress || "",
+          firstName: clerkUser.firstName,
+          lastName: clerkUser.lastName,
+        },
+      });
+    }
+
+    // Ensure unique slug
+    let uniqueSlug = data.slug;
+    let counter = 1;
+    while (await prisma.event.findUnique({ where: { slug: uniqueSlug } })) {
+      uniqueSlug = `${data.slug}-${counter}`;
+      counter++;
+    }
 
     // Create Event
     const event = await prisma.event.create({
       data: {
         title: data.title,
-        slug: data.slug,
+        slug: uniqueSlug,
         description: data.description,
         destination: data.destination,
         startDate: data.startDate,
@@ -110,7 +133,7 @@ export async function createEvent(data: {
     // Log activity
     await prisma.activityLog.create({
       data: {
-        userId: user.id,
+        userId: dbUser.id,
         module: "EVENTS",
         action: "CREATE_EVENT",
         details: { eventId: event.id, title: event.title },
@@ -135,6 +158,12 @@ export async function updateEvent(
     const user = await currentUser();
     if (!user) throw new Error("Unauthorized");
 
+    const dbUser = await prisma.user.findUnique({
+      where: { clerkId: user.id },
+    });
+
+    if (!dbUser) throw new Error("User not found in database");
+
     const event = await prisma.event.update({
       where: { id: eventId },
       data: {
@@ -148,6 +177,54 @@ export async function updateEvent(
         ...(data.organizer !== undefined && { organizer: data.organizer }),
         ...(data.images && { images: data.images }),
         ...(data.highlights && { highlights: data.highlights }),
+        
+        // Handle Ticket Types
+        ...(data.ticketTypes && {
+          ticketTypes: {
+            deleteMany: {}, // Delete old ones (Be careful if tickets exist)
+            create: data.ticketTypes.map((tt) => ({
+              name: tt.name,
+              basePrice: new Decimal(tt.basePrice),
+              maxQuantity: tt.maxQuantity,
+              earlyBirdEndDate: tt.earlyBirdEndDate,
+              earlyBirdPrice: tt.earlyBirdPrice ? new Decimal(tt.earlyBirdPrice) : null,
+              surgeThreshold: tt.surgeThreshold,
+              surgeMultiplier: tt.surgeMultiplier ? new Decimal(tt.surgeMultiplier) : null,
+            })),
+          },
+        }),
+
+        // Handle Seating Zones
+        ...(data.seatingZones && {
+          seatingZones: {
+            deleteMany: {},
+            create: data.seatingZones.map((sz) => ({
+              sectionName: sz.sectionName,
+              capacity: sz.capacity,
+              priceModifier: sz.priceModifier ? new Decimal(sz.priceModifier) : new Decimal(1.0),
+            })),
+          },
+        }),
+
+        // Handle Refund Policy
+        ...(data.refundPolicy && {
+          refundPolicy: {
+            upsert: {
+              create: {
+                cancellationDeadlineDays: data.refundPolicy.cancellationDeadlineDays,
+                refundPercentageBeforeDeadline: data.refundPolicy.refundPercentageBeforeDeadline,
+                refundPercentageAfterDeadline: data.refundPolicy.refundPercentageAfterDeadline,
+                refundPercentageAfterEvent: data.refundPolicy.refundPercentageAfterEvent || 0,
+              },
+              update: {
+                cancellationDeadlineDays: data.refundPolicy.cancellationDeadlineDays,
+                refundPercentageBeforeDeadline: data.refundPolicy.refundPercentageBeforeDeadline,
+                refundPercentageAfterDeadline: data.refundPolicy.refundPercentageAfterDeadline,
+                refundPercentageAfterEvent: data.refundPolicy.refundPercentageAfterEvent || 0,
+              },
+            },
+          },
+        }),
       },
       include: {
         ticketTypes: true,
@@ -158,7 +235,7 @@ export async function updateEvent(
 
     await prisma.activityLog.create({
       data: {
-        userId: user.id,
+        userId: dbUser.id,
         module: "EVENTS",
         action: "UPDATE_EVENT",
         details: { eventId: event.id },
@@ -166,6 +243,7 @@ export async function updateEvent(
     });
 
     revalidatePath("/admin/events");
+    revalidatePath("/events");
     return { success: true, event };
   } catch (error) {
     console.error("Error updating event:", error);
@@ -245,13 +323,26 @@ export async function getAdminEvents() {
       orderBy: { createdAt: "desc" },
     });
 
-    return events.map((e) => ({
-      ...e,
-      ticketsSold: e.tickets.length,
-    }));
+    return {
+      success: true,
+      events: events.map((e) => ({
+        ...e,
+        ticketTypes: e.ticketTypes.map((t) => ({
+          ...t,
+          basePrice: typeof t.basePrice === 'object' && t.basePrice !== null ? Number(t.basePrice) : t.basePrice,
+          earlyBirdPrice: t.earlyBirdPrice ? Number(t.earlyBirdPrice) : null,
+          surgeMultiplier: t.surgeMultiplier ? Number(t.surgeMultiplier) : null,
+        })),
+        seatingZones: e.seatingZones.map((z) => ({
+          ...z,
+          priceModifier: typeof z.priceModifier === 'object' && z.priceModifier !== null ? Number(z.priceModifier) : z.priceModifier,
+        })),
+        ticketsSold: e.tickets.length,
+      }))
+    };
   } catch (error) {
     console.error("Error fetching admin events:", error);
-    return [];
+    return { success: false, events: [], error: String(error) };
   }
 }
 
@@ -303,28 +394,120 @@ export async function getEventBySlug(slug: string) {
       include: {
         ticketTypes: true,
         seatingZones: true,
-        tickets: {
-          where: { status: { in: ["AVAILABLE", "ISSUED"] } },
-        },
-        refundPolicy: true,
+        tickets: true,
       },
     });
 
     if (!event) return null;
 
-    const capacityRemaining =
-      event.totalCapacity - event.tickets.length;
+    const ticketsSold = event.tickets.filter((t) => t.status !== "CANCELLED").length;
+    const capacityRemaining = event.totalCapacity - ticketsSold;
 
     return {
       ...event,
+      ticketTypes: event.ticketTypes.map((t) => ({
+        ...t,
+        basePrice: typeof t.basePrice === 'object' && t.basePrice !== null ? Number(t.basePrice) : t.basePrice,
+        earlyBirdPrice: t.earlyBirdPrice ? Number(t.earlyBirdPrice) : null,
+        surgeMultiplier: t.surgeMultiplier ? Number(t.surgeMultiplier) : null,
+        quantitySold: event.tickets.filter((tick) => tick.ticketTypeId === t.id && tick.status !== 'CANCELLED').length,
+      })),
+      seatingZones: event.seatingZones.map((z) => ({
+        ...z,
+        priceModifier: typeof z.priceModifier === 'object' && z.priceModifier !== null ? Number(z.priceModifier) : z.priceModifier,
+      })),
+      ticketsSold,
       capacityRemaining,
       isSoldOut: capacityRemaining <= 0,
     };
   } catch (error) {
-    console.error("Error fetching event:", error);
+    console.error("Error fetching event by slug:", error);
     return null;
   }
 }
+
+export async function getEventById(eventId: string) {
+  try {
+    const event = await prisma.event.findUnique({
+      where: { id: eventId },
+      include: {
+        ticketTypes: true,
+        seatingZones: true,
+        tickets: true,
+        refundPolicy: true,
+      },
+    });
+
+    if (!event) return { success: false, error: 'Event not found' };
+
+    const ticketsSold = event.tickets.filter((t) => t.status !== "CANCELLED").length;
+    const capacityRemaining = event.totalCapacity - ticketsSold;
+
+    return {
+      success: true,
+      event: {
+        ...event,
+        ticketTypes: event.ticketTypes.map((t) => ({
+          ...t,
+          basePrice: Number(t.basePrice),
+          earlyBirdPrice: t.earlyBirdPrice ? Number(t.earlyBirdPrice) : null,
+          surgeMultiplier: t.surgeMultiplier ? Number(t.surgeMultiplier) : null,
+        })),
+        seatingZones: event.seatingZones.map((z) => ({
+          ...z,
+          priceModifier: Number(z.priceModifier),
+        })),
+        ticketsSold,
+        capacityRemaining,
+        isSoldOut: capacityRemaining <= 0,
+      }
+    };
+  } catch (error) {
+    console.error("Error fetching event by ID:", error);
+    return { success: false, error: 'Failed to fetch event' };
+  }
+}
+
+export async function deleteEvent(eventId: string) {
+  try {
+    const user = await currentUser();
+    if (!user) throw new Error("Unauthorized");
+
+    // Check if there are any active tickets before deleting
+    const ticketsCount = await prisma.ticket.count({
+      where: {
+        eventId,
+        status: { in: ["RESERVED", "ISSUED"] }
+      }
+    });
+
+    if (ticketsCount > 0) {
+      throw new Error("Cannot delete event with active bookings. Cancel the event instead.");
+    }
+
+    await prisma.event.delete({
+      where: { id: eventId }
+    });
+
+    await prisma.activityLog.create({
+      data: {
+        userId: user.id,
+        module: "EVENTS",
+        action: "DELETE_EVENT",
+        details: { eventId },
+      },
+    });
+
+    revalidatePath("/admin/events");
+    revalidatePath("/events");
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting event:", error);
+    return { success: false, error: String(error) };
+  }
+}
+
 
 // ============ PRICING LOGIC ============
 
@@ -390,7 +573,7 @@ async function applyDynamicPricing(
     return price;
   } catch (error) {
     console.error("Error applying dynamic pricing:", error);
-    return Number(ticketType?.basePrice || 0);
+    return 0;
   }
 }
 

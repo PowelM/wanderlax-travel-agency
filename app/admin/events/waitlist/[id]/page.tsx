@@ -17,7 +17,7 @@ export default function EventWaitlistPage() {
   useEffect(() => {
     async function loadData() {
       try {
-        const [waitlist, eventData] = await Promise.all([
+        const [waitlist] = await Promise.all([
           getEventWaitlist(eventId),
           // Need to fetch event by ID - you may need to add this action
         ]);

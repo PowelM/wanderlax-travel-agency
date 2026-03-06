@@ -1,42 +1,36 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { getAllEventBookings, markTicketUsed, cancelTicket } from '@/app/actions/eventBookingActions';
+import { getAllEventTickets, markTicketUsedItem, cancelTicketItem } from '@/app/actions/eventBookingActions';
 
 export default function AdminTicketsPage() {
-  const [bookings, setBookings] = useState<any[]>([]);
+  const [tickets, setTickets] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchBookings = async () => {
-      const { success, bookings: fetchedBookings } = await getAllEventBookings();
-      if (success && fetchedBookings) {
-        setBookings(fetchedBookings);
+    const fetchTickets = async () => {
+      const { success, tickets: fetchedTickets } = await getAllEventTickets();
+      if (success && fetchedTickets) {
+        setTickets(fetchedTickets);
       }
       setLoading(false);
     };
-    fetchBookings();
+    fetchTickets();
   }, []);
 
   const handleMarkUsed = async (ticketId: string) => {
-    const { success } = await markTicketUsed(ticketId);
+    const { success } = await markTicketUsedItem(ticketId);
     if (success) {
       // Optimistic update
-      setBookings(prev => prev.map(booking => ({
-        ...booking,
-        tickets: booking.tickets.map((t: any) => t.id === ticketId ? { ...t, status: 'USED' } : t)
-      })));
+      setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, status: 'USED' } : t));
     }
   };
 
   const handleCancelTicket = async (ticketId: string) => {
-    const { success } = await cancelTicket(ticketId);
+    const { success } = await cancelTicketItem(ticketId);
     if (success) {
       // Optimistic update
-      setBookings(prev => prev.map(booking => ({
-        ...booking,
-        tickets: booking.tickets.map((t: any) => t.id === ticketId ? { ...t, status: 'CANCELLED' } : t)
-      })));
+      setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, status: 'CANCELLED' } : t));
     }
   };
 
@@ -56,7 +50,7 @@ export default function AdminTicketsPage() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-white/5 border-b border-white/10 uppercase text-xs tracking-wider text-slate-400">
-                <th className="p-4 font-medium">Ticket #</th>
+                <th className="p-4 font-medium">Ticket ID</th>
                 <th className="p-4 font-medium">Event</th>
                 <th className="p-4 font-medium">Attendee</th>
                 <th className="p-4 font-medium">Purchaser</th>
@@ -65,22 +59,24 @@ export default function AdminTicketsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5 text-sm text-slate-300">
-              {bookings.flatMap(booking => booking.tickets.map((ticket: any) => (
+              {tickets.map((ticket: any) => (
                 <tr key={ticket.id} className="hover:bg-white/5 transition-colors group">
-                  <td className="p-4 font-mono font-medium text-white">{ticket.ticketNumber}</td>
+                  <td className="p-4 font-mono font-medium text-white">{ticket.id.substring(0, 8).toUpperCase()}</td>
                   <td className="p-4">
-                    <p className="font-bold text-white">{booking.event.title}</p>
-                    <p className="text-xs text-slate-500">{new Date(booking.event.startDate).toLocaleDateString()}</p>
+                    <p className="font-bold text-white">{ticket.event?.title || 'Unknown Event'}</p>
+                    {ticket.event?.startDate && (
+                      <p className="text-xs text-slate-500">{new Date(ticket.event.startDate).toLocaleDateString()}</p>
+                    )}
                   </td>
                   <td className="p-4 text-white">
-                    {ticket.attendeeName}
+                    {ticket.attendeeName || 'Not Specified'}
                   </td>
                   <td className="p-4">
-                    <p>{booking.user?.email || 'Unknown'}</p>
+                    <p>{ticket.user?.email || 'Unknown'}</p>
                   </td>
                   <td className="p-4">
                     <span className={`inline-flex px-2 py-1 rounded text-xs font-bold ${
-                      ticket.status === 'VALID' ? 'bg-green-500/20 text-green-400' :
+                      ticket.status === 'ISSUED' || ticket.status === 'RESERVED' ? 'bg-green-500/20 text-green-400' :
                       ticket.status === 'USED' ? 'bg-slate-500/20 text-slate-400' :
                       'bg-red-500/20 text-red-400'
                     }`}>
@@ -89,7 +85,7 @@ export default function AdminTicketsPage() {
                   </td>
                   <td className="p-4 text-right">
                     <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      {ticket.status === 'VALID' && (
+                      {(ticket.status === 'ISSUED' || ticket.status === 'RESERVED') && (
                         <>
                           <button 
                             onClick={() => handleMarkUsed(ticket.id)}
@@ -108,8 +104,8 @@ export default function AdminTicketsPage() {
                     </div>
                   </td>
                 </tr>
-              )))}
-              {bookings.length === 0 && (
+              ))}
+              {tickets.length === 0 && (
                 <tr>
                   <td colSpan={6} className="p-8 text-center text-slate-500">
                     No tickets sold yet.

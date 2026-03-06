@@ -60,7 +60,7 @@ export default function TicketsDashboardPage() {
       new Date().toLocaleDateString(),
     ]);
 
-    const csvContent = [headers.join(','), ...rows.map((row) => row.join(','))].join('\n');
+    const csvContent = [headers.join(','), ...rows.map((row: any[]) => row.join(','))].join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);

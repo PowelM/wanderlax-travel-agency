@@ -6,21 +6,29 @@ interface TicketItemProps {
 }
 
 export default function TicketItem({ ticket }: TicketItemProps) {
-  const { eventBooking, ticketNumber, attendeeName, status } = ticket;
-  const { event } = eventBooking;
+  const { event, id: ticketNumber, attendeeName, status } = ticket;
   const startDate = new Date(event.startDate);
 
-  const statusColors = {
-    VALID: 'bg-green-500/20 text-green-400 border-green-500/30',
+  const statusColors: Record<string, string> = {
+    ISSUED: 'bg-green-500/20 text-green-400 border-green-500/30',
+    RESERVED: 'bg-green-500/20 text-green-400 border-green-500/30', // treat RESERVED as valid for display
     USED: 'bg-slate-500/20 text-slate-400 border-slate-500/30',
     CANCELLED: 'bg-primary/20 text-primary border-primary/30',
+    REFUNDED: 'bg-primary/20 text-primary border-primary/30',
   };
 
-  const statusIcons = {
-    VALID: 'check_circle',
+  const statusIcons: Record<string, string> = {
+    ISSUED: 'check_circle',
+    RESERVED: 'hourglass_empty',
     USED: 'done_all',
     CANCELLED: 'cancel',
+    REFUNDED: 'undo',
   };
+
+  // Default colors/icons for unknown states
+  const colorClass = statusColors[status] || 'bg-slate-500/20 text-slate-400 border-slate-500/30';
+  const iconName = statusIcons[status] || 'info';
+  const isValid = status === 'ISSUED' || status === 'RESERVED';
 
   return (
     <div className="relative overflow-hidden rounded-3xl bg-white/5 border border-white/10 backdrop-blur-md group hover:border-white/20 transition-all duration-300">
@@ -43,8 +51,8 @@ export default function TicketItem({ ticket }: TicketItemProps) {
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 md:bg-gradient-to-r md:from-black/50 to-transparent"></div>
           
           <div className="absolute bottom-4 left-4">
-             <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-bold uppercase tracking-wider border ${statusColors[status as keyof typeof statusColors]}`}>
-               <span className="material-symbols-outlined text-[14px]">{statusIcons[status as keyof typeof statusIcons]}</span>
+             <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-bold uppercase tracking-wider border ${colorClass}`}>
+               <span className="material-symbols-outlined text-[14px]">{iconName}</span>
                {status}
              </div>
           </div>
@@ -82,7 +90,7 @@ export default function TicketItem({ ticket }: TicketItemProps) {
               </div>
               <div>
                 <p className="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-1">Ticket Type</p>
-                <p className="text-white font-medium">General Admission</p>
+                <p className="text-white font-medium">{ticket.ticketType?.name || 'General Admission'}</p>
               </div>
             </div>
           </div>
@@ -97,13 +105,12 @@ export default function TicketItem({ ticket }: TicketItemProps) {
           
           <div className="text-center mb-6">
             <p className="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-1">Ticket Number</p>
-            <p className="font-mono text-white text-sm tracking-wider bg-white/5 py-1 px-3 rounded border border-white/10">{ticketNumber}</p>
+            <p className="font-mono text-white text-sm tracking-wider bg-white/5 py-1 px-3 rounded border border-white/10">{ticketNumber.substring(0, 8).toUpperCase()}</p>
           </div>
           
-           <div className={`size-32 rounded-xl flex items-center justify-center relative overflow-hidden ${status === 'VALID' ? 'bg-white p-2' : 'bg-white/20 opacity-50 grayscale'}`}>
-             {status === 'VALID' ? (
+           <div className={`size-32 rounded-xl flex items-center justify-center relative overflow-hidden ${isValid ? 'bg-white p-2' : 'bg-white/20 opacity-50 grayscale'}`}>
+             {isValid ? (
                <div className="w-full h-full relative">
-                 {/* Placeholder for actual QR code rendering if needed via a library like qrcode.react */}
                  <Image src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${ticketNumber}`} alt="QR Code" fill className="object-contain" />
                </div>
              ) : (

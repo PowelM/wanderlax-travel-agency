@@ -1,15 +1,17 @@
 "use client";
 
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   publishEvent,
   cancelEvent,
-  getAdminEvents,
+  deleteEvent,
 } from '@/app/actions/eventActions';
 import { AdminHeader } from '@/components/admin/AdminHeader';
+import { toast } from 'react-hot-toast';
 
-type Event = {
+interface Event {
   id: string;
   title: string;
   slug: string;
@@ -20,411 +22,429 @@ type Event = {
   category: string;
   status: string;
   totalCapacity: number;
-  organizer?: string;
+  organizer?: string | null;
   images: string[];
   createdAt: Date | string;
   ticketsSold: number;
-  ticketTypes: Array<{ id: string; name: string; basePrice: number }>;
-};
+  ticketTypes: Array<{ 
+    id: string; 
+    name: string; 
+    basePrice: number;
+    quantitySold: number;
+    maxQuantity: number;
+  }>;
+}
 
 export function AdminEventsClient({ initialEvents }: { initialEvents: Event[] }) {
   const router = useRouter();
   const [events, setEvents] = useState<Event[]>(initialEvents);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('All');
-  const [statusFilter, setStatusFilter] = useState('All');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('ALL');
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
-  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
+  const [loading, setLoading] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
 
-  // Close dropdown on outside click
-  useEffect(() => {
-    const handleOutside = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setOpenMenuId(null);
-      }
-    };
-    document.addEventListener('mousedown', handleOutside);
-    return () => document.removeEventListener('mousedown', handleOutside);
-  }, []);
-
-  // Stats
-  const stats = useMemo(() => {
-    return {
-      total: events.length,
-      published: events.filter(e => e.status === 'PUBLISHED').length,
-      drafts: events.filter(e => e.status === 'DRAFT').length,
-      cancelled: events.filter(e => e.status === 'CANCELLED').length,
-    };
-  }, [events]);
-
-  // Filtered events
   const filteredEvents = useMemo(() => {
     return events.filter((event) => {
       const matchesSearch =
-        event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        event.destination.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesCategory =
-        categoryFilter === 'All' || event.category === categoryFilter;
+        event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        event.destination.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesStatus =
-        statusFilter === 'All' || event.status === statusFilter;
-
-      return matchesSearch && matchesCategory && matchesStatus;
+        statusFilter === 'ALL' || event.status === statusFilter;
+      return matchesSearch && matchesStatus;
     });
-  }, [events, searchQuery, categoryFilter, statusFilter]);
+  }, [events, searchTerm, statusFilter]);
 
   const selectedEvent = events.find((e) => e.id === selectedEventId) || null;
 
-  const handlePublish = async (eventId: string) => {
-    setIsUpdating(true);
+  const handlePublish = async (id: string) => {
+    setLoading(true);
     try {
-      const result = await publishEvent(eventId);
+      const result = await publishEvent(id);
       if (result.success) {
         setEvents((prev) =>
-          prev.map((e) => (e.id === eventId ? { ...e, status: 'PUBLISHED' } : e))
+          prev.map((e) => (e.id === id ? { ...e, status: 'PUBLISHED' } : e))
         );
+        toast.success('Event published successfully');
+      } else {
+        toast.error(result.error || 'Failed to publish event');
       }
     } catch (error) {
       console.error('Error publishing event:', error);
+      toast.error('Error publishing event');
     } finally {
-      setIsUpdating(false);
-      setOpenMenuId(null);
+      setLoading(false);
     }
   };
 
-  const handleCancel = async (eventId: string) => {
-    setIsUpdating(true);
+  const handleCancel = async (id: string) => {
+    if (!confirm('Are you sure you want to cancel this event?')) return;
+    setLoading(true);
     try {
-      const result = await cancelEvent(eventId);
+      const result = await cancelEvent(id);
       if (result.success) {
         setEvents((prev) =>
-          prev.map((e) => (e.id === eventId ? { ...e, status: 'CANCELLED' } : e))
+          prev.map((e) => (e.id === id ? { ...e, status: 'CANCELLED' } : e))
         );
+        toast.success('Event cancelled');
+      } else {
+        toast.error(result.error || 'Failed to cancel event');
       }
     } catch (error) {
       console.error('Error cancelling event:', error);
+      toast.error('Error cancelling event');
     } finally {
-      setIsUpdating(false);
-      setOpenMenuId(null);
-      setDeleteConfirmId(null);
+      setLoading(false);
     }
   };
 
-  const handleExport = () => {
-    const headers = [
-      'Title',
-      'Category',
-      'Destination',
-      'Date',
-      'Capacity',
-      'Sold',
-      'Price',
-      'Status',
-      'Created',
-    ];
-
-    const rows = filteredEvents.map((event) => [
-      `"${event.title.replace(/"/g, '""')}"`,
-      event.category,
-      event.destination,
-      new Date(event.startDate).toLocaleDateString(),
-      event.totalCapacity,
-      event.ticketsSold,
-      event.ticketTypes[0]?.basePrice || 'N/A',
-      event.status,
-      new Date(event.createdAt).toLocaleDateString(),
-    ]);
-
-    const csvContent = [
-      headers.join(','),
-      ...rows.map((row) => row.join(',')),
-    ].join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `events-${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
+  const handleDelete = async (id: string) => {
+    setLoading(true);
+    try {
+      const result = await deleteEvent(id);
+      if (result.success) {
+        setEvents(events.filter(e => e.id !== id));
+        setSelectedEventId(null);
+        setShowDeleteConfirm(null);
+        toast.success('Event deleted');
+        router.refresh();
+      } else {
+        toast.error(result.error || 'Failed to delete event');
+      }
+    } catch (error) {
+      console.error('Error deleting event:', error);
+      toast.error('Error deleting event');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="flex h-full bg-gray-900">
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col">
-        {/* Header */}
-        <AdminHeader title="Events" subtitle="Manage your events and ticket sales" />
+    <div className="flex flex-col h-full overflow-hidden bg-[#180a0a]">
+      <AdminHeader
+        title="Event Management"
+        description="Oversee and manage your ticketed events."
+      >
+        <div className="flex items-center gap-4">
+          <Link
+            href="/admin/events/create"
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-all font-bold text-sm shadow-lg shadow-primary/20"
+          >
+            <span className="material-symbols-outlined text-[20px]">add</span>
+            Create Event
+          </Link>
+        </div>
+      </AdminHeader>
 
-        {/* Stats Bar */}
-        <div className="grid grid-cols-4 gap-4 p-6 bg-gray-800/50 border-b border-gray-700">
-          <div className="bg-gray-700 rounded-lg p-4">
-            <p className="text-gray-400 text-sm mb-1">Total Events</p>
-            <p className="text-2xl font-bold text-white">{stats.total}</p>
+      <div className="flex-1 overflow-y-auto p-4 sm:p-8 space-y-6">
+        {/* Stats Row */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="bg-surface-dark p-6 rounded-xl border border-white/10">
+            <div className="flex justify-between items-start mb-2">
+              <span className="text-slate-400 text-sm font-medium">Total Events</span>
+              <span className="p-2 bg-primary/10 rounded-lg text-primary">
+                <span className="material-symbols-outlined">event</span>
+              </span>
+            </div>
+            <h3 className="text-2xl font-bold text-white">{events.length}</h3>
           </div>
-          <div className="bg-gray-700 rounded-lg p-4">
-            <p className="text-gray-400 text-sm mb-1">Published</p>
-            <p className="text-2xl font-bold text-green-400">{stats.published}</p>
+          <div className="bg-surface-dark p-6 rounded-xl border border-white/10">
+            <div className="flex justify-between items-start mb-2">
+              <span className="text-slate-400 text-sm font-medium">Active</span>
+              <span className="p-2 bg-green-500/10 rounded-lg text-green-500">
+                <span className="material-symbols-outlined">check_circle</span>
+              </span>
+            </div>
+            <h3 className="text-2xl font-bold text-white">
+              {events.filter(e => e.status === 'PUBLISHED').length}
+            </h3>
           </div>
-          <div className="bg-gray-700 rounded-lg p-4">
-            <p className="text-gray-400 text-sm mb-1">Drafts</p>
-            <p className="text-2xl font-bold text-yellow-400">{stats.drafts}</p>
+          <div className="bg-surface-dark p-6 rounded-xl border border-white/10">
+            <div className="flex justify-between items-start mb-2">
+              <span className="text-slate-400 text-sm font-medium">Drafts</span>
+              <span className="p-2 bg-yellow-500/10 rounded-lg text-yellow-500">
+                <span className="material-symbols-outlined">edit_note</span>
+              </span>
+            </div>
+            <h3 className="text-2xl font-bold text-white">
+              {events.filter(e => e.status === 'DRAFT').length}
+            </h3>
           </div>
-          <div className="bg-gray-700 rounded-lg p-4">
-            <p className="text-gray-400 text-sm mb-1">Cancelled</p>
-            <p className="text-2xl font-bold text-red-400">{stats.cancelled}</p>
+          <div className="bg-surface-dark p-6 rounded-xl border border-white/10">
+            <div className="flex justify-between items-start mb-2">
+              <span className="text-slate-400 text-sm font-medium">Tickets Sold</span>
+              <span className="p-2 bg-blue-500/10 rounded-lg text-blue-500">
+                <span className="material-symbols-outlined">local_activity</span>
+              </span>
+            </div>
+            <h3 className="text-2xl font-bold text-white">
+              {events.reduce((acc, e) => acc + (e.ticketsSold || 0), 0)}
+            </h3>
           </div>
         </div>
 
-        {/* Filters and Actions */}
-        <div className="p-6 border-b border-gray-700 space-y-4">
-          <div className="flex gap-4">
-            <input
-              type="text"
-              placeholder="Search events..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="flex-1 px-4 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 placeholder-gray-400"
-            />
-            <button
-              onClick={() => router.push('/admin/events/create')}
-              className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-semibold"
-            >
-              Create Event
-            </button>
-            <button
-              onClick={handleExport}
-              className="px-6 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 font-semibold"
-            >
-              Export CSV
-            </button>
-          </div>
-
-          <div className="flex gap-4">
-            <select
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              className="px-4 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-            >
-              <option>All</option>
-              <option>CONFERENCE</option>
-              <option>CONCERT</option>
-              <option>EXPERIENCE</option>
-              <option>WORKSHOP</option>
-              <option>OTHER</option>
-            </select>
-
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-            >
-              <option>All</option>
-              <option>DRAFT</option>
-              <option>PUBLISHED</option>
-              <option>CANCELLED</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Content Area */}
-        <div className="flex-1 flex gap-6 p-6 overflow-hidden">
-          {/* Events Table */}
-          <div className="flex-1 flex flex-col bg-gray-800 rounded-lg overflow-hidden">
-            <div className="overflow-y-auto flex-1">
-              <table className="w-full text-sm text-gray-300">
-                <thead className="bg-gray-700 sticky top-0">
-                  <tr>
-                    <th className="text-left px-4 py-3 font-semibold">Title</th>
-                    <th className="text-left px-4 py-3 font-semibold">Category</th>
-                    <th className="text-left px-4 py-3 font-semibold">Date</th>
-                    <th className="text-right px-4 py-3 font-semibold">Tickets Sold</th>
-                    <th className="text-left px-4 py-3 font-semibold">Status</th>
-                    <th className="text-center px-4 py-3 font-semibold">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-700">
-                  {filteredEvents.length === 0 ? (
-                    <tr>
-                      <td colSpan={6} className="text-center py-8 text-gray-500">
-                        No events found
-                      </td>
-                    </tr>
-                  ) : (
-                    filteredEvents.map((event) => (
-                      <tr
-                        key={event.id}
-                        onClick={() => setSelectedEventId(event.id)}
-                        className="hover:bg-gray-700 cursor-pointer transition"
-                      >
-                        <td className="px-4 py-3 font-medium">{event.title}</td>
-                        <td className="px-4 py-3">{event.category}</td>
-                        <td className="px-4 py-3">
-                          {new Date(event.startDate).toLocaleDateString()}
-                        </td>
-                        <td className="text-right px-4 py-3">
-                          {event.ticketsSold} / {event.totalCapacity}
-                        </td>
-                        <td className="px-4 py-3">
-                          <span
-                            className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                              event.status === 'PUBLISHED'
-                                ? 'bg-green-900 text-green-100'
-                                : event.status === 'DRAFT'
-                                ? 'bg-yellow-900 text-yellow-100'
-                                : 'bg-red-900 text-red-100'
-                            }`}
-                          >
-                            {event.status}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                          <div className="relative" ref={menuRef}>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setOpenMenuId(
-                                  openMenuId === event.id ? null : event.id
-                                );
-                              }}
-                              className="p-2 hover:bg-gray-600 rounded"
-                            >
-                              ⋮
-                            </button>
-                            {openMenuId === event.id && (
-                              <div className="absolute right-0 mt-1 w-48 bg-gray-700 rounded-lg shadow-lg z-10">
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    router.push(`/admin/events/edit/${event.id}`);
-                                  }}
-                                  className="block w-full text-left px-4 py-2 hover:bg-gray-600"
-                                >
-                                  Edit
-                                </button>
-                                {event.status === 'DRAFT' && (
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handlePublish(event.id);
-                                    }}
-                                    className="block w-full text-left px-4 py-2 hover:bg-gray-600"
-                                  >
-                                    Publish
-                                  </button>
-                                )}
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    router.push(
-                                      `/admin/events/waitlist/${event.id}`
-                                    );
-                                  }}
-                                  className="block w-full text-left px-4 py-2 hover:bg-gray-600"
-                                >
-                                  View Waitlist
-                                </button>
-                                {event.status !== 'CANCELLED' && (
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setDeleteConfirmId(event.id);
-                                    }}
-                                    className="block w-full text-left px-4 py-2 hover:bg-red-600/20 text-red-400"
-                                  >
-                                    Cancel Event
-                                  </button>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+        {/* Filters & Content */}
+        <div className="bg-surface-dark rounded-xl border border-white/10 overflow-hidden shadow-2xl shadow-black/40">
+          <div className="p-4 border-b border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 bg-black/20">
+            <div className="relative w-full md:w-96">
+              <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">
+                <span className="material-symbols-outlined text-[20px]">search</span>
+              </span>
+              <input
+                type="text"
+                placeholder="Search events or destinations..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full bg-background-dark border border-white/10 rounded-lg pl-10 pr-4 py-2 text-sm text-white focus:outline-none focus:border-primary transition-colors"
+              />
+            </div>
+            <div className="flex gap-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
+              {['ALL', 'PUBLISHED', 'DRAFT', 'CANCELLED'].map(s => (
+                <button
+                  key={s}
+                  onClick={() => setStatusFilter(s)}
+                  className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
+                    statusFilter === s
+                    ? 'bg-primary text-white'
+                    : 'bg-background-dark text-slate-400 hover:text-white border border-white/5'
+                  }`}
+                >
+                  {s}
+                </button>
+              ))}
             </div>
           </div>
 
-          {/* Detail Panel */}
-          {selectedEvent && (
-            <div className="w-96 bg-gray-800 rounded-lg p-6 overflow-y-auto space-y-6">
-              <div>
-                <h3 className="text-xl font-bold mb-2">{selectedEvent.title}</h3>
-                <p className="text-gray-400 text-sm line-clamp-3">
-                  {selectedEvent.description}
-                </p>
-              </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-white/10 bg-black/40 text-xs uppercase tracking-wider text-slate-400">
+                  <th className="px-6 py-4 font-bold">Event & Organizer</th>
+                  <th className="px-6 py-4 font-bold">Location & Category</th>
+                  <th className="px-6 py-4 font-bold">Date & Time</th>
+                  <th className="px-6 py-4 font-bold text-center">Status</th>
+                  <th className="px-6 py-4 font-bold text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {filteredEvents.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-12 text-center text-slate-500">
+                      <span className="material-symbols-outlined text-4xl mb-2 opacity-30 block">event_busy</span>
+                      No events found matching your criteria.
+                    </td>
+                  </tr>
+                ) : (
+                  filteredEvents.map((event) => {
+                    const statusClass = {
+                      PUBLISHED: 'bg-green-500/10 text-green-500 border-green-500/20',
+                      DRAFT: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20',
+                      CANCELLED: 'bg-red-500/10 text-red-500 border-red-500/20',
+                    }[event.status as string] || 'bg-slate-500/10 text-slate-500 border-slate-500/20';
 
-              <div className="space-y-2">
+                    return (
+                      <tr 
+                        key={event.id} 
+                        className={`hover:bg-white/5 transition-colors group cursor-pointer ${selectedEventId === event.id ? 'bg-primary/5' : ''}`} 
+                        onClick={() => setSelectedEventId(event.id)}
+                      >
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <div 
+                              className="size-12 rounded-lg bg-background-dark bg-cover bg-center border border-white/10 shadow-lg" 
+                              style={{ backgroundImage: `url('${event.images?.[0] || 'https://via.placeholder.com/150'}')` }}
+                            ></div>
+                            <div>
+                              <p className="text-white font-bold group-hover:text-primary transition-colors">{event.title}</p>
+                              <p className="text-xs text-slate-500">{event.organizer || 'Internal Team'}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-1.5 text-slate-300 text-sm">
+                            <span className="material-symbols-outlined text-[16px] text-primary">location_on</span>
+                            {event.destination}
+                          </div>
+                          <div className="mt-1 flex items-center gap-1.5 text-xs text-slate-500">
+                            <span className="material-symbols-outlined text-[14px]">category</span>
+                            {event.category}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <p className="text-sm text-white font-medium">
+                            {new Date(event.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                          </p>
+                          <p className="text-xs text-slate-500">
+                            {new Date(event.startDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </p>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold border ${statusClass}`}>
+                            {event.status}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+                            <Link
+                              href={`/admin/events/${event.id}`}
+                              className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-all"
+                              title="Edit"
+                            >
+                              <span className="material-symbols-outlined text-[20px]">edit</span>
+                            </Link>
+                            {event.status === 'DRAFT' && (
+                              <button
+                                onClick={() => handlePublish(event.id)}
+                                className="p-1.5 text-slate-400 hover:text-green-500 hover:bg-green-500/10 rounded-lg transition-all"
+                                title="Publish"
+                              >
+                                <span className="material-symbols-outlined text-[20px]">publish</span>
+                              </button>
+                            )}
+                            {event.status !== 'CANCELLED' && (
+                              <button
+                                onClick={() => handleCancel(event.id)}
+                                className="p-1.5 text-slate-400 hover:text-yellow-500 hover:bg-yellow-500/10 rounded-lg transition-all"
+                                title="Cancel"
+                              >
+                                <span className="material-symbols-outlined text-[20px]">block</span>
+                              </button>
+                            )}
+                            <button
+                              onClick={() => setShowDeleteConfirm(event.id)}
+                              className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
+                              title="Delete"
+                            >
+                              <span className="material-symbols-outlined text-[20px]">delete</span>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Details Panel - Shows when event is selected */}
+        {selectedEvent && (
+          <div className="animate-in slide-in-from-bottom-4 fade-in duration-300 bg-surface-dark rounded-xl border border-white/10 p-6 shadow-2xl">
+            <div className="flex justify-between items-start mb-6">
+              <div className="flex gap-4">
+                <div 
+                  className="size-20 rounded-xl bg-cover bg-center border-2 border-primary/20" 
+                  style={{ backgroundImage: `url('${selectedEvent.images?.[0]}')` }}
+                ></div>
                 <div>
-                  <p className="text-gray-400 text-xs mb-1">Category</p>
-                  <p className="font-semibold">{selectedEvent.category}</p>
-                </div>
-                <div>
-                  <p className="text-gray-400 text-xs mb-1">Destination</p>
-                  <p className="font-semibold">{selectedEvent.destination}</p>
-                </div>
-                <div>
-                  <p className="text-gray-400 text-xs mb-1">Date</p>
-                  <p className="font-semibold">
-                    {new Date(selectedEvent.startDate).toLocaleDateString()} -{' '}
-                    {new Date(selectedEvent.endDate).toLocaleDateString()}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-gray-400 text-xs mb-1">Capacity</p>
-                  <p className="font-semibold">
-                    {selectedEvent.ticketsSold} / {selectedEvent.totalCapacity}{' '}
-                    sold
-                  </p>
+                  <h2 className="text-xl font-bold text-white mb-1">{selectedEvent.title}</h2>
+                  <div className="flex gap-3 text-xs">
+                    <span className="text-slate-400">ID: {selectedEvent.id}</span>
+                    <span className="text-slate-400">Slug: {selectedEvent.slug}</span>
+                  </div>
                 </div>
               </div>
+              <button onClick={() => setSelectedEventId(null)} className="text-slate-400 hover:text-white">
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
 
-              <div className="bg-gray-700/50 rounded-lg p-4">
-                <h4 className="font-semibold mb-3">Ticket Types</h4>
-                <div className="space-y-2">
-                  {selectedEvent.ticketTypes.map((type) => (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="space-y-4">
+                <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest border-b border-white/5 pb-2">Sales Overview</h4>
+                <div className="flex justify-between items-center p-3 bg-black/20 rounded-lg">
+                  <span className="text-sm text-slate-400">Total Capacity</span>
+                  <span className="text-sm font-bold text-white">{selectedEvent.totalCapacity}</span>
+                </div>
+                <div className="flex justify-between items-center p-3 bg-black/20 rounded-lg">
+                  <span className="text-sm text-slate-400">Tickets Sold</span>
+                  <span className="text-sm font-bold text-white">{selectedEvent.ticketsSold || 0}</span>
+                </div>
+                <div className="mt-2">
+                  <div className="flex justify-between text-[10px] text-slate-500 mb-1">
+                    <span>Availability</span>
+                    <span>{Math.round(((selectedEvent.ticketsSold || 0) / (selectedEvent.totalCapacity || 1)) * 100)}%</span>
+                  </div>
+                  <div className="h-1.5 w-full bg-background-dark rounded-full overflow-hidden">
                     <div
-                      key={type.id}
-                      className="flex justify-between text-sm"
-                    >
-                      <span className="text-gray-300">{type.name}</span>
-                      <span className="text-red-400">${type.basePrice}</span>
+                      className="h-full bg-primary"
+                      style={{ width: `${Math.min(100, ((selectedEvent.ticketsSold || 0) / (selectedEvent.totalCapacity || 1)) * 100)}%` }}
+                    ></div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest border-b border-white/5 pb-2">Ticket Tiers</h4>
+                <div className="space-y-2">
+                  {selectedEvent.ticketTypes?.map((tt) => (
+                    <div key={tt.id} className="flex justify-between items-center p-3 bg-black/20 rounded-lg">
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-white truncate">{tt.name}</p>
+                        <p className="text-[10px] text-slate-500">{tt.quantitySold}/{tt.maxQuantity} Sold</p>
+                      </div>
+                      <span className="text-sm font-bold text-primary">${Number(tt.basePrice).toFixed(0)}</span>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {deleteConfirmId === selectedEvent.id && (
-                <div className="bg-red-900/20 border border-red-600 rounded-lg p-4">
-                  <p className="text-sm text-red-200 mb-4">
-                    Are you sure you want to cancel this event? This action
-                    cannot be undone.
-                  </p>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleCancel(selectedEvent.id)}
-                      disabled={isUpdating}
-                      className="flex-1 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
-                    >
-                      {isUpdating ? 'Cancelling...' : 'Cancel Event'}
-                    </button>
-                    <button
-                      onClick={() => setDeleteConfirmId(null)}
-                      className="flex-1 px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600"
-                    >
-                      No, Keep It
-                    </button>
-                  </div>
+              <div className="space-y-4">
+                <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest border-b border-white/5 pb-2">Quick Actions</h4>
+                <div className="grid grid-cols-2 gap-3">
+                  <Link
+                    href={`/admin/events/${selectedEvent.id}`}
+                    className="flex flex-col items-center justify-center p-4 bg-background-dark rounded-xl border border-white/5 hover:border-primary/50 transition-all text-slate-400 hover:text-white"
+                  >
+                    <span className="material-symbols-outlined mb-1 text-primary">edit_square</span>
+                    <span className="text-[10px] font-bold">Edit Details</span>
+                  </Link>
+                  <Link
+                    href={`/events/${selectedEvent.slug}`}
+                    target="_blank"
+                    className="flex flex-col items-center justify-center p-4 bg-background-dark rounded-xl border border-white/5 hover:border-primary/50 transition-all text-slate-400 hover:text-white"
+                  >
+                    <span className="material-symbols-outlined mb-1 text-primary">visibility</span>
+                    <span className="text-[10px] font-bold">Public View</span>
+                  </Link>
                 </div>
-              )}
+              </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-surface-dark border border-white/10 rounded-2xl p-8 max-w-md w-full shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="size-16 bg-red-500/20 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+              <span className="material-symbols-outlined text-4xl">delete_forever</span>
+            </div>
+            <h3 className="text-xl font-bold text-white text-center mb-2">Delete Event?</h3>
+            <p className="text-slate-400 text-center mb-8 text-sm">
+              This action cannot be undone. You can only delete events with no active ticket sales.
+            </p>
+            <div className="flex gap-4">
+              <button 
+                onClick={() => setShowDeleteConfirm(null)}
+                className="flex-1 py-3 text-sm font-bold text-slate-400 hover:text-white transition-colors"
+                disabled={loading}
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => handleDelete(showDeleteConfirm)}
+                disabled={loading}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl text-sm font-bold shadow-lg shadow-red-600/20 transition-all disabled:opacity-50"
+              >
+                {loading ? 'Deleting...' : 'Delete Event'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

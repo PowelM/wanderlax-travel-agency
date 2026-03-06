@@ -1,7 +1,6 @@
 import { getAdminEvents } from '@/app/actions/eventActions';
 import { AdminEventsClient } from '@/components/admin/AdminEventsClient';
-import { redirect } from 'next/navigation';
-import { currentUser } from '@clerk/nextjs';
+import { AdminSidebar } from '@/components/admin/AdminSidebar';
 
 export const metadata = {
   title: 'Events Management - Admin',
@@ -9,13 +8,20 @@ export const metadata = {
 };
 
 export default async function EventsAdminPage() {
-  const user = await currentUser();
+  const result = await getAdminEvents();
+  const safeEvents = result.success && result.events ? result.events : [];
 
-  if (!user || (user.unsafeMetadata?.role !== 'ADMIN' && user.unsafeMetadata?.role !== 'SUPER_ADMIN')) {
-    redirect('/');
-  }
-
-  const events = await getAdminEvents();
-
-  return <AdminEventsClient initialEvents={events} />;
+  return (
+    <div className="stitch-screen">
+      <div className="flex h-screen w-full">
+        {/* Sidebar */}
+        <AdminSidebar />
+        
+        {/* Main Content Area */}
+        <main className="flex-1 flex flex-col h-full overflow-hidden bg-background-light dark:bg-[#120d0d] relative">
+          <AdminEventsClient initialEvents={safeEvents} />
+        </main>
+      </div>
+    </div>
+  );
 }

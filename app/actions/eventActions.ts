@@ -62,13 +62,13 @@ export async function createEvent(data: {
     // Ensure unique slug
     let uniqueSlug = data.slug;
     let counter = 1;
-    while (await prisma.event.findUnique({ where: { slug: uniqueSlug } })) {
+    while (await (prisma as any).event.findUnique({ where: { slug: uniqueSlug } })) {
       uniqueSlug = `${data.slug}-${counter}`;
       counter++;
     }
 
     // Create Event
-    const event = await prisma.event.create({
+    const event = await (prisma as any).event.create({
       data: {
         title: data.title,
         slug: uniqueSlug,
@@ -256,7 +256,7 @@ export async function publishEvent(eventId: string) {
     const user = await currentUser();
     if (!user) throw new Error("Unauthorized");
 
-    const event = await prisma.event.update({
+    const event = await (prisma as any).event.update({
       where: { id: eventId },
       data: { status: "PUBLISHED" },
     });
@@ -285,7 +285,7 @@ export async function cancelEvent(eventId: string, reason?: string) {
     const user = await currentUser();
     if (!user) throw new Error("Unauthorized");
 
-    const event = await prisma.event.update({
+    const event = await (prisma as any).event.update({
       where: { id: eventId },
       data: { status: "CANCELLED" },
     });
@@ -362,7 +362,7 @@ export async function getPublicEvents() {
       orderBy: { startDate: "asc" },
     });
 
-    return events.map((e) => {
+    return events.map((e: any) => {
       const capacityRemaining =
         e.totalCapacity - e.tickets.length;
       const isSoldOut = capacityRemaining <= 0;
@@ -373,7 +373,7 @@ export async function getPublicEvents() {
         capacityRemaining,
         isSoldOut,
         basePrice: Math.min(
-          ...e.ticketTypes.map((t) =>
+          ...e.ticketTypes.map((t: any) =>
             t.earlyBirdPrice && new Date() < (t.earlyBirdEndDate || new Date(0))
               ? Number(t.earlyBirdPrice)
               : Number(t.basePrice)
@@ -400,7 +400,7 @@ export async function getEventBySlug(slug: string) {
 
     if (!event) return null;
 
-    const ticketsSold = event.tickets.filter((t) => t.status !== "CANCELLED").length;
+    const ticketsSold = event.tickets.filter((t: any) => t.status !== "CANCELLED").length;
     const capacityRemaining = event.totalCapacity - ticketsSold;
 
     return {
@@ -440,7 +440,7 @@ export async function getEventById(eventId: string) {
 
     if (!event) return { success: false, error: 'Event not found' };
 
-    const ticketsSold = event.tickets.filter((t) => t.status !== "CANCELLED").length;
+    const ticketsSold = event.tickets.filter((t: any) => t.status !== "CANCELLED").length;
     const capacityRemaining = event.totalCapacity - ticketsSold;
 
     return {
@@ -485,7 +485,7 @@ export async function deleteEvent(eventId: string) {
       throw new Error("Cannot delete event with active bookings. Cancel the event instead.");
     }
 
-    await prisma.event.delete({
+    await (prisma as any).event.delete({
       where: { id: eventId }
     });
 
@@ -677,7 +677,7 @@ export async function createTicketBooking(data: {
 
     // Create booking record
     const bookingRef = `WL-E-${Math.floor(1000 + Math.random() * 9000)}`;
-    const booking = await prisma.booking.create({
+    const booking = await (prisma as any).booking.create({
       data: {
         bookingRef,
         userId: user.id,
@@ -695,7 +695,7 @@ export async function createTicketBooking(data: {
     // Create individual ticket records
     const tickets = await Promise.all(
       data.attendeeDetails.map((attendee) =>
-        prisma.ticket.create({
+        (prisma as any).ticket.create({
           data: {
             eventId: event.id,
             userId: user.id,
@@ -794,7 +794,7 @@ export async function addToWaitlist(data: {
     if (!event) throw new Error("Event not found");
 
     // Get highest position
-    const lastWaitlist = await prisma.eventWaitlist.findFirst({
+    const lastWaitlist = await (prisma as any).eventWaitlist.findFirst({
       where: {
         eventId: event.id,
         ticketTypeId: data.ticketTypeId,
@@ -863,7 +863,7 @@ export async function promoteFromWaitlist(
   availableTickets: number
 ) {
   try {
-    const waitlistEntries = await prisma.eventWaitlist.findMany({
+    const waitlistEntries = await (prisma as any).eventWaitlist.findMany({
       where: {
         eventId,
         ticketTypeId,
@@ -943,7 +943,7 @@ export async function processRefund(
       Number(booking.finalAmount) * (refundPercentage / 100);
 
     // Update booking and tickets
-    await prisma.booking.update({
+    await (prisma as any).booking.update({
       where: { id: bookingId },
       data: {
         status: "CANCELLED",

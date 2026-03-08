@@ -1,4 +1,4 @@
-import { getUpcomingEvents } from '@/app/actions/eventActions';
+import { getPublicEvents } from '@/app/actions/eventActions';
 import EventCard from '@/components/events/EventCard';
 
 export const metadata = {
@@ -7,15 +7,17 @@ export const metadata = {
 };
 
 export default async function EventsPage() {
-  const { success, events, error } = await getUpcomingEvents();
+  const result = await getPublicEvents();
 
-  if (!success) {
+  if (!result?.success) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
-        <p className="text-red-500">{error || 'Failed to load events'}</p>
+        <p className="text-red-500">{result?.error || 'Failed to load events'}</p>
       </div>
     );
   }
+
+  const events = result.events || [];
 
   return (
     <div className="min-h-screen bg-black pb-32">
@@ -46,7 +48,7 @@ export default async function EventsPage() {
         <div className="max-w-[1400px] mx-auto">
           {events && events.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {events.map((event) => (
+              {events.map((event: any) => (
                 <EventCard key={event.id} event={event} />
               ))}
             </div>

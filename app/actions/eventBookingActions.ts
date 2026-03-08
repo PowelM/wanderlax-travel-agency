@@ -2,122 +2,78 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { v4 as uuidv4 } from "uuid";
-
-export async function createEventBooking(data: {
-  userId: string;
-  eventId: string;
-  ticketCount: number;
-  totalAmount: number;
-  attendees: { name: string; email: string }[];
-}) {
-  try {
-    return await prisma.$transaction(async (tx) => {
-      // 1. Create the Event Booking
-      const eventBooking = await tx.eventBooking.create({
-        data: {
-          userId: data.userId,
-          eventId: data.eventId,
-          ticketCount: data.ticketCount,
-          totalAmount: data.totalAmount,
-          status: 'CONFIRMED', // Assuming immediate confirmation for this flow
-        },
-      });
-
-      // 2. Create the associated Booking record for the overarching system
-      await tx.booking.create({
-        data: {
-          bookingRef: `EVT-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
-          userId: data.userId,
-          serviceType: 'EVENT',
-          status: 'CONFIRMED',
-          paymentStatus: 'PAID', // Assuming paid for this flow
-          totalAmount: data.totalAmount,
-          finalAmount: data.totalAmount,
-          eventBookingId: eventBooking.id,
-        },
-      });
-
-      // 3. Generate individual tickets
-      const ticketsData = data.attendees.map((attendee) => ({
-        eventBookingId: eventBooking.id,
-        ticketNumber: `TKT-${uuidv4().substring(0, 8).toUpperCase()}`,
-        attendeeName: attendee.name,
-        attendeeEmail: attendee.email,
-        status: 'VALID' as const,
-      }));
-
-      await tx.ticket.createMany({
-        data: ticketsData,
-      });
-
-      // 4. Update the event's sold tickets count
-      await tx.event.update({
-        where: { id: data.eventId },
-        data: {
-          soldTickets: {
-            increment: data.ticketCount,
-          },
-        },
-      });
-
-      revalidatePath('/portal/tickets');
-      revalidatePath(`/events`);
-      return { success: true, eventBookingId: eventBooking.id };
-    });
-  } catch (error) {
-    console.error("Error creating event booking:", error);
-    return { success: false, error: "Failed to create event booking" };
-  }
-}
 
 export async function getUserTickets(userId: string) {
   try {
+    const clerkUser = await prisma.user.findFirst({
+      where: { clerkId: userId },
+    });
+    const dbUserId = clerkUser ? clerkUser.id : userId;
+
     const tickets = await prisma.ticket.findMany({
       where: {
-        eventBooking: {
-          userId: userId,
-        },
+        userId: dbUserId,
       },
       include: {
-        eventBooking: {
-          include: {
-            event: true,
-          },
-        },
+        event: true,
+        ticketType: true,
       },
       orderBy: {
-        eventBooking: {
-          event: {
-            startDate: 'asc',
-          },
+        event: {
+          startDate: 'asc',
         },
-      },
+      } as any,
     });
-    return { success: true, tickets };
+    
+    return { 
+      success: true, 
+      tickets: tickets.map((t: any) => ({
+        ...t,
+        pricePaid: Number(t.pricePaid),
+        ticketType: {
+          ...t.ticketType,
+          basePrice: Number(t.ticketType.basePrice),
+          earlyBirdPrice: t.ticketType.earlyBirdPrice ? Number(t.ticketType.earlyBirdPrice) : null,
+          surgeMultiplier: t.ticketType.surgeMultiplier ? Number(t.ticketType.surgeMultiplier) : null,
+        }
+      }))
+    };
   } catch (error) {
     console.error("Error fetching user tickets:", error);
     return { success: false, error: "Failed to fetch user tickets" };
   }
 }
 
-export async function getAllEventBookings() {
+export async function getAllEventTickets() {
   try {
-    const bookings = await prisma.eventBooking.findMany({
+    const tickets = await prisma.ticket.findMany({
       include: {
         user: true,
         event: true,
-        tickets: true,
-        booking: true, // Overarching system booking
+        ticketType: true,
+        seatSection: true,
       },
       orderBy: {
         createdAt: 'desc',
       },
     });
-    return { success: true, bookings };
+    
+    return { 
+      success: true, 
+      tickets: tickets.map((t: any) => ({
+        ...t,
+        pricePaid: Number(t.pricePaid),
+        ticketType: {
+          ...t.ticketType,
+          basePrice: Number(t.ticketType.basePrice),
+          earlyBirdPrice: t.ticketType.earlyBirdPrice ? Number(t.ticketType.earlyBirdPrice) : null,
+          surgeMultiplier: t.ticketType.surgeMultiplier ? Number(t.ticketType.surgeMultiplier) : null,
+        }
+      }))
+    };
   } catch (error) {
-    console.error("Error fetching all event bookings:", error);
-    return { success: false, error: "Failed to fetch event bookings" };
+    console.error("Error fetching all event tickets:", error);
+    return { success: false, error: "Failed to fetch event tickets" };
   }
 }
 
@@ -125,7 +81,7 @@ export async function cancelTicket(id: string) {
   try {
     await prisma.ticket.update({
       where: { id },
-      data: { status: 'CANCELLED' },
+      data: { status: 'CANCELLED' as any },
     });
     revalidatePath('/portal/tickets');
     revalidatePath('/admin/tickets');
@@ -141,9 +97,9 @@ export async function markTicketUsed(id: string) {
     await prisma.ticket.update({
       where: { id },
       data: { 
-        status: 'USED',
-        scannedAt: new Date(),
-      },
+        status: 'USED' as any,
+        issuedAt: new Date(), 
+      } as any,
     });
     revalidatePath('/admin/tickets');
     revalidatePath('/portal/tickets');
@@ -151,5 +107,92 @@ export async function markTicketUsed(id: string) {
   } catch (error) {
     console.error("Error marking ticket used:", error);
     return { success: false, error: "Failed to mark ticket used" };
+  }
+}
+
+export async function createEventBooking(data: {
+  userId: string;
+  eventId: string;
+  ticketCount: number;
+  totalAmount: number;
+  attendees: { name: string; email: string }[];
+}) {
+  console.log('--- STARTING EVENT BOOKING ---');
+  console.log('Received Data:', JSON.stringify(data, null, 2));
+
+  try {
+    let user = await prisma.user.findUnique({
+      where: { clerkId: data.userId },
+    });
+
+    if (!user) {
+      console.log('Did not find user by clerkId, trying by db id...');
+      user = await prisma.user.findUnique({ where: { id: data.userId }});
+      if (!user) {
+        console.error('User not found by id either.');
+        return { success: false, error: "User not found" };
+      }
+    }
+
+    console.log('User OK:', user.id);
+
+    const event = await prisma.event.findUnique({
+      where: { id: data.eventId },
+      include: { ticketTypes: true }
+    });
+
+    if (!event || event.ticketTypes.length === 0) {
+      console.error('Event or ticket types not found.');
+      return { success: false, error: "Event or ticket types not found" };
+    }
+
+    console.log('Event OK, TicketType Count:', event.ticketTypes.length);
+
+    const ticketTypeId = event.ticketTypes[0].id;
+    const pricePerTicket = data.totalAmount / data.ticketCount;
+
+    console.log('Starting transaction...');
+
+    const booking = await prisma.$transaction(async (tx: any) => {
+      console.log('Creating booking record at amount:', data.totalAmount);
+      const book = await tx.booking.create({
+        data: {
+          bookingRef: `EVT-${Math.random().toString(36).substring(2, 9).toUpperCase()}`,
+          userId: user!.id,
+          serviceType: "EVENT",
+          status: "CONFIRMED",
+          totalAmount: data.totalAmount,
+          finalAmount: data.totalAmount,
+          eventId: data.eventId,
+          ticketQuantity: data.ticketCount,
+        },
+      });
+
+      console.log('Creating tickets...', data.attendees.length);
+      for (const attendee of data.attendees) {
+        if (!attendee.name || !attendee.email) continue;
+        await tx.ticket.create({
+          data: {
+            eventId: data.eventId,
+            userId: user!.id,
+            ticketTypeId: ticketTypeId,
+            attendeeName: attendee.name,
+            attendeeEmail: attendee.email,
+            pricePaid: pricePerTicket,
+            status: "ISSUED",
+          },
+        });
+      }
+
+      console.log('Tickets created successfully.');
+      return book;
+    });
+
+    console.log('Transaction succeeded, revalidating path...');
+    revalidatePath("/portal/tickets");
+    return { success: true, booking: JSON.parse(JSON.stringify(booking)) };
+  } catch (error) {
+    console.error("Error creating event booking:", error);
+    return { success: false, error: "Failed to create booking", detailedError: String(error) };
   }
 }
